@@ -7,15 +7,19 @@
 class FileoutObject : public AudioObject
 {
 public:
-	std::vector<float> data;
-
 	void run();
 };
 
 class OscillatorObject : public AudioObject
 {
 	Block make_block();
+public:
+	void run();
+};
 
+class SawtoothOscillatorObject : public AudioObject
+{
+	Block make_block();
 public:
 	void run();
 };
@@ -23,5 +27,13 @@ public:
 class PassObject : public AudioObject
 {
 public:
+	void run();
+};
+
+class FilterObject : public AudioObject
+{
+	float last;
+public:
+	FilterObject();
 	void run();
 };
