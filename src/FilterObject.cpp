@@ -1,5 +1,5 @@
 
-#include "Rumpetroll.h"
+#include "Yggdrasil.h"
 #include "Block.h"
 #include "objects.h"
 
@@ -9,16 +9,21 @@ void FilterObject::run()
 	{
 		Block b = read_block();
 
-		b[0] = .01*b[0] + .99*last;
-		for (int i = 1; i < BLOCKSIZE; i++)
+		b[0] = bal*b[0] + (1-bal)*last;
+		for (uint i = 1; i < BLOCKSIZE; i++)
 		{
-			b[i] = .01f*b[i] + .99f*b[i - 1];
-			b[i] *= 0.5;
+			b[i] = bal*b[i] + (1-bal)*b[i - 1];
 		}
 
 		last = b[BLOCKSIZE - 1];
+
+		for (uint i = 0; i < BLOCKSIZE; i++)
+		{
+			b[i] *= 0.5f;
+		}
+		
 		write_block(b);
 	}
 }
 
-FilterObject::FilterObject() : last(0) { }
+FilterObject::FilterObject() : last(0), bal(0.1) { }

@@ -11,6 +11,7 @@ public:
 	AudioOutput* out;
 	Block get_block();
 	uint get_block_count();
+	
 };
 
 class AudioInput { public: AudioConnector* connection; };
@@ -18,11 +19,13 @@ class AudioInput { public: AudioConnector* connection; };
 class AudioOutput
 {
 	BlockBuffer buf;
+	AudioConnector connection;
 
 public:
-	AudioConnector* connection;
-
 	Block get_block();
-	void write_block(Block b);
+	void write_block(Block);
 	uint get_block_count();
+	void connect(AudioInput &);
+
+	AudioOutput();
 };

@@ -18,3 +18,13 @@ uint AudioOutput::get_block_count()
 {
 	return buf.get_block_count();
 }
+
+void AudioOutput::connect(AudioInput &in)
+{
+	in.connection = &connection;
+}
+
+AudioOutput::AudioOutput()
+{
+	connection.out = this;
+}

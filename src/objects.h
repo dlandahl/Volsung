@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Rumpetroll.h"
+#include "Yggdrasil.h"
 #include "AudioObject.h"
 #include "Block.h"
 
@@ -32,6 +32,7 @@ public:
 
 class FilterObject : public AudioObject
 {
+	float bal;
 	float last;
 public:
 	FilterObject();

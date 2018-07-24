@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Rumpetroll.h"
+#include "Yggdrasil.h"
 #include "AudioDataflow.h"
 #include "Block.h"
 
@@ -11,11 +11,12 @@ class AudioObject : public Object
 protected:
 	Block read_block();
 
-	uint in_block_count();
 	uint out_block_count();
 
 	void write_block(Block b);
 public:
+	std::vector<float> data;
+	uint in_block_count();
 
 	AudioInput input;
 	AudioOutput output;
