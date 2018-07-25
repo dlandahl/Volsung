@@ -30,16 +30,19 @@ int main()
 {
 	std::map<std::string, AudioObject*> symbol_table;
 
-	create_object<SawtoothOscillatorObject>	("osc", symbol_table);
-	create_object<FilterObject>				("lop", symbol_table);
-	create_object<FileoutObject>			("out", symbol_table);
+	create_object<OscillatorObject>("osc", symbol_table);
+	create_object<BitcrushObject>("bit", symbol_table);
+	create_object<FilterObject>("lop", symbol_table);
+	create_object<FileoutObject>("out", symbol_table);
 	
-	connect_object(*symbol_table["osc"], *symbol_table["lop"]);
+	connect_object(*symbol_table["osc"], *symbol_table["bit"]);
+	connect_object(*symbol_table["bit"], *symbol_table["lop"]);
 	connect_object(*symbol_table["lop"], *symbol_table["out"]);
 
 	for (uint i = 0; i < 1000; i++)
 	{
 		symbol_table["osc"]->run();
+		symbol_table["bit"]->run();
 		symbol_table["lop"]->run();
 		symbol_table["out"]->run();
 	}

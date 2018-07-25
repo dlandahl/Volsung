@@ -30,6 +30,12 @@ public:
 	void run();
 };
 
+class BitcrushObject : public AudioObject
+{
+public:
+	void run();
+};
+
 class FilterObject : public AudioObject
 {
 	float bal;

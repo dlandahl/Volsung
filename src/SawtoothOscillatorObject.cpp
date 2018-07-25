@@ -13,7 +13,7 @@ Block SawtoothOscillatorObject::make_block()
 		b[i] = 0;
 		for(int j = 1; j < 150; j++)
 			b[i] += (float)sinf((float)(i + block_index*BLOCKSIZE)
-								/ SAMPLE_RATE * 110 * TAU * j) / j;
+				/ SAMPLE_RATE * 110 * TAU * j) / j;
 	}
 
 	block_index++;
