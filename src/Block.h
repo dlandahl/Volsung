@@ -18,7 +18,7 @@ class BlockBuffer
 	uint block_count;
 
 public:
-	Block get_block();
+	Block read_block();
 	void write_block(Block b);
 	uint get_block_count();
 	BlockBuffer();

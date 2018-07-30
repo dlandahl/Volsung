@@ -6,7 +6,7 @@ Block AudioConnector::get_block() { return out->get_block(); };
 uint AudioConnector::get_block_count() { return out->get_block_count(); };
 
 Block AudioOutput::get_block() {
-	return buf.get_block();
+	return buf.read_block();
 }
 
 void AudioOutput::write_block(Block b)

@@ -20,9 +20,6 @@ void create_object(std::string name, std::map<std::string, AudioObject*> &symbol
 
 void connect_object(AudioObject &a, AudioObject &b)
 {
-	//b.input.connection = &a.output.connection;
-	//a.output.connection.out = &a.output;
-
 	a.output.connect(b.input);
 }
 
@@ -57,4 +54,5 @@ int main()
 	}
 	
 	file.close();
+	
 }

@@ -9,10 +9,10 @@ void FilterObject::run()
 	{
 		Block b = read_block();
 
-		b[0] = bal*b[0] + (1-bal)*last;
+		b[0] = bal*b[0] + (1 - bal)*last;
 		for (uint i = 1; i < BLOCKSIZE; i++)
 		{
-			b[i] = bal*b[i] + (1-bal)*b[i - 1];
+			b[i] = bal*b[i] + (1 - bal)*b[i - 1];
 		}
 
 		last = b[BLOCKSIZE - 1];
@@ -26,4 +26,4 @@ void FilterObject::run()
 	}
 }
 
-FilterObject::FilterObject() : last(0), bal(0.1) { }
+FilterObject::FilterObject() : last(0), bal(0.2f) { }

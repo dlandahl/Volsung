@@ -7,7 +7,7 @@ float& Block::operator[](size_t n)
 	return sdata[n];
 }
 
-Block BlockBuffer::get_block()
+Block BlockBuffer::read_block()
 {
 	Block b = bdata[0];
 	bdata.erase(bdata.begin());
