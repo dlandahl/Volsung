@@ -1,18 +1,22 @@
 
 #include <fstream>
+#include <vector>
 
+#include "FileoutObject.h"
 #include "Yggdrasil.h"
-#include "objects.h"
 #include "Block.h"
 
 void FileoutObject::run()
 {
-	if (in_block_count() > 0)
+	std::vector<Block> b = read_block();
+	for (uint i = 0; i < BLOCKSIZE; i++)
 	{
-		Block b = read_block();
-		for (uint i = 0; i < BLOCKSIZE; i++)
-		{
-			data.push_back(b[i]);
-		}
+		data.push_back(b[0][i] * b[1][i]);
 	}
+}
+
+FileoutObject::FileoutObject()
+{
+	inputs.push_back({});
+	inputs.push_back({});
 }

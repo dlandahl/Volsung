@@ -22,4 +22,5 @@ public:
 	void write_block(Block b);
 	uint get_block_count();
 	BlockBuffer();
+
 };

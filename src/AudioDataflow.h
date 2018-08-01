@@ -6,26 +6,25 @@ class AudioOutput;
 
 class AudioConnector
 {
-
 public:
-	AudioOutput* out;
-	Block get_block();
-	uint get_block_count();
+	BlockBuffer buf;
+	//AudioOutput* out;	
+};
+
+class AudioInput
+{
+public:
+	std::vector<AudioConnector*> connections;
+	Block read_block();
 	
 };
 
-class AudioInput { public: AudioConnector* connection; };
-
 class AudioOutput
 {
-	BlockBuffer buf;
-	AudioConnector connection;
-
 public:
-	Block get_block();
+	std::vector<AudioConnector*> connections;
 	void write_block(Block);
-	uint get_block_count();
-	void connect(AudioInput &);
+	//void connect(AudioInput &);
 
-	AudioOutput();
+	//AudioOutput();
 };

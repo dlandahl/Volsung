@@ -1,30 +1,34 @@
 
+#include <iostream>
+
 #include "Block.h"
 #include "AudioDataflow.h"
 
-Block AudioConnector::get_block() { return out->get_block(); };
-uint AudioConnector::get_block_count() { return out->get_block_count(); };
+Block AudioInput::read_block()
+{
+	
+	if (connections.size()) {
+		Block b;	
+		for (uint j = 0; j < connections.size(); j++) {
+			Block other_block = connections[j]->buf.read_block();
+	
+			for (uint i = 0; i < BLOCKSIZE; i++) {
+				b[i] = other_block[i];
+				//std::cout << other_block[i] << std::endl;
+			}
+		}
 
-Block AudioOutput::get_block() {
-	return buf.read_block();
+		//for (uint i = 0; i < BLOCKSIZE; i++) {
+		//	b[i] /= connections.size();
+		//}
+
+		return b;
+	}
 }
 
 void AudioOutput::write_block(Block b)
 {
-	buf.write_block(b);
-}
-
-uint AudioOutput::get_block_count()
-{
-	return buf.get_block_count();
-}
-
-void AudioOutput::connect(AudioInput &in)
-{
-	in.connection = &connection;
-}
-
-AudioOutput::AudioOutput()
-{
-	connection.out = this;
+	for (uint i = 0; i < connections.size(); i++) {
+		connections[i]->buf.write_block(b);
+	}
 }
