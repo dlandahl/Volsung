@@ -2,13 +2,10 @@
 
 #include "Block.h"
 
-class AudioOutput;
-
 class AudioConnector
 {
 public:
 	BlockBuffer buf;
-	//AudioOutput* out;	
 };
 
 class AudioInput
@@ -16,7 +13,6 @@ class AudioInput
 public:
 	std::vector<AudioConnector*> connections;
 	Block read_block();
-	
 };
 
 class AudioOutput
@@ -24,7 +20,4 @@ class AudioOutput
 public:
 	std::vector<AudioConnector*> connections;
 	void write_block(Block);
-	//void connect(AudioInput &);
-
-	//AudioOutput();
 };

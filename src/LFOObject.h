@@ -7,5 +7,5 @@ class LFOObject : public AudioObject
 	void run() override;
 	Block make_block();
 public:
-	LFOObject();
+	LFOObject(std::string);
 };

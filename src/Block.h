@@ -7,7 +7,7 @@
 
 class Block
 {
-	std::array<float, BLOCKSIZE> sdata;
+	std::array<float, BLOCKSIZE> sdata = { 0 };
 public:
 	float& operator[](size_t n);
 };
@@ -15,12 +15,8 @@ public:
 class BlockBuffer
 {
 	std::vector<Block> bdata;
-	uint block_count;
 
 public:
 	Block read_block();
 	void write_block(Block b);
-	uint get_block_count();
-	BlockBuffer();
-
 };

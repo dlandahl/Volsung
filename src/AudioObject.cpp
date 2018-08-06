@@ -19,3 +19,5 @@ void AudioObject::write_block(Block b, uint output)
 {
 	outputs[output].write_block(b);
 }
+
+AudioObject::AudioObject() { }

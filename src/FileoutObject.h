@@ -6,5 +6,5 @@ class FileoutObject : public AudioObject
 {
 	void run() override;
 public:
-	FileoutObject();
+	FileoutObject(std::string);
 };

@@ -15,7 +15,7 @@ void FileoutObject::run()
 	}
 }
 
-FileoutObject::FileoutObject()
+FileoutObject::FileoutObject(std::string)
 {
 	inputs.push_back({});
 	inputs.push_back({});

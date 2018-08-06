@@ -11,21 +11,17 @@ float& Block::operator[](size_t n)
 
 Block BlockBuffer::read_block()
 {
-	Block b = bdata[0];
-	bdata.erase(bdata.begin());
-	block_count -= 1;
+	Block b;
+
+	if (bdata.size())
+	{
+		b = bdata[0];
+		bdata.erase(bdata.begin());
+	}
 	return b;
 };
 
 void BlockBuffer::write_block(Block b)
 {
 	bdata.push_back(b);
-	block_count += 1;
 }
-
-uint BlockBuffer::get_block_count()
-{
-	return block_count;
-}
-
-BlockBuffer::BlockBuffer() : block_count(0) { }

@@ -14,40 +14,48 @@
 #include "LFOObject.h"
 #include "FileoutObject.h"
 
-template<class obj>
-void create_object(std::string name, std::map<std::string, AudioObject*> &symbols)
+float operator "" _hz(long double f)
 {
-	if(std::is_base_of<AudioObject, obj>::value)
-		symbols[name] = new obj;
+	return TAU * float(f / SAMPLE_RATE);
+}
+
+template<class obj>
+void create_object(str name, std::map<str, AudioObject*> &symbols, str args="")
+{
+	static_assert(std::is_base_of<AudioObject, obj>::value, "no");
+	symbols[name] = new obj(args);
+}
+
+void connect_objects(AudioObject* a, uint out, AudioObject* b, uint in)
+{
+	a->outputs[out].connections.push_back({});
+	b->inputs [in] .connections.push_back({});
+	
+	a->outputs[out].connections.back() =
+	b->inputs [in] .connections.back() =
+		new AudioConnector;
 }
 
 int main()
 {
-	std::map<std::string, AudioObject*> symbol_table;
+	std::map<str, AudioObject*>		  symbol_table;
+	std::map<str, AudioObject*>& st = symbol_table;
 
-	create_object<OscillatorObject>("osc", symbol_table);
-	create_object<LFOObject>("lfo", symbol_table);
-	create_object<FileoutObject>("out", symbol_table);
-	
-	AudioConnector connection;
-	AudioConnector connection2;
-	
-	symbol_table["osc"]->outputs[0].connections.push_back({});
-	symbol_table["lfo"]->outputs[0].connections.push_back({});
-	symbol_table["out"]->inputs [0].connections.push_back({});
-	symbol_table["out"]->inputs [1].connections.push_back({});
-	
-	symbol_table["osc"]->outputs[0].connections[0] = &connection;
-	symbol_table["out"]->inputs [0].connections[0] = &connection;
-	
-	symbol_table["lfo"]->outputs[0].connections[0] = &connection2;
-	symbol_table["out"]->inputs [1].connections[0] = &connection2;
+	create_object<OscillatorObject>("mod", st, "5");
+	create_object<OscillatorObject>("osc", st, "220");
+	create_object<OscillatorObject>("amp", st, "1");
+	create_object<FileoutObject>   ("out", st);
 
-	for (uint i = 0; i < 10000; i++)
+	connect_objects(st["osc"], 0, st["out"], 0);
+	connect_objects(st["mod"], 0, st["osc"], 0);
+	connect_objects(st["amp"], 0, st["out"], 1);
+
+	for (uint i = 0; i < 1000; i++)
 	{
-		symbol_table["osc"]->run();
-		symbol_table["lfo"]->run();
-		symbol_table["out"]->run();
+		for (auto const& x : st)
+		{
+			x.second->run();
+		}
 	}
 
 	std::vector<float> out_data;

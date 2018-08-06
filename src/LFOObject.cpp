@@ -10,7 +10,7 @@ Block LFOObject::make_block()
 	Block b;
 	for (uint i = 0; i < BLOCKSIZE; i++)
 	{
-		b[i] = sinf((float)(i + block_index*BLOCKSIZE) / SAMPLE_RATE * 1 * TAU);
+		b[i] = sinf((i + block_index*BLOCKSIZE) * 10.0_hz);
 	}
 
 	block_index++;
@@ -22,7 +22,7 @@ void LFOObject::run()
 	write_block(make_block(), 0);
 }
 
-LFOObject::LFOObject()
+LFOObject::LFOObject(std::string)
 {
 	outputs.push_back({});
 }
