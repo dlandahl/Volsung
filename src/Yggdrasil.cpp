@@ -11,13 +11,7 @@
 #include "AudioObject.h"
 
 #include "OscillatorObject.h"
-#include "LFOObject.h"
 #include "FileoutObject.h"
-
-float operator "" _hz(long double f)
-{
-	return TAU * float(f / SAMPLE_RATE);
-}
 
 template<class obj>
 void create_object(str name, std::map<str, AudioObject*> &symbols, str args="")
@@ -38,19 +32,17 @@ void connect_objects(AudioObject* a, uint out, AudioObject* b, uint in)
 
 int main()
 {
-	std::map<str, AudioObject*>		  symbol_table;
+	std::map<str, AudioObject*>       symbol_table;
 	std::map<str, AudioObject*>& st = symbol_table;
 
-	create_object<OscillatorObject>("mod", st, "5");
+	create_object<OscillatorObject>("mod", st, "1");
 	create_object<OscillatorObject>("osc", st, "220");
-	create_object<OscillatorObject>("amp", st, "1");
 	create_object<FileoutObject>   ("out", st);
 
 	connect_objects(st["osc"], 0, st["out"], 0);
 	connect_objects(st["mod"], 0, st["osc"], 0);
-	connect_objects(st["amp"], 0, st["out"], 1);
 
-	for (uint i = 0; i < 1000; i++)
+	for (uint i = 0; i < 10000; i++)
 	{
 		for (auto const& x : st)
 		{

@@ -5,19 +5,19 @@
 class AudioConnector
 {
 public:
-	BlockBuffer buf;
+	BlockBuffer                  buf;
 };
 
 class AudioInput
 {
 public:
 	std::vector<AudioConnector*> connections;
-	Block read_block();
+	Block                        read_block();
 };
 
 class AudioOutput
 {
 public:
 	std::vector<AudioConnector*> connections;
-	void write_block(Block);
+	void                         write_block(Block);
 };

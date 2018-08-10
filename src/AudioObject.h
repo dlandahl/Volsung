@@ -12,18 +12,17 @@ class Object { };
 class AudioObject : public Object
 {
 protected:
-	virtual std::vector<Block>	read_block();
-	virtual void				write_block(Block b, uint output);
+	virtual std::vector<Block> read_block();
+	virtual void               write_block(Block b, uint output);
 
-	std::string					args;
+	std::string                args;
 public:
-	std::vector<float>			data;
+	std::vector<float>         data;
 
-	std::vector<AudioInput>		inputs;
-	std::vector<AudioOutput>	outputs;
+	std::vector<AudioInput>    inputs;
+	std::vector<AudioOutput>   outputs;
 
-	virtual void				run() = 0;
+	virtual void               run() = 0;
 
 	AudioObject();
-
 };

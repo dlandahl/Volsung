@@ -15,7 +15,9 @@ Block OscillatorObject::make_block()
 		Block p = read_block()[0];
 		for (uint i = 0; i < BLOCKSIZE; i++)
 		{
-			b[i] = sinf((i + block_index*BLOCKSIZE) * (p[i]*220) * TAU / SAMPLE_RATE);
+			b[i] = sinf(TAU * phase);
+			phase = phase + (p[i] + 1) * 220 / SAMPLE_RATE;;
+			if (phase >= 1.0) { phase -= 1.0; }
 		}
 	} else {
 		for (uint i = 0; i < BLOCKSIZE; i++)
@@ -32,7 +34,7 @@ void OscillatorObject::run()
 	write_block(make_block(), 0);
 }
 
-OscillatorObject::OscillatorObject(std::string a) : block_index(0)
+OscillatorObject::OscillatorObject(std::string a) : block_index(0), phase(0)
 {
 	outputs.push_back({});
 	inputs.push_back({});
