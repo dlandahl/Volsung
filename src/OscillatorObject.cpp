@@ -29,6 +29,8 @@ Block OscillatorObject::make_block()
 	return b;
 }
 
+//Everytime the run function is called on this AudioObject, it should write a block
+//	to its 0th output using the make_block function defined above.
 void OscillatorObject::run()
 {
 	write_block(make_block(), 0);
@@ -36,8 +38,11 @@ void OscillatorObject::run()
 
 OscillatorObject::OscillatorObject(std::string a) : block_index(0), phase(0)
 {
+	//Create an output and an input.
+	//The input is for pitch modulation, the output is to output the sine wave signal.
 	outputs.push_back({});
 	inputs.push_back({});
+	
+	//This reads the argument that is passed in and sets the freqency based on the argument.
 	frequency = std::stoi(a, nullptr, 10) * TAU / SAMPLE_RATE;
-	std::cout << frequency << std::endl;
 }
