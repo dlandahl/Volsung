@@ -5,7 +5,7 @@
 
 #include "Yggdrasil.h"
 
-//A block is an array of samples. These block are passed
+//A block is an array of samples. These blocks are passed
 //	around by audio objects for processing and synthesis.
 class Block
 {
