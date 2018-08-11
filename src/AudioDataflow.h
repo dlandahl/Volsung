@@ -7,7 +7,7 @@
 //Blocks are arrays of samples.
 
 //An AudioObject may write a block to an output, which will place it in all
-//	AudioConnectors that are connected. THE input that the Connector
+//	AudioConnectors that are connected. THE input that each Connector
 //	is also connected to can then read the block.
 class AudioConnector
 {
