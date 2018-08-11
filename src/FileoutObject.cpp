@@ -6,6 +6,9 @@
 #include "Yggdrasil.h"
 #include "Block.h"
 
+//The run function for this AudioObject is implemented to simply save
+//	data from its input to its data storage, which is later written
+//	to a file
 void FileoutObject::run()
 {
 	std::vector<Block> b = read_block();
