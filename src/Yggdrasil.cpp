@@ -62,7 +62,7 @@ int main()
 	std::map<str, AudioObject*>       symbol_table;
 	std::map<str, AudioObject*>& st = symbol_table;
 
-	//The code below here is a hardcoded sample patch which creates a pitch modulated sine wave.
+	//The code below here is a hardcoded patch which creates a pitch modulated sine wave.
 	//Later, objects will be created and linked using the command line or a graphical interface
 	
 	//Create an oscillator called "mod" and pass "1" as an argument. This argument is interpreted as
