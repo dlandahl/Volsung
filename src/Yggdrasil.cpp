@@ -16,7 +16,7 @@
 #include "AddObject.h"
 
 template<class obj>
-void create_object(int name, std::map<int, AudioObject*> &symbols, str args="")
+void create_object(str name, std::map<str, AudioObject*> &symbols, str args="")
 {
 	static_assert(std::is_base_of<AudioObject, obj>::value, "no");
 	symbols[name] = new obj(args);
@@ -34,13 +34,13 @@ void connect_objects(AudioObject* a, uint out, AudioObject* b, uint in)
 
 int main()
 {
-	std::map<int, AudioObject*>       symbol_table;
-	std::map<int, AudioObject*>& st = symbol_table;
+	std::map<str, AudioObject*>       symbol_table;
+	std::map<str, AudioObject*>& st = symbol_table;
 
-	create_object<OscillatorObject>(1, st, "432");
-	create_object<FileoutObject>(34563456, st, "lol.raw");
+	create_object<OscillatorObject>("osc", st, "432");
+	create_object<FileoutObject>("why", st, "output.raw");
 
-	connect_objects(st[1], 0, st[34563456], 0);
+	connect_objects(st["osc"], 0, st["why"], 0);
 
 	for (auto const& x : st)
 	{
