@@ -16,7 +16,7 @@ Block OscillatorObject::make_block()
 		for (uint i = 0; i < BLOCKSIZE; i++)
 		{
 			b[i] = sinf(TAU * phase);
-			phase = phase + (p[i] + 1) * 220 / SAMPLE_RATE;;
+			phase = phase + p[i] / SAMPLE_RATE;;
 			if (phase >= 1.0) { phase -= 1.0; }
 		}
 	} else {
@@ -36,8 +36,9 @@ void OscillatorObject::run()
 
 OscillatorObject::OscillatorObject(std::string a) : block_index(0), phase(0)
 {
+	try         { frequency = std::stoi(a, nullptr, 10) * TAU / SAMPLE_RATE; }
+	catch (...) { frequency = 1; }
+	
 	outputs.push_back({});
 	inputs.push_back({});
-	frequency = std::stoi(a, nullptr, 10) * TAU / SAMPLE_RATE;
-	std::cout << frequency << std::endl;
 }

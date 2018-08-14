@@ -13,8 +13,10 @@
 #include "OscillatorObject.h"
 #include "FileoutObject.h"
 
+#include "AddObject.h"
+
 template<class obj>
-void create_object(str name, std::map<str, AudioObject*> &symbols, str args="")
+void create_object(int name, std::map<int, AudioObject*> &symbols, str args="")
 {
 	static_assert(std::is_base_of<AudioObject, obj>::value, "no");
 	symbols[name] = new obj(args);
@@ -32,32 +34,20 @@ void connect_objects(AudioObject* a, uint out, AudioObject* b, uint in)
 
 int main()
 {
-	std::map<str, AudioObject*>       symbol_table;
-	std::map<str, AudioObject*>& st = symbol_table;
+	std::map<int, AudioObject*>       symbol_table;
+	std::map<int, AudioObject*>& st = symbol_table;
 
-	create_object<OscillatorObject>("mod", st, "1");
-	create_object<OscillatorObject>("osc", st, "220");
-	create_object<FileoutObject>   ("out", st);
+	create_object<OscillatorObject>(1, st, "432");
+	create_object<FileoutObject>(34563456, st, "lol.raw");
 
-	connect_objects(st["osc"], 0, st["out"], 0);
-	connect_objects(st["mod"], 0, st["osc"], 0);
+	connect_objects(st[1], 0, st[34563456], 0);
 
-	for (uint i = 0; i < 10000; i++)
+	for (auto const& x : st)
 	{
-		for (auto const& x : st)
+		for (uint i = 0; i < 1000; i++)
 		{
 			x.second->run();
 		}
+		x.second->finish();
 	}
-
-	std::vector<float> out_data;
-	out_data = symbol_table["out"]->data;
-	
-	std::fstream file("audio.raw", std::fstream::out | std::fstream::binary);
-	
-	for (uint i = 0; i < out_data.size(); i++) {
-		file.write((const char*)&out_data[i], sizeof(float));
-	}
-	
-	file.close();
 }

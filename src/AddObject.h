@@ -2,12 +2,12 @@
 
 #include "AudioObject.h"
 
-class FileoutObject : public AudioObject
+class AddObject : public AudioObject
 {
 	void run()    override;
 	void finish() override;
 
 	std::string filename;
 public:
-	FileoutObject(std::string);
+	AddObject(std::string);
 };

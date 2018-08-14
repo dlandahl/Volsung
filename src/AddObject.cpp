@@ -2,11 +2,11 @@
 #include <fstream>
 #include <vector>
 
-#include "FileoutObject.h"
+#include "AddObject.h"
 #include "Yggdrasil.h"
 #include "Block.h"
 
-void FileoutObject::run()
+void AddObject::run()
 {
 	std::vector<Block> b = read_block();
 	for (uint i = 0; i < BLOCKSIZE; i++)
@@ -15,7 +15,7 @@ void FileoutObject::run()
 	}
 }
 
-void FileoutObject::finish()
+void AddObject::finish()
 {
 	std::fstream file(filename, std::fstream::out | std::fstream::binary);
 
@@ -26,7 +26,7 @@ void FileoutObject::finish()
 	file.close();
 }
 
-FileoutObject::FileoutObject(std::string filename) : filename(filename)
+AddObject::AddObject(std::string filename) : filename(filename)
 {
 	inputs.push_back({});
 }

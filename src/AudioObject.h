@@ -16,13 +16,15 @@ protected:
 	void                    write_block(Block b, uint output);
 
 	std::string             args;
+	
 public:
-	std::vector<float>      data;
-
 	std::vector<AudioInput> inputs;
 	std::vector<AudioOutput>outputs;
+	
+	std::vector<float>      data;
 
 	virtual void            run() = 0;
+	virtual void            finish();
 
 	AudioObject();
 };

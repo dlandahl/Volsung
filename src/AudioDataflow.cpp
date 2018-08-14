@@ -1,6 +1,4 @@
 
-#include <iostream>
-
 #include "Block.h"
 #include "AudioDataflow.h"
 
@@ -14,7 +12,6 @@ Block AudioInput::read_block()
 	
 			for (uint i = 0; i < BLOCKSIZE; i++) {
 				b[i] = other_block[i];
-				//std::cout << other_block[i] << std::endl;
 			}
 		}
 
