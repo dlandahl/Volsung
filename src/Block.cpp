@@ -1,6 +1,4 @@
 
-#include <iostream>
-
 #include "Yggdrasil.h"
 #include "Block.h"
 

@@ -7,5 +7,5 @@
 #define PI          3.14159265f
 #define TAU         6.28318530f
 
-typedef unsigned    uint;
-typedef std::string str;
+using uint = unsigned;
+using str  = std::string;

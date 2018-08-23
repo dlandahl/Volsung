@@ -6,7 +6,8 @@
 std::vector<Block> AudioObject::read_block()
 {
 	std::vector<Block> b;
-	for (uint i = 0; i < inputs.size(); i++) {
+	for (uint i = 0; i < inputs.size(); i++)
+	{
 		b.push_back(inputs[i].read_block());
 	}
 	return b;
