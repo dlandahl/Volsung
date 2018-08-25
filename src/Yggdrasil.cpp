@@ -1,8 +1,9 @@
 
 #include <fstream>
 #include <string>
+#include <array>
 #include <type_traits>
-#include <map>
+#include <unordered_map>
 
 #include "Yggdrasil.h"
 #include "AudioDataflow.h"
@@ -16,7 +17,7 @@
 #include "./objects/NoiseObject.h"
 
 //Symbol table type
-using st_type = std::map<str, AudioObject*>;
+using st_type = std::unordered_map<str, AudioObject*>;
 
 template<class obj>
 void create_object(str name, st_type &symbols, str args = "")
