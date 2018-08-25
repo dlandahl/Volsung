@@ -5,7 +5,7 @@
 
 void FilterObject::run()
 {
-	std::vector<Block>x = read_block();
+	std::vector<Block> x = read_block();
 	Block y;
 
 	b = 2 - cosf(TAU * x[1][0] / SAMPLE_RATE);
