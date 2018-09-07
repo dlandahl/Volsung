@@ -11,20 +11,24 @@ class Object { };
 
 class AudioObject : public Object
 {
+	std::vector<CircularBuffer> in, out;
+	str name;
+
 protected:
-	std::vector<Block>       read_block();
-	void                     write_block(Block b, uint output);
-							 
-	std::string              args;
-							 
-public:						 
+	virtual void run(buf&, buf&, int) = 0;
+	bool         is_connected(uint);
+	bool         init(int, int, str, std::vector<float*>);
+	
+public:
+	static int index;
+
 	std::vector<AudioInput>  inputs;
 	std::vector<AudioOutput> outputs;
-							 
-	std::vector<float>       data;
-							 
-	virtual void             run() = 0;
-	virtual void             finish();
 
-	AudioObject();
+	void implement();
+	virtual void finish();
+	
+	str get_name() { return name; }
+
+	AudioObject(int, int);
 };

@@ -2,24 +2,24 @@
 #include "Yggdrasil.h"
 #include "Block.h"
 
-float& Block::operator[](size_t n)
+float& Block::operator[](uint n)
 {
-	return sdata[n];
+	return sample_data[n];
 }
 
 Block BlockBuffer::read_block()
 {
 	Block b;
 
-	if (bdata.size())
+	if (block_data.size())
 	{
-		b = bdata[0];
-		bdata.erase(bdata.begin());
+		b = block_data[0];
+		block_data.erase(block_data.begin());
 	}
 	return b;
 };
 
 void BlockBuffer::write_block(Block b)
 {
-	bdata.push_back(b);
+	block_data.push_back(b);
 }

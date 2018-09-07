@@ -7,14 +7,14 @@
 
 class Block
 {
-	std::array<float, BLOCKSIZE> sdata = { 0 };
+	std::array<float, BLOCKSIZE> sample_data = { 0 };
 public:
-	float& operator[](size_t n);
+	float& operator[](uint n);
 };
 
 class BlockBuffer
 {
-	std::vector<Block> bdata;
+	std::vector<Block> block_data;
 
 public:
 	Block  read_block();

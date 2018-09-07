@@ -1,71 +1,103 @@
 
-#include <fstream>
+#include <memory>
 #include <string>
-#include <array>
+#include <iostream>
 #include <type_traits>
 #include <unordered_map>
 
 #include "Yggdrasil.h"
 #include "AudioDataflow.h"
 #include "AudioObject.h"
+#include "StringFormat.h"
 
-#include "./objects/OscillatorObject.h"
-#include "./objects/FileoutObject.h"
-#include "./objects/MultObject.h"
-#include "./objects/AddObject.h"
-#include "./objects/FilterObject.h"
-#include "./objects/NoiseObject.h"
+#include "./objects/~add.h"
+#include "./objects/~mult.h"
+#include "./objects/~noise.h"
+#include "./objects/~filter.h"
+#include "./objects/~oscillator.h"
+#include "./objects/~square.h"
+#include "./objects/~fileout.h"
+#include "./objects/~crush.h"
 
-//Symbol table type
-using st_type = std::unordered_map<str, AudioObject*>;
+using st_type = std::unordered_map<str, std::unique_ptr<AudioObject>>;
 
 template<class obj>
 void create_object(str name, st_type &symbols, str args = "")
 {
 	static_assert(std::is_base_of<AudioObject, obj>::value, "no");
-	symbols[name] = new obj(args);
+	symbols[name] = std::make_unique<obj>(args);
 }
 
-void connect_objects(AudioObject* a, uint out, AudioObject* b, uint in)
+void connect_objects(std::unique_ptr<AudioObject> &a, uint out,
+	                 std::unique_ptr<AudioObject> &b, uint in)
 {
-	a->outputs[out].connections.push_back({});
-	b->inputs[in].connections.push_back({});
+	a->outputs[out].connect(b->inputs[in]);
+}
 
-	a->outputs[out].connections.back() =
-	b->inputs[in].connections.back() =
-		new AudioConnector;
+void make_patch(st_type &st)
+{
+	std::string cmd;
+
+	while (cmd != "done")
+	{
+		std::getline(std::cin, cmd);
+
+		if (sf::starts_with(cmd, "mk "))
+		{
+			auto mk_cmd = sf::split_by(cmd, ' ');
+
+			if (mk_cmd[1] == "osc")
+			  { create_object<OscillatorObject>(mk_cmd[2], st, cmd); }
+
+			if (mk_cmd[1] == "out")
+				{ create_object<FileoutObject> (mk_cmd[2], st, cmd); }
+
+			if (mk_cmd[1] == "add")
+				{ create_object<AddObject>     (mk_cmd[2], st, cmd); }
+
+			if (mk_cmd[1] == "mult")
+				{ create_object<MultObject>    (mk_cmd[2], st, cmd); }
+
+			if (mk_cmd[1] == "noise")
+				{ create_object<NoiseObject>   (mk_cmd[2], st, cmd); }
+
+			if (mk_cmd[1] == "filter")
+				{ create_object<FilterObject>  (mk_cmd[2], st, cmd); }
+
+			if (mk_cmd[1] == "square")
+				{ create_object<SquareObject>  (mk_cmd[2], st, cmd); }
+
+			if (mk_cmd[1] == "crush")
+				{ create_object<CrushObject>   (mk_cmd[2], st, cmd); }
+		}
+
+		if (sf::starts_with(cmd, "ct "))
+		{
+			cmd        = sf::split_by(cmd, ' ')[1];
+			auto c_cmd = sf::split_by(cmd, '>');
+
+			int in, out;
+
+			out = c_cmd[0][c_cmd[0].size() - 1] - '0'; c_cmd[0].pop_back();
+			in  = c_cmd[1][c_cmd[1].size() - 1] - '0'; c_cmd[1].pop_back();
+			connect_objects(st[c_cmd[0]], out, st[c_cmd[1]], in);
+		}
+	}
 }
 
 int main()
 {
 	st_type       symbol_table;
 	st_type& st = symbol_table;
-
-	/*             This will not be hardcoded in the final version             */
-	/*  Will either be read from a file or created with a command line or GUI  */
-	create_object<OscillatorObject>("mod", st, "3");
-	create_object<AddObject>("add", st, "1");
-	create_object<MultObject>("mult", st, "500");
-
-	create_object<NoiseObject>("osc", st);
-	create_object<FilterObject>("filter1", st);
-	create_object<FilterObject>("filter2", st);
-	create_object<FileoutObject>("output", st, "output.raw");
-
-	connect_objects(st["mod"], 0, st["add"], 0);
-	connect_objects(st["add"], 0, st["mult"], 0);
-
-	connect_objects(st["mult"], 0, st["filter1"], 1);
-	connect_objects(st["mult"], 0, st["filter2"], 1);
-
-	connect_objects(st["osc"], 0, st["filter1"], 0);
-	connect_objects(st["filter1"], 0, st["filter2"], 0);
-	connect_objects(st["filter2"], 0, st["output"], 0);
-
-	for (uint i = 0; i < 1000; i++)
+	
+	make_patch(st);
+	
+	for (uint i = 0; i < 500; i++)
 	{
 		for (auto const& s : st)
-			s.second->run();
+			s.second->implement();
+	
+		AudioObject::index += BLOCKSIZE;
 	}
 		for (auto const& s : st)
 			s.second->finish();
