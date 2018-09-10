@@ -5,6 +5,7 @@
 class CrushObject : public AudioObject
 {
 	void run(buf&, buf&, int) override;
+	
 	float val               = 0;
 	float samples_repeated  = 0;
 	float samples_to_repeat = 0;

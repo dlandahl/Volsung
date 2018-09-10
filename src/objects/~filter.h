@@ -4,11 +4,12 @@
 
 class FilterObject : public AudioObject
 {
-	float frequency;
-	float a;
-	float b;
+	float  frequency;
+	double a;
+	double b;
+	
+	void run(buf&, buf&, int) override;
 
 public:
-	void run(buf&, buf&, int) override;
 	FilterObject(std::string);
 };

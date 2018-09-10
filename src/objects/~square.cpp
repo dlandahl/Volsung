@@ -20,7 +20,7 @@ void SquareObject::run(buf &in, buf &out, int index)
 	if (phase >= 1.0) { phase -= 1.0; }
 }
 
-SquareObject::SquareObject(str args)
+SquareObject::SquareObject(std::string args)
 {
 	init(2, 1, args, { &frequency, &pw });
 }

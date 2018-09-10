@@ -9,6 +9,7 @@ class FileoutObject : public AudioObject
 
 	std::vector<float> data;
 	std::string filename;
+	
 public:
 	FileoutObject(std::string);
 };

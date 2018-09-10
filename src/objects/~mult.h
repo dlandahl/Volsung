@@ -5,8 +5,8 @@
 class MultObject : public AudioObject
 {
 	float default_value;
+	void run(buf&, buf&, int) override;
 
 public:
-	void run(buf&, buf&, int) override;
 	MultObject(std::string);
 };

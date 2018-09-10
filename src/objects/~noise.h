@@ -9,8 +9,9 @@ class NoiseObject : public AudioObject
 {
 	std::default_random_engine generator;
 	std::uniform_real_distribution<float> distribution;
+	
+	void run(buf&, buf&, int) override;
 
 public:
-	void run(buf&, buf&, int) override;
 	NoiseObject(std::string);
 };

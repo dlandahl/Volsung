@@ -6,7 +6,7 @@
 
 void FilterObject::run(buf& x, buf& y, int i)
 {
-	if (is_connected(0))
+	if (is_connected(1))
 		frequency = x[1][i];
 
 	b = 2 - cos(TAU * frequency / SAMPLE_RATE);
