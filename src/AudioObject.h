@@ -8,7 +8,6 @@
 #include "Block.h"
 
 class Object { };
-
 class AudioObject : public Object
 {
 	std::vector<CircularBuffer> in, out;
@@ -16,9 +15,12 @@ class AudioObject : public Object
 
 protected:
 	virtual void run(buf&, buf&, int) = 0;
+	void         set_io(int, int);
+	void         get_float_args(str, std::vector<float*>);
+	void         init(int, int, str, std::vector<float*>);
+
 	bool         is_connected(uint);
-	bool         init(int, int, str, std::vector<float*>);
-	
+
 public:
 	static int index;
 
@@ -27,8 +29,9 @@ public:
 
 	void implement();
 	virtual void finish();
-	
+
 	str get_name() { return name; }
 
 	AudioObject(int, int);
+	AudioObject() = default;
 };
