@@ -1,15 +1,10 @@
 
-#include <memory>
-#include <string>
 #include <iostream>
 #include <fstream>
-#include <type_traits>
 
 #include "Patch.h"
 #include "Yggdrasil.h"
-#include "AudioDataflow.h"
 #include "AudioObject.h"
-#include "StringFormat.h"
 
 int main(int argc, char* argv[])
 {
@@ -21,7 +16,8 @@ int main(int argc, char* argv[])
 		std::ifstream file;
 		file.open(argv[1]);
 
-		make_patch(st, file);
+		if (file) make_patch(st, file);
+		else std::cout << "What?\n";
 	}
 	else
 		make_patch(st, std::cin);

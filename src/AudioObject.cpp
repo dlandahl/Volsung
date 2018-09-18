@@ -49,7 +49,7 @@ void AudioObject::get_float_args(str args, std::vector<float*> float_members)
 	std::vector<str> sargl = sf::split_by(args, ' ');
 	name = sargl[2];
 	
-	for (uint i = 0; i < float_members.size(); i++)
+	for (uint i = 0; i < float_members.size() && i < sargl.size() - 3; i++)
 	{
    		try         { *float_members[i] = float(std::stof(sargl[i+3], nullptr)); }
 		catch (...) { std::cout << "Failed to initialize value on " << name << "\n"; }

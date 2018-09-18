@@ -2,7 +2,6 @@
 
 #include <string>
 #include <vector>
-#include <type_traits>
 #include <unordered_map>
 #include <memory>
 
@@ -15,9 +14,9 @@
 class AudioObject;
 class CircularBuffer;
 
-using uint  = unsigned;
-using str   = std::string;
-using buf   = std::vector<CircularBuffer>;
+using uint = unsigned;
+using str  = std::string;
+using buf  = std::vector<CircularBuffer>;
 
 using st_type = std::unordered_map<str, std::unique_ptr<AudioObject>>;
 

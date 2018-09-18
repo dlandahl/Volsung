@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <algorithm>
 
 #include "StringFormat.h"
 
@@ -8,6 +9,14 @@ bool sf::starts_with(str a, str b)
 	return a.rfind(b, 0) == 0;
 }
 
+str sf::remove_spaces(str in)
+{
+	in.erase(std::remove (in.begin(), in.end(), ' '), in.end());
+	return in;
+}
+
+//this is horrid
+//i'm not smart enough to do something better
 std::vector<str> sf::split_by(str input, char delim)
 {
 	bool found_delim;
