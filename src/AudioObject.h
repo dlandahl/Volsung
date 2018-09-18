@@ -7,8 +7,7 @@
 #include "AudioDataflow.h"
 #include "Block.h"
 
-class Object { };
-class AudioObject : public Object
+class AudioObject
 {
 	std::vector<CircularBuffer> in, out;
 	str name;
