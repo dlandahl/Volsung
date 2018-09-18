@@ -1,15 +1,15 @@
-SRCO = AudioDataflow.o AudioObject.o Block.o StringFormat.o Yggdrasil.o Patch.o
-OBJO = ~add.o ~fileout.o ~filter.o ~mult.o ~noise.o ~oscillator.o ~square.o ~crush.o
-STDLIB = -static-libgcc -static-libstdc++
+SRCO := AudioDataflow AudioObject Block StringFormat Yggdrasil Patch
+OBJO := ~add ~fileout ~filter ~mult ~noise ~oscillator ~square ~crush
+STDLIB := -static-libgcc -static-libstdc++
 
-iSRCO = $(addprefix inter/,$(SRCO))
-iOBJO = $(addprefix inter/,$(OBJO))
+SRCO := $(addsuffix .o, $(addprefix ../inter/, $(SRCO)))
+OBJO := $(addsuffix .o, $(addprefix ../inter/, $(OBJO)))
 
-Yggdrasil.exe: $(iOBJO) $(iSRCO)
+../Yggdrasil.exe: $(OBJO) $(SRCO)
 	g++ -Wall $(STDLIB) $^ -o $@
 
-inter/%.o: %.cpp
+../inter/%.o: %.cpp
 	g++ -Wall -c $^ -o $@
 
-inter/%.o: objects/%.cpp
+../inter/%.o: objects/%.cpp
 	g++ -Wall -c $^ -o $@
