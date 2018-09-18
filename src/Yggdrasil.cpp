@@ -26,9 +26,9 @@ int main(int argc, char* argv[])
 	{
 		for (auto const& s : st)
 			s.second->implement();
-	
+			
 		AudioObject::index += BLOCKSIZE;
 	}
-		for (auto const& s : st)
-			s.second->finish();
+	for (auto const& s : st)
+		s.second->finish();
 }
