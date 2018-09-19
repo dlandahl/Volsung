@@ -8,8 +8,8 @@ class OscillatorObject : public AudioObject
 {
 	void  run(buf&, buf&, int) override;
 		  
-	float phase;
-	float frequency;
+	float phase     = 0;
+	float frequency = 100;
 
 public:
 	OscillatorObject(std::string);

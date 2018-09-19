@@ -4,7 +4,7 @@
 
 class MultObject : public AudioObject
 {
-	float default_value;
+	float default_value = 1;
 	void run(buf&, buf&, int) override;
 
 public:

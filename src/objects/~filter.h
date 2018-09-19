@@ -4,7 +4,7 @@
 
 class FilterObject : public AudioObject
 {
-	float  frequency;
+	float  frequency = 100;
 	double a;
 	double b;
 	
