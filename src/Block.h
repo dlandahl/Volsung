@@ -17,6 +17,6 @@ class BlockBuffer
 	std::vector<Block> block_data;
 
 public:
-	Block  read_block();
-	void   write_block(Block b);
+	Block read_block();
+	void  write_block(Block b);
 };

@@ -2,6 +2,7 @@
 #include <memory>
 #include <istream>
 
+#include "StringFormat.h"
 #include "Yggdrasil.h"
 
 void create_object(str, st_type&, str);

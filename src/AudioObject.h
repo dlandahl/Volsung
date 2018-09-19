@@ -10,13 +10,13 @@
 class AudioObject
 {
 	std::vector<CircularBuffer> in, out;
-	str name;
+	std::string name;
 
 protected:
 	virtual void run(buf&, buf&, int) = 0;
 	void         set_io(int, int);
-	void         get_float_args(str, std::vector<float*>);
-	void         init(int, int, str, std::vector<float*>);
+	void         get_float_args(std::string, std::vector<float*>);
+	void         init(int, int, std::string, std::vector<float*>);
 
 	bool         is_connected(uint);
 
@@ -29,7 +29,7 @@ public:
 	void implement();
 	virtual void finish();
 
-	str get_name() { return name; }
+	std::string get_name() { return name; }
 
 	AudioObject(int, int);
 	AudioObject() = default;

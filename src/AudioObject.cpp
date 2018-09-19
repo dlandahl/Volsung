@@ -38,15 +38,15 @@ bool AudioObject::is_connected(uint in)
 }
 
 void AudioObject::init(int num_inputs, int num_outputs,
-					   str args, std::vector<float*> float_members)
+					   std::string args, std::vector<float*> float_members)
 {
 	set_io(num_inputs, num_outputs);
 	get_float_args(args, float_members);
 }
 
-void AudioObject::get_float_args(str args, std::vector<float*> float_members)
+void AudioObject::get_float_args(std::string args, std::vector<float*> float_members)
 {
-	std::vector<str> sargl = sf::split_by(args, ' ');
+	std::vector<std::string> sargl = sf::split_by(args, ' ');
 	name = sargl[2];
 	
 	for (uint i = 0; i < float_members.size() && i < sargl.size() - 3; i++)

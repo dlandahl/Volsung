@@ -15,10 +15,9 @@ class AudioObject;
 class CircularBuffer;
 
 using uint = unsigned;
-using str  = std::string;
 using buf  = std::vector<CircularBuffer>;
 
-using st_type = std::unordered_map<str, std::unique_ptr<AudioObject>>;
+using st_type = std::unordered_map<std::string, std::unique_ptr<AudioObject>>;
 
 template <typename T>
 int sign(T val)

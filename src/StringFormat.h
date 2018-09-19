@@ -5,6 +5,8 @@
 
 #include "Yggdrasil.h"
 
+using str = std::string;
+
 namespace sf
 {
 	bool             starts_with(str, str);

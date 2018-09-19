@@ -16,7 +16,7 @@ void OscillatorObject::run(buf &in, buf &out, int index)
 	if (phase >= 1.0) { phase -= 1.0; }
 }
 
-OscillatorObject::OscillatorObject(str args) :  phase(0)
+OscillatorObject::OscillatorObject(std::string args) :  phase(0)
 {
 	init(1, 1, args, {&frequency} );
 }

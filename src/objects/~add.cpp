@@ -11,7 +11,7 @@ void AddObject::run(buf &in, buf &out, int index)
 		out[0][index] = in[0][index] + default_value;
 }
 
-AddObject::AddObject(str arg)
+AddObject::AddObject(std::string arg)
 {
 	init(2, 1, arg, { &default_value });
 }
