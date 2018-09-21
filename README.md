@@ -14,3 +14,7 @@ ct sine0>out0        ; connect output 0 on the oscillator to input 0 on the file
 done                 ; generate the audio
 ```
 ### Documentation:
+##### ~oscillator
+Type: `osc`
+Parameters: `frequency`
+Function: Generates a sinewave at \[frequency]hz
