@@ -13,8 +13,8 @@ mk out out out.raw   ; make a file output, call it 'out' and set the output file
 ct sine0>out0        ; connect [output 0] on the oscillator to [input 0] on the fileout
 done                 ; generate the audio
 ```
-In many cases, object parameters are overridden by input signals if there are connections to the corresponding input. `[input 0]` is often the signal to be processed by the object. i.e. `add` will add signals, unless there is no input signal on `[input 1]`, in which case the `[default value]` parameter will be used
-### Documentation:
+In many cases, object parameters are overridden by input signals if there are connections to the corresponding input. `[input 0]` is often the signal to be processed by the object. i.e. `add` will add signals, unless there is no input signal on `[input 1]`, in which case the `[default value]` parameter will be used.
+### Object list:
 ~oscillator <br />
 `mk osc [name] [frequency]`						In: 1 | Out: 1 <br />
 Generates a sine wave at `[frequency]` or `[input 0]` hz <br />
@@ -32,8 +32,8 @@ Writes `[input 0]` to a file at `[file path]` <br />
 Writes white noise to `[output 0]` <br />
 
 ~filter <br />
-`mk filter [name] [cutoff frequency]`			In: 1 | Out: 1 <br />
-Lowpass filter, `[input 0]` or `[cutoff frequency]` is the edge frequency. <br />
+`mk filter [name] [cutoff frequency]`			In: 2 | Out: 1 <br />
+Lowpass filter, `[input 1]` or `[cutoff frequency]` is the edge frequency <br />
 
 ~crush <br />
 `mk crush [name] [resolution] [s&h]`			In: 3 | Out: 1 <br />
