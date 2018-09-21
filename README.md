@@ -1,10 +1,10 @@
 ## Yggdrasil
 
-Yggdrasil is at the moment a scripting language for sound design. It is composed of small audio processing modules such as Oscillators, Filters, Signal adders, Signal multipliers. Here is a complete list of the audio objects available and what they do
+Yggdrasil is at the moment a scripting language for sound design. It is composed of small audio processing modules such as Oscillators, Filters, Signal adders, Signal multipliers.
 
-- `add`\n
+- `add` <br />
 `add` is an object which adds the amplitudes of its two input signals, or alternatively adds a constant value to input `0`
-- `mult`
+- `mult` <br />
 works the same way as `add`
 - `crush`
 `crush` is a simple distortion object. It takes an input signal, and two integral parameters. One is a sample and hold for `n` samples, the other specifies the vertical resolution, i.e. how many different amplitudes should the signal amplitude be quantized to
