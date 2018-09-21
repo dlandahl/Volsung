@@ -42,8 +42,8 @@ Lowpass filter, `[input 1]` or `[cutoff frequency]` is the edge frequency <br />
 
 ~add <br />
 `mk add [name] [default value]`					In: 2 | Out: 1 <br />
-Output is the sum of `[input 0]` and either `[input 1]` or `[default value]` <br />
+`[output 0]` is the sum of `[input 0]` and either `[input 1]` or `[default value]` <br />
 
 ~mult <br />
 `mk mult [name] [default value]`				In: 2 | Out: 1 <br />
-Output is the product of `[input 0]` and either `[input 1]` or `[default value]` <br />
+`[output 0]` is the product of `[input 0]` and either `[input 1]` or `[default value]` <br />
