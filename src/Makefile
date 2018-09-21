@@ -1,4 +1,4 @@
-SRCO := AudioDataflow AudioObject Block StringFormat Yggdrasil Patch
+SRCO := AudioDataflow AudioObject StringFormat Yggdrasil Patch
 OBJO := ~add ~fileout ~filter ~mult ~noise ~oscillator ~square ~crush
 STDLIB := -static-libgcc -static-libstdc++
 

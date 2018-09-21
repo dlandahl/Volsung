@@ -1,8 +1,23 @@
 #pragma once
 
 #include <memory>
+#include <array>
 
-#include "Block.h"
+class Block
+{
+	std::array<float, BLOCKSIZE> sample_data = { 0 };
+public:
+	float& operator[](uint n);
+};
+
+class BlockBuffer
+{
+	std::vector<Block> block_data;
+
+public:
+	Block read_block();
+	void  write_block(Block b);
+};
 
 class AudioConnector
 {
