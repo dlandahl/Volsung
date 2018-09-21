@@ -11,7 +11,7 @@ void OscillatorObject::run(buf &in, buf &out, int index)
 
 	out[0][index] = sinf(TAU * phase);
 
-	phase = phase + abs(frequency) / SAMPLE_RATE;
+	phase = phase + frequency / SAMPLE_RATE;
 
 	if (phase >= 1.0) { phase -= 1.0; }
 }
