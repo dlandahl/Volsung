@@ -6,7 +6,7 @@ Yggdrasil is at the moment a scripting language for sound design. You put togeth
 `ct [identifier][output_index]>[identifier][input_index]` <br />
 ### Example:
 ```
-; This is a comment
+; This patch will generate a sine wave at 200hz
 mk osc sine 200      ; make an oscillator, call it 'sine' and set the default frequency to 200hz
 mk out out out.raw   ; make a file output, call it 'out' and set the output file to the CWD\out.raw
                      ; non relative paths may be used
