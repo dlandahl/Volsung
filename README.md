@@ -16,16 +16,16 @@ done                 ; generate the audio
 ##### Documentation:
 ~oscillator <br />
 `mk osc [name] [frequency]` In: 1 Out: 1 <br />
-Generates a sine wave at \[frequency] or \[input 0] hz <br /> <br />
+Generates a sine wave at \[frequency] or \[input 0] hz <br />
 
 ~square <br />
 `mk square [name] [frequency] [pulse width]` In: 2 Out: 1 <br />
-Generates a square wave. \[pulse width]/\[input 1] ranges from -1 to 1, where 0 is 50% duty cycle <br /> <br />
+Generates a square wave. \[pulse width]/\[input 1] ranges from -1 to 1, where 0 is 50% duty cycle <br />
 
 ~fileout <br />
 `mk out [name] [file path]` In: 1 Out: 0 <br />
-Writes \[input 0] to a file at \[file path] <br /> <br />
+Writes \[input 0] to a file at \[file path] <br />
 
 ~noise <br />
 `mk noise [name]` In: 0 Out: 1 <br />
-Writes white noise to \[output 0] hz <br /> <br />
+Writes white noise to \[output 0] hz <br />
