@@ -1,13 +1,12 @@
 ## Yggdrasil
 
-Yggdrasil is at the moment a scripting language for sound design. You put together small audio processing modules such as oscillators, filters, signal adders, signal multipliers. <br />
-Someone will make a GUI at some point. <br />
-Read from a file or enter code line by line.
+Yggdrasil is at the moment a scripting language for sound design. You put together small audio processing modules such as oscillators, filters, signal adders, signal multipliers. Someone will make a GUI at some point. Read from a file or enter code line by line.
 
 ##### Syntax:
+`; comment` <br />
 `mk [type] [identifier] [params]` <br />
-`ct [identifier][output_index]>[identifier][input_index]`
-
+`ct [identifier][output_index]>[identifier][input_index]` <br />
+<br />
 ##### Example:
 ```
 ; This is a comment
