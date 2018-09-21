@@ -1,6 +1,6 @@
 ## Yggdrasil
 
-Yggdrasil is at the moment a scripting language for sound design. It is composed of small audio processing modules such as Oscillators, Filters, Signal adders, Signal multipliers.
+Yggdrasil is at the moment a scripting language for sound design. You put together small audio processing modules such as oscillators, filters, signal adders, signal multipliers.
 Someone will make a GUI at some point.
 Read from a file or enter code line by line. Syntax:
 ```
