@@ -15,7 +15,7 @@ done                 ; generate the audio
 ```
 In many cases, object parameters are overridden by input signals if there are connections to the corresponding input. `[input 0]` is often the signal to be processed by the object. i.e. `add` will add signals, unless there is no input signal on `[input 1]`, in which case the `[default value]` parameter will be used.
 ### Object list
-IO is zero-indexed but having one input means one input. Therefore In: 0 | Out: 1 means no inputs and one output, which is \[output 0]. <br />
+IO is zero-indexed but having one input means one input. Therefore In: 0 | Out: 1 means no inputs and one output, which is `\[output 0]`. <br /> <br />
 ~oscillator <br />
 `mk osc [name] [frequency]`						In: 1 | Out: 1 <br />
 Generates a sine wave at `[frequency]` or `[input 0]` hz <br />
