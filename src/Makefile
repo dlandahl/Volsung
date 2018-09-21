@@ -5,7 +5,7 @@ STDLIB := -static-libgcc -static-libstdc++
 SRCO := $(addsuffix .o, $(addprefix ../inter/, $(SRCO)))
 OBJO := $(addsuffix .o, $(addprefix ../inter/, $(OBJO)))
 
-../Yggdrasil.exe: $(OBJO) $(SRCO)
+../build/Yggdrasil.exe: $(OBJO) $(SRCO)
 	g++ -Wall $(STDLIB) $^ -o $@
 
 ../inter/%.o: %.cpp
