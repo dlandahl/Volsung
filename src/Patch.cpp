@@ -34,7 +34,7 @@ void connect_objects(std::unique_ptr<AudioObject> &a, uint out,
 		a->outputs[out].connect(b->inputs[in]);
 	else
 		std::cout << "Index out of range for connection "
-			<< a->name << ">" << b->name;
+			<< a->name << ">" << b->name << "\n";
 }
 
 void make_patch(st_type &st, std::istream &in_stream)
