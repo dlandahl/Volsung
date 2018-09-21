@@ -15,6 +15,5 @@ done                 ; generate the audio
 ```
 ### Documentation:
 ~oscillator <br />
-Type:       `osc` <br />
-Parameters: `frequency` <br />
-Function:   Generates a sinewave at \[frequency]hz <br />
+`mk osc [name] [frequency]` <br />
+Generates a sine wave at \[frequency] hz <br />
