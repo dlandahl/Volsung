@@ -2,9 +2,17 @@
 
 Yggdrasil is at the moment a scripting language for sound design. It is composed of small audio processing modules such as Oscillators, Filters, Signal adders, Signal multipliers.
 
-- `add` <br />
-`add` is an object which adds the amplitudes of its two input signals, or alternatively adds a constant value to input `0`
-- `mult` <br />
+Read from a file or enter code line by line. Syntax:
+```
+; This is a comment
+mk osc sine 200 ; make an oscillator, call it 'sine' and set the default frequency to 200hz
+mk out out out.raw ; make a file output, call it 'out' and set the output file to the CWD\out.raw
+ct sine0>out0 ; connect output 0 on the oscillator to input 0 on the fileout
+done ; generate the audio
+```
+
+<!--`add` is an object which adds the amplitudes of its two input signals, or alternatively adds a constant value to input `0`
+- `mult`
 works the same way as `add`
 - `crush`
 `crush` is a simple distortion object. It takes an input signal, and two integral parameters. One is a sample and hold for `n` samples, the other specifies the vertical resolution, i.e. how many different amplitudes should the signal amplitude be quantized to
