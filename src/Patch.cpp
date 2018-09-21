@@ -21,13 +21,20 @@ template<class obj>
 void create_object(str name, st_type &symbols, str args = "")
 {
 	static_assert(std::is_base_of<AudioObject, obj>::value, "no");
-	symbols[name] = std::make_unique<obj>(args);
+	if (symbols.count(name) == 0)
+		symbols[name] = std::make_unique<obj>(args);
+	else
+		std::cout << "Symbol '" << name << "' is already used\n";
 }
 
 void connect_objects(std::unique_ptr<AudioObject> &a, uint out,
 	                 std::unique_ptr<AudioObject> &b, uint in)
 {
-	a->outputs[out].connect(b->inputs[in]);
+	if (a->outputs.size() > out && b->inputs.size() > in)
+		a->outputs[out].connect(b->inputs[in]);
+	else
+		std::cout << "Index out of range for connection "
+			<< a->name << ">" << b->name;
 }
 
 void make_patch(st_type &st, std::istream &in_stream)

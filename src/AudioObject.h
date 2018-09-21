@@ -9,7 +9,6 @@
 class AudioObject
 {
 	std::vector<CircularBuffer> in, out;
-	std::string name;
 
 protected:
 	virtual void run(buf&, buf&, int) = 0;
@@ -21,6 +20,7 @@ protected:
 
 public:
 	static int index;
+	std::string name;
 
 	std::vector<AudioInput>  inputs;
 	std::vector<AudioOutput> outputs;
