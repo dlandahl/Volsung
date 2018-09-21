@@ -1,10 +1,10 @@
-## Yggdrasil
+# Yggdrasil
 Yggdrasil is at the moment a scripting language for sound design. You put together small audio processing modules such as oscillators, filters, signal adders, signal multipliers. Someone will make a GUI at some point. Read from a file or enter code line by line.
-#### Syntax:
+### Syntax:
 `; comment` <br />
 `mk [type] [identifier] [params]` <br />
 `ct [identifier][output_index]>[identifier][input_index]` <br />
-#### Example:
+### Example:
 ```
 ; This is a comment
 mk osc sine 200      ; make an oscillator, call it 'sine' and set the default frequency to 200hz
@@ -14,7 +14,7 @@ ct sine0>out0        ; connect [output 0] on the oscillator to [input 0] on the 
 done                 ; generate the audio
 ```
 In many cases, object parameters are overridden by input signals if there are connections to the corresponding input. `[input 0]` is often the signal to be processed by the object. i.e. `add` will add signals, unless there is no input signal on `[input 1]`, in which case the `[default value]` parameter will be used
-#### Documentation:
+### Documentation:
 ~oscillator <br />
 `mk osc [name] [frequency]`						In: 1 | Out: 1 <br />
 Generates a sine wave at `[frequency]` or `[input 0]` hz <br />
