@@ -22,7 +22,7 @@ Generates a sine wave at `[frequency]` or `[input 0]` hz, oscillating in the ran
 
 ~square <br />
 `mk square [name] [frequency] [pulse width]` In: 2 | Out: 1 <br />
-Generates a square wave. `[pulse width]` or `[input 1]` ranges from -1 to 1, where 0 is 50% duty cycle <br />
+Generates a square wave. `[pulse width]` or `[input 1]` ranges from -1 to 1, where 0 is 50% duty cycle <hl />
 
 ~fileout <br />
 `mk out [name] [file path]` In: 1 | Out: 0 <br />
