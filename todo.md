@@ -1,0 +1,2 @@
+- remove blocks
+- create framework to group together inputs, default values and parameters
