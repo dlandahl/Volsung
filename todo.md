@@ -1,6 +1,6 @@
 - remove blocks
 - create framework to group together inputs, default values and parameters
 - add abstraction (multiple symbol tables or subroutines)
-- add more objects (saw, delay)
+- add more objects (saw, delay, envelopes)
 - labels for syntactic sugar
 - syntax for variables (time elapsed, simulation duration)
