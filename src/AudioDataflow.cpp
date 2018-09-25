@@ -69,5 +69,5 @@ void AudioOutput::connect(AudioInput &other)
 
 	connections.back() =
 	other.connections.back() =
-		std::make_shared<AudioConnector>();
+        std::make_shared<AudioConnector>();
 };

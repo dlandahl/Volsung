@@ -38,7 +38,7 @@ bool AudioObject::is_connected(uint in)
 }
 
 void AudioObject::init(int num_inputs, int num_outputs,
-					   std::string args, std::vector<float*> float_members)
+                       std::string args, std::vector<float*> float_members)
 {
 	set_io(num_inputs, num_outputs);
 	get_float_args(args, float_members);

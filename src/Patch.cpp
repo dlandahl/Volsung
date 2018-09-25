@@ -28,13 +28,13 @@ void create_object(str name, st_type &symbols, str args = "")
 }
 
 void connect_objects(std::unique_ptr<AudioObject> &a, uint out,
-	                 std::unique_ptr<AudioObject> &b, uint in)
+                     std::unique_ptr<AudioObject> &b, uint in)
 {
 	if (a->outputs.size() > out && b->inputs.size() > in)
 		a->outputs[out].connect(b->inputs[in]);
 	else
 		std::cout << "Index out of range for connection "
-			<< a->name << ">" << b->name << "\n";
+                  << a->name << ">" << b->name << "\n";
 }
 
 void make_patch(st_type &st, std::istream &in_stream)
