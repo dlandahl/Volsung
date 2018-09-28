@@ -1,9 +1,11 @@
 SRCO := AudioDataflow AudioObject StringFormat Yggdrasil Patch
 OBJO := ~add ~fileout ~filter ~mult ~noise ~oscillator ~square ~crush
-STDLIB := -static-libgcc -static-libstdc++ -std=c++17
+STDLIB := -static-libstdc++ -std=c++17
 
-SRCO := $(addsuffix .o, $(addprefix ../inter/, $(SRCO)))
-OBJO := $(addsuffix .o, $(addprefix ../inter/, $(OBJO)))
+INTER := ../inter/
+
+SRCO := $(addsuffix .o, $(addprefix $(INTER), $(SRCO)))
+OBJO := $(addsuffix .o, $(addprefix $(INTER), $(OBJO)))
 
 ifeq ($(OS),Windows_NT)
 	BINARY := Yggdrasil.exe
@@ -11,11 +13,17 @@ else
 	BINARY := Yggdrasil.out
 endif
 
+$(shell mkdir -p $(INTER))
+
 ../build/$(BINARY): $(OBJO) $(SRCO)
 	g++ -Wall $(STDLIB) $^ -o $@
 
-../inter/%.o: %.cpp
+$(INTER)%.o: %.cpp
 	g++ -Wall -c $^ -o $@
 
-../inter/%.o: objects/%.cpp
+$(INTER)%.o: objects/%.cpp
 	g++ -Wall -c $^ -o $@
+
+.PHONY : clean
+clean:
+	rm $(INTER)*.o
