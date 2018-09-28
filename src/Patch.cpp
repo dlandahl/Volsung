@@ -53,25 +53,25 @@ void make_patch(st_type &st, std::istream &in_stream)
 				{ create_object<OscillatorObject>(mk_cmd[2], st, cmd); }
 			else
 			if (mk_cmd[1] == "out")
-				{ create_object<FileoutObject> (mk_cmd[2], st, cmd); }
+				{ create_object<FileoutObject>   (mk_cmd[2], st, cmd); }
 			else
 			if (mk_cmd[1] == "add")
-				{ create_object<AddObject>     (mk_cmd[2], st, cmd); }
+				{ create_object<AddObject>       (mk_cmd[2], st, cmd); }
 			else
 			if (mk_cmd[1] == "mult")
-				{ create_object<MultObject>    (mk_cmd[2], st, cmd); }
+				{ create_object<MultObject>      (mk_cmd[2], st, cmd); }
 			else
 			if (mk_cmd[1] == "noise")
-				{ create_object<NoiseObject>   (mk_cmd[2], st, cmd); }
+				{ create_object<NoiseObject>     (mk_cmd[2], st, cmd); }
 			else
 			if (mk_cmd[1] == "filter")
-				{ create_object<FilterObject>  (mk_cmd[2], st, cmd); }
+				{ create_object<FilterObject>    (mk_cmd[2], st, cmd); }
 			else
 			if (mk_cmd[1] == "square")
-				{ create_object<SquareObject>  (mk_cmd[2], st, cmd); }
+				{ create_object<SquareObject>    (mk_cmd[2], st, cmd); }
 			else
 			if (mk_cmd[1] == "crush")
-				{ create_object<CrushObject>   (mk_cmd[2], st, cmd); }
+				{ create_object<CrushObject>     (mk_cmd[2], st, cmd); }
 			else {std::cout << "Bad make command\n"; }
 		}
 
@@ -91,7 +91,8 @@ void make_patch(st_type &st, std::istream &in_stream)
 				connect_objects(st[c_cmd[0]], out, st[c_cmd[1]], in);
 		}
 
-		else {
+		else
+		{
 			cmd = sf::remove_spaces(cmd);
 			if (cmd != "" && cmd != "done")
 			{
