@@ -20,7 +20,6 @@
 template<class obj>
 void create_object(str name, st_type &symbols, str args = "")
 {
-	static_assert(std::is_base_of<AudioObject, obj>::value, "no");
 	if (symbols.count(name) == 0)
 		symbols[name] = std::make_unique<obj>(args);
 	else
@@ -85,7 +84,11 @@ void make_patch(st_type &st, std::istream &in_stream)
 
 			out = c_cmd[0][c_cmd[0].size() - 1] - '0'; c_cmd[0].pop_back();
 			in  = c_cmd[1][c_cmd[1].size() - 1] - '0'; c_cmd[1].pop_back();
-			connect_objects(st[c_cmd[0]], out, st[c_cmd[1]], in);
+
+			if (st.count(c_cmd[0]) != 1 || st.count(c_cmd[1]) != 1)
+				std::cout << "Cannot connect objects, symbol not found\n";
+			else
+				connect_objects(st[c_cmd[0]], out, st[c_cmd[1]], in);
 		}
 
 		else {
