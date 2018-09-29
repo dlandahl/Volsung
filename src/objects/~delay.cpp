@@ -5,7 +5,7 @@
 
 void DelayObject::run(buf &in, buf &out, int index)
 {
-	out[0][index] = in[1][index - sample_delay];
+	out[0][index] = in[0][index - sample_delay];
 }
 
 DelayObject::DelayObject(std::string arg)

@@ -16,6 +16,7 @@
 #include "./objects/~square.h"
 #include "./objects/~fileout.h"
 #include "./objects/~crush.h"
+#include "./objects/~delay.h"
 
 template<class obj>
 void create_object(str name, st_type &symbols, str args = "")
@@ -66,6 +67,9 @@ void make_patch(st_type &st, std::istream &in_stream)
 			else
 			if (mk_cmd[1] == "filter")
 				{ create_object<FilterObject>    (mk_cmd[2], st, cmd); }
+			else
+			if (mk_cmd[1] == "delay")
+				{ create_object<DelayObject>     (mk_cmd[2], st, cmd); }
 			else
 			if (mk_cmd[1] == "square")
 				{ create_object<SquareObject>    (mk_cmd[2], st, cmd); }
