@@ -7,5 +7,5 @@ void NoiseObject::run(buf &in, buf &out, int index)
 }
 
 NoiseObject::NoiseObject(std::string) :
-	AudioObject(0, 1), distribution(-1.0f, 1.0f)
-{ }
+	distribution(-1.0f, 1.0f)
+{ set_io(0, 1); }

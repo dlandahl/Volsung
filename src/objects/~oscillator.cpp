@@ -6,9 +6,6 @@
 
 void OscillatorObject::run(buf &in, buf &out, int index)
 {
-	if (is_connected(0))
-		frequency = in[0][index];
-
 	out[0][index] = sinf(TAU * phase);
 
 	phase = phase + frequency / SAMPLE_RATE;
@@ -19,4 +16,5 @@ void OscillatorObject::run(buf &in, buf &out, int index)
 OscillatorObject::OscillatorObject(std::string args) :  phase(0)
 {
 	init(1, 1, args, {&frequency} );
+	set_defval(&frequency, frequency, 0);
 }

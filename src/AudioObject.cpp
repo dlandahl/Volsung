@@ -7,7 +7,6 @@
 #include "StringFormat.h"
 
 void AudioObject::finish() { }
-
 int AudioObject::index = 0;
 
 void AudioObject::implement()
@@ -20,7 +19,13 @@ void AudioObject::implement()
 	}
 
 	for (uint i = 0; i < BLOCKSIZE; i++)
+	{
+		for (auto & value : linked_values)
+			if (inputs[value.input].is_connected())
+				*value.parameter = in[value.input][index];
+
 		run(in, out, AudioObject::index + i);
+	}
 
 	for (uint i = 0; i < outputs.size(); i++)
 	{
@@ -65,7 +70,7 @@ void AudioObject::set_io(int num_inputs, int num_outputs)
 	in.resize(num_inputs);
 }
 
-AudioObject::AudioObject(int num_inputs, int num_outputs)
+void AudioObject::set_defval(float* parameter, float default_value, int input)
 {
-   	set_io(num_inputs, num_outputs);
+	linked_values.push_back({ parameter, default_value, input });
 }

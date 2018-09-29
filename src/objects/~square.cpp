@@ -6,13 +6,7 @@
 #include "~square.h"
 
 void SquareObject::run(buf &in, buf &out, int index)
-{
-	if (is_connected(0))
-		frequency = in[0][index];
-	
-	if (is_connected(1))
-		pw = in[1][index];
-	
+{	
 	out[0][index] = (float)sign<float>(sinf(TAU * phase) + pw);
 
 	phase = phase + frequency / SAMPLE_RATE;
@@ -23,4 +17,6 @@ void SquareObject::run(buf &in, buf &out, int index)
 SquareObject::SquareObject(std::string args)
 {
 	init(2, 1, args, { &frequency, &pw });
+	set_defval(&frequency, frequency, 0);
+	set_defval(&pw, pw, 1);
 }

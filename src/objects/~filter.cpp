@@ -6,9 +6,6 @@
 
 void FilterObject::run(buf& x, buf& y, int i)
 {
-	if (is_connected(1))
-		frequency = x[1][i];
-
 	b = 2 - cos(TAU * frequency / SAMPLE_RATE);
 	b = sqrt(b*b - 1) - b;
 	a = 1 + b;
@@ -19,4 +16,5 @@ void FilterObject::run(buf& x, buf& y, int i)
 FilterObject::FilterObject(std::string args)
 {
 	init(2, 1, args, { &frequency });
+	set_defval(&frequency, frequency, 1);
 }

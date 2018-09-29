@@ -2,19 +2,35 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include "Yggdrasil.h"
 #include "AudioDataflow.h"
 
+struct linked_value
+{
+	float* parameter;
+	float  default_value;
+	int input;
+
+	linked_value(float* p, float dv, int in):
+		parameter(p), default_value(dv), input(in)
+	{ }
+};
+
 class AudioObject
 {
+private:
 	std::vector<CircularBuffer> in, out;
+	std::vector<linked_value> linked_values;
 
 protected:
 	virtual void run(buf&, buf&, int) = 0;
-	void         set_io(int, int);
+	void         set_io(int inputs, int outputs);
 	void         get_float_args(std::string, std::vector<float*>);
 	void         init(int, int, std::string, std::vector<float*>);
+
+	void         set_defval(float*, float, int);
 
 	bool         is_connected(uint);
 

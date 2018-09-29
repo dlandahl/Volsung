@@ -23,5 +23,5 @@ void FileoutObject::finish()
 }
 
 FileoutObject::FileoutObject(std::string filename) :
-	AudioObject(1, 0), filename(sf::split_by(filename, ' ')[3])
-{ }
+	filename(sf::split_by(filename, ' ')[3])
+{ set_io(1, 0); }
