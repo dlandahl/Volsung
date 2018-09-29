@@ -10,6 +10,6 @@ void DelayObject::run(buf &in, buf &out, int index)
 
 DelayObject::DelayObject(std::string arg)
 {
-	init(2, 1, arg, { &sample_delay, &feedback });
+	init(2, 1, arg, { &sample_delay });
 	set_defval(&sample_delay, sample_delay, 1);
 }

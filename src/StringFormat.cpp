@@ -17,10 +17,10 @@ str sf::remove_spaces(str in)
 
 //this is horrid
 //i'm not smart enough to do something better
-std::vector<str> sf::split_by(str input, char delim)
+std::vector<std::string> sf::split_by(std::string input, char delim)
 {
 	bool found_delim;
-	std::vector<str> output;
+	std::vector<std::string> output;
 	while (input.size())
 	{
 		found_delim = false;
