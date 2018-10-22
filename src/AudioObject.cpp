@@ -20,9 +20,9 @@ void AudioObject::implement()
 
 	for (uint i = 0; i < BLOCKSIZE; i++)
 	{
-		for (auto & value : linked_values)
+		for (auto const& value : linked_values)
 			if (inputs[value.input].is_connected())
-				*value.parameter = in[value.input][index];
+				*value.parameter = in[value.input][AudioObject::index + i];
 
 		run(in, out, AudioObject::index + i);
 	}
@@ -72,5 +72,5 @@ void AudioObject::set_io(int num_inputs, int num_outputs)
 
 void AudioObject::set_defval(float* parameter, float default_value, int input)
 {
-	linked_values.push_back({ parameter, default_value, input });
+	linked_values.push_back(linked_value(parameter, default_value, input));
 }
