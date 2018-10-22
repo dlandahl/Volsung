@@ -7,7 +7,7 @@ Yggdrasil is at the moment a scripting language for sound design. You put togeth
 ### Example
 ```
 ; Simple patch for amplitude modulation
-mk osc osc 300      ; make an oscillator, call it 'sine' and set the default frequency to 400hz
+mk osc osc 300      ; make an oscillator, call it 'osc' and set the default frequency to 300hz
 mk osc mod 50       ; make another oscillator at 50hz
 mk mult mult _      ; make a multiplier object with no default parameter
 
