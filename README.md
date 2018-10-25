@@ -53,3 +53,41 @@ Lowpass filter, `[input 1]` or `[cutoff frequency]` is the edge frequency <br />
 ~mult <br />
 `mk mult [name] [default value]` In: 2 | Out: 1 <br />
 `[output 0]` is the product of `[input 0]` and either `[input 1]` or `[default value]` <br />
+### Advanced Example
+```
+; === Envelope ===
+; generate an envelope
+; it should be above zero to avoid phase inversion
+mk square env 3 -0.9
+mk add shift 1
+mk mult div 0.5
+mk filter smooth 50
+
+ct env0>shift0
+ct shift0>div0
+ct div0>smooth0
+
+; === Oscillator ===
+; the volume will be controlled by the envelope
+mk osc osc 200
+mk mult amp 0
+ct osc0>amp0
+ct smooth0>amp1
+
+; === Delay ===
+; delay line with feedback loop
+mk delay ddl 8820
+mk mult fb 0.5
+mk add sum 0
+
+ct amp0>sum0
+ct sum0>ddl0
+ct ddl0>fb0
+ct fb0>sum1
+
+; write the output of the dealy to a file
+mk out out out.raw
+ct ddl0>out0
+
+done
+```
