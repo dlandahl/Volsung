@@ -32,7 +32,7 @@ Generates a square wave. `[pulse width]` or `[input 1]` ranges from -1 to 1, whe
 
 ~fileout <br />
 `mk out [name] [file path]` In: 1 | Out: 0 <br />
-Writes `[input 0]` to a file at `[file path]` <br />
+Writes `[input 0]` to a file at `[file path]`. 32bit, Mono, 44.1khz, Little-endian. <br />
 
 ~noise <br />
 `mk noise [name]` In: 0 | Out: 1 <br />
@@ -77,7 +77,7 @@ ct div0>smooth0
 
 ; === Oscillator ===
 ; the volume will be controlled by the envelope
-mk noise osc 200
+mk noise osc
 mk mult amp 0
 ct osc0>amp0
 ct smooth0>amp1
