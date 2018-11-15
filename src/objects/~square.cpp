@@ -5,7 +5,7 @@
 
 #include "~square.h"
 
-void SquareObject::run(buf &in, buf &out, int index)
+void SquareObject::run(buf &, buf &out, int index)
 {	
 	out[0][index] = (float)sign<float>(sinf(TAU * phase) + pw);
 

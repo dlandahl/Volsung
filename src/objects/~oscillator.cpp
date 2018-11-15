@@ -4,7 +4,7 @@
 
 #include "~oscillator.h"
 
-void OscillatorObject::run(buf &in, buf &out, int index)
+void OscillatorObject::run(buf &, buf &out, int index)
 {
 	out[0][index] = sinf(TAU * phase);
 

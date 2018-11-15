@@ -17,7 +17,7 @@ Block BlockBuffer::read_block()
 		block_data.erase(block_data.begin());
 	}
 	return b;
-};
+}
 
 void BlockBuffer::write_block(Block b)
 {
@@ -41,7 +41,7 @@ float& CircularBuffer::operator[](int n)
 bool AudioInput::is_connected() 
 { 
 	return bool(connections.size());
-};
+}
 
 Block AudioInput::read_block()
 {
@@ -70,4 +70,4 @@ void AudioOutput::connect(AudioInput &other)
 	connections.back() =
 	other.connections.back() =
         std::make_shared<AudioConnector>();
-};
+}

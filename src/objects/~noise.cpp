@@ -1,7 +1,7 @@
 
 #include "~noise.h"
 
-void NoiseObject::run(buf &in, buf &out, int index)
+void NoiseObject::run(buf &, buf &out, int index)
 {
 	out[0][index] = distribution(generator);
 }

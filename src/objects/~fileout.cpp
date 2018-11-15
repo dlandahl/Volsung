@@ -5,7 +5,7 @@
 #include "../StringFormat.h"
 #include "~fileout.h"
 
-void FileoutObject::run(buf &in, buf &out, int index)
+void FileoutObject::run(buf &in, buf &, int index)
 {
 	data.push_back(in[0][index]);
 }
