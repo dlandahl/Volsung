@@ -4,6 +4,8 @@
 
 #include "~oscillator.h"
 
+namespace Yggdrasil {
+
 void OscillatorObject::run(buf &, buf &out, int index)
 {
 	out[0][index] = sinf(TAU * phase);
@@ -17,4 +19,6 @@ OscillatorObject::OscillatorObject(std::string args) :  phase(0)
 {
 	init(1, 1, args, {&frequency} );
 	set_defval(&frequency, frequency, 0);
+}
+
 }

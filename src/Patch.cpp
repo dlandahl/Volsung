@@ -7,28 +7,22 @@
 #include "Yggdrasil.h"
 #include "Patch.h"
 #include "StringFormat.h"
+#include "Objects.h"
 
-#include "./objects/~add.h"
-#include "./objects/~mult.h"
-#include "./objects/~noise.h"
-#include "./objects/~filter.h"
-#include "./objects/~oscillator.h"
-#include "./objects/~square.h"
-#include "./objects/~fileout.h"
-#include "./objects/~crush.h"
-#include "./objects/~delay.h"
+namespace Yggdrasil {
 
 template<class obj>
-void create_object(str name, st_type &symbols, str args = "")
+void YggdrasilSymbolTable::create_object(std::string name, std::string args)
 {
-	if (symbols.count(name) == 0)
-		symbols[name] = std::make_unique<obj>(args);
+	if (table.count(name) == 0)
+		table[name] = std::make_unique<obj>(args);
 	else
 		std::cout << "Symbol '" << name << "' is already used\n";
 }
 
-void connect_objects(std::unique_ptr<AudioObject> &a, uint out,
-                     std::unique_ptr<AudioObject> &b, uint in)
+void YggdrasilSymbolTable::connect_objects(
+	std::unique_ptr<AudioObject> &a, uint out,
+    std::unique_ptr<AudioObject> &b, uint in)
 {
 	if (a->outputs.size() > out && b->inputs.size() > in)
 		a->outputs[out].connect(b->inputs[in]);
@@ -37,71 +31,73 @@ void connect_objects(std::unique_ptr<AudioObject> &a, uint out,
                   << a->name << ">" << b->name << "\n";
 }
 
-void make_patch(st_type &st, std::istream &in_stream)
+void YggdrasilSymbolTable::make_patch(std::istream &in_stream)
 {
 	std::string cmd = ";";
 
 	while (cmd != "done")
 	{
-		std::getline(in_stream, cmd);
-		cmd = sf::split_by(cmd, ';')[0];
+		getline(in_stream, cmd);
+		cmd = split_by(cmd, ';')[0];
 
-		if (sf::starts_with(cmd, "mk "))
+		if (starts_with(cmd, "mk "))
 		{
-			auto mk_cmd = sf::split_by(cmd, ' ');
+			auto mk_cmd = split_by(cmd, ' ');
 
 			if (mk_cmd[1] == "osc")
-				{ create_object<OscillatorObject>(mk_cmd[2], st, cmd); }
+				{ create_object<OscillatorObject>(mk_cmd[2], cmd); }
 			else
 			if (mk_cmd[1] == "out")
-				{ create_object<FileoutObject>   (mk_cmd[2], st, cmd); }
+				{ create_object<FileoutObject>   (mk_cmd[2], cmd); }
 			else
 			if (mk_cmd[1] == "add")
-				{ create_object<AddObject>       (mk_cmd[2], st, cmd); }
+				{ create_object<AddObject>       (mk_cmd[2], cmd); }
 			else
 			if (mk_cmd[1] == "mult")
-				{ create_object<MultObject>      (mk_cmd[2], st, cmd); }
+				{ create_object<MultObject>      (mk_cmd[2], cmd); }
 			else
 			if (mk_cmd[1] == "noise")
-				{ create_object<NoiseObject>     (mk_cmd[2], st, cmd); }
+				{ create_object<NoiseObject>     (mk_cmd[2], cmd); }
 			else
 			if (mk_cmd[1] == "filter")
-				{ create_object<FilterObject>    (mk_cmd[2], st, cmd); }
+				{ create_object<FilterObject>    (mk_cmd[2], cmd); }
 			else
 			if (mk_cmd[1] == "delay")
-				{ create_object<DelayObject>     (mk_cmd[2], st, cmd); }
+				{ create_object<DelayObject>     (mk_cmd[2], cmd); }
 			else
 			if (mk_cmd[1] == "square")
-				{ create_object<SquareObject>    (mk_cmd[2], st, cmd); }
+				{ create_object<SquareObject>    (mk_cmd[2], cmd); }
 			else
 			if (mk_cmd[1] == "crush")
-				{ create_object<CrushObject>     (mk_cmd[2], st, cmd); }
+				{ create_object<CrushObject>     (mk_cmd[2], cmd); }
 			else {std::cout << "Bad make command\n"; }
 		}
 
-		else if (sf::starts_with(cmd, "ct "))
+		else if (starts_with(cmd, "ct "))
 		{
-			cmd        = sf::split_by(cmd, ' ')[1];
-			auto c_cmd = sf::split_by(cmd, '>');
+			cmd        = split_by(cmd, ' ')[1];
+			auto c_cmd = split_by(cmd, '>');
 
 			uint in, out;
 
 			out = c_cmd[0][c_cmd[0].size() - 1] - '0'; c_cmd[0].pop_back();
 			in  = c_cmd[1][c_cmd[1].size() - 1] - '0'; c_cmd[1].pop_back();
 
-			if (st.count(c_cmd[0]) != 1 || st.count(c_cmd[1]) != 1)
+			if (table.count(c_cmd[0]) != 1 || table.count(c_cmd[1]) != 1)
 				std::cout << "Cannot connect objects, symbol not found\n";
 			else
-				connect_objects(st[c_cmd[0]], out, st[c_cmd[1]], in);
+				connect_objects(table[c_cmd[0]], out, table[c_cmd[1]], in);
 		}
-
+		
 		else
 		{
-			cmd = sf::remove_spaces(cmd);
+			cmd = remove_spaces(cmd);
 			if (cmd != "" && cmd != "done")
 			{
 				std::cout << "Bad command\n";
 			}
 		}
 	}
+}
+
 }

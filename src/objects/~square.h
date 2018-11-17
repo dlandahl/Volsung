@@ -4,6 +4,8 @@
 
 #include "../AudioObject.h"
 
+namespace Yggdrasil {
+
 class SquareObject : public AudioObject
 {
 	void  run(buf&, buf&, int) override;
@@ -15,3 +17,5 @@ class SquareObject : public AudioObject
 public:
 	SquareObject(std::string);
 };
+
+}

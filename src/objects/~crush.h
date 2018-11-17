@@ -2,6 +2,8 @@
 
 #include "../AudioObject.h"
 
+namespace Yggdrasil {
+
 class CrushObject : public AudioObject
 {
 	void run(buf&, buf&, int) override;
@@ -14,3 +16,5 @@ class CrushObject : public AudioObject
 public:
 	CrushObject(std::string);
 };
+
+}

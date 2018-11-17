@@ -4,6 +4,8 @@
 
 #include "~filter.h"
 
+namespace Yggdrasil {
+
 void FilterObject::run(buf& x, buf& y, int i)
 {
 	b = 2 - cos(TAU * frequency / SAMPLE_RATE);
@@ -17,4 +19,6 @@ FilterObject::FilterObject(std::string args)
 {
 	init(2, 1, args, { &frequency });
 	set_defval(&frequency, frequency, 1);
+}
+
 }

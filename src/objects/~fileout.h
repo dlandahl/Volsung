@@ -2,6 +2,8 @@
 
 #include "../AudioObject.h"
 
+namespace Yggdrasil {
+
 class FileoutObject : public AudioObject
 {
 	void run(buf&, buf&, int) override;
@@ -13,3 +15,5 @@ class FileoutObject : public AudioObject
 public:
 	FileoutObject(std::string);
 };
+
+}

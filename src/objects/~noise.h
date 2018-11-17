@@ -5,6 +5,8 @@
 
 #include "../AudioObject.h"
 
+namespace Yggdrasil {
+
 class NoiseObject : public AudioObject
 {
 	std::default_random_engine generator;
@@ -15,3 +17,5 @@ class NoiseObject : public AudioObject
 public:
 	NoiseObject(std::string);
 };
+
+}

@@ -5,11 +5,10 @@
 
 #include "Yggdrasil.h"
 
-using str = std::string;
+namespace Yggdrasil {
 
-namespace sf
-{
-	bool             starts_with(str, str);
-	std::vector<str> split_by(str, char);
-	str              remove_spaces(str);
+bool starts_with(std::string, std::string);
+std::vector<std::string> split_by(std::string, char);
+std::string remove_spaces(std::string);
+
 }

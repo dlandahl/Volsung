@@ -2,6 +2,8 @@
 
 #include "../AudioObject.h"
 
+namespace Yggdrasil {
+
 class FilterObject : public AudioObject
 {
 	float  frequency = 100;
@@ -13,3 +15,5 @@ class FilterObject : public AudioObject
 public:
 	FilterObject(std::string);
 };
+
+}

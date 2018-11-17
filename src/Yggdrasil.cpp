@@ -6,23 +6,24 @@
 #include "Yggdrasil.h"
 #include "AudioObject.h"
 
+using namespace ygg;
+
 int main(int argc, char* argv[])
 {
-	st_type       symbol_table;
-	st_type& st = symbol_table;
+	YggdrasilSymbolTable st;
 
 	if (argc >= 2)
 	{
 		std::ifstream file;
 		file.open(argv[1]);
 
-		if (file) make_patch(st, file);
+		if (file) st.make_patch(file);
 		else std::cout << "What?\n";
 	}
 	else
-		make_patch(st, std::cin);
+		st.make_patch(std::cin);
 	
-	for (uint i = 0; i < 500; i++)
+	for (int i = 0; i < 500; i++)
 	{
 		for (auto const& s : st)
 			s.second->implement();

@@ -7,6 +7,8 @@
 #include "Yggdrasil.h"
 #include "AudioDataflow.h"
 
+namespace Yggdrasil {
+
 struct linked_value
 {
 	float* parameter;
@@ -44,8 +46,18 @@ public:
 	void implement();
 	virtual void finish();
 
-	std::string get_name() { return name; }
-
 	AudioObject(int, int);
 	AudioObject() = default;
 };
+
+class SymbolTableOutput : public AudioObject
+{
+
+};
+
+class SymbolTableInput : public AudioObject
+{
+
+};
+
+}

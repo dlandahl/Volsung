@@ -5,6 +5,8 @@
 #include "../StringFormat.h"
 #include "~fileout.h"
 
+namespace Yggdrasil {
+
 void FileoutObject::run(buf &in, buf &, int index)
 {
 	data.push_back(in[0][index]);
@@ -23,5 +25,7 @@ void FileoutObject::finish()
 }
 
 FileoutObject::FileoutObject(std::string filename) :
-	filename(sf::split_by(filename, ' ')[3])
+	filename(split_by(filename, ' ')[3])
 { set_io(1, 0); }
+
+}

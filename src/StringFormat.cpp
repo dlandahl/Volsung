@@ -4,12 +4,14 @@
 
 #include "StringFormat.h"
 
-bool sf::starts_with(str a, str b)
+namespace Yggdrasil {
+
+bool starts_with(std::string a, std::string b)
 {
 	return a.rfind(b, 0) == 0;
 }
 
-str sf::remove_spaces(str in)
+std::string remove_spaces(std::string in)
 {
 	in.erase(std::remove (in.begin(), in.end(), ' '), in.end());
 	return in;
@@ -17,7 +19,7 @@ str sf::remove_spaces(str in)
 
 //this is horrid
 //i'm not smart enough to do something better
-std::vector<std::string> sf::split_by(std::string input, char delim)
+std::vector<std::string> split_by(std::string input, char delim)
 {
 	bool found_delim;
 	std::vector<std::string> output;
@@ -41,4 +43,6 @@ std::vector<std::string> sf::split_by(std::string input, char delim)
 	}
 	output.push_back(input);
 	return output;
+}
+
 }

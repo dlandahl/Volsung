@@ -6,6 +6,8 @@
 #include "AudioObject.h"
 #include "StringFormat.h"
 
+namespace Yggdrasil {
+
 void AudioObject::finish() { }
 int AudioObject::index = 0;
 
@@ -51,7 +53,7 @@ void AudioObject::init(int num_inputs, int num_outputs,
 
 void AudioObject::get_float_args(std::string args, std::vector<float*> float_members)
 {
-	std::vector<std::string> sargl = sf::split_by(args, ' ');
+	std::vector<std::string> sargl = split_by(args, ' ');
 	name = sargl[2];
 	
 	for (uint i = 0; i < float_members.size() && i < sargl.size() - 3; i++)
@@ -73,4 +75,6 @@ void AudioObject::set_io(int num_inputs, int num_outputs)
 void AudioObject::set_defval(float* parameter, float default_value, int input)
 {
 	linked_values.push_back(linked_value(parameter, default_value, input));
+}
+
 }

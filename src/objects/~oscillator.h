@@ -4,6 +4,8 @@
 
 #include "../AudioObject.h"
 
+namespace Yggdrasil {
+
 class OscillatorObject : public AudioObject
 {
 	void  run(buf&, buf&, int) override;
@@ -14,3 +16,5 @@ class OscillatorObject : public AudioObject
 public:
 	OscillatorObject(std::string);
 };
+
+}

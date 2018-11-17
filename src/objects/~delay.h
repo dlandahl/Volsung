@@ -2,6 +2,8 @@
 
 #include "../AudioObject.h"
 
+namespace Yggdrasil {
+
 class DelayObject : public AudioObject
 {
 	void run(buf&, buf&, int) override;
@@ -10,3 +12,5 @@ class DelayObject : public AudioObject
 public:
 	DelayObject(std::string);
 };
+
+}

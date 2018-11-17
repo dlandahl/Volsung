@@ -3,6 +3,8 @@
 #include <memory>
 #include <array>
 
+namespace Yggdrasil {
+
 class Block
 {
 	std::array<float, BLOCKSIZE> sample_data = { 0 };
@@ -31,8 +33,6 @@ class CircularBuffer
 	int wval;
 
 public:
-	void  write_value(float);
-
 	float& operator[](int n);
 };
 
@@ -53,3 +53,5 @@ public:
 
 	void connect(AudioInput &other);
 };
+
+}

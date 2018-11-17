@@ -1,6 +1,8 @@
 
 #include "~crush.h"
 
+namespace Yggdrasil {
+
 void CrushObject::run(buf &in, buf &out, int index)
 {
 	if(samples_to_repeat <= ++samples_repeated)
@@ -21,4 +23,6 @@ CrushObject::CrushObject(std::string args)
 	init(3, 1, args, { &resolution, &samples_to_repeat });
 	set_defval(&resolution, resolution, 1);
 	set_defval(&samples_to_repeat, samples_to_repeat, 2);
+}
+
 }

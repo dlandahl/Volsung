@@ -2,6 +2,8 @@
 #include "Yggdrasil.h"
 #include "AudioDataflow.h"
 
+namespace Yggdrasil {
+
 float& Block::operator[](uint n)
 {
 	return sample_data[n];
@@ -24,13 +26,6 @@ void BlockBuffer::write_block(Block b)
 	block_data.push_back(b);
 }
 
-void CircularBuffer::write_value(float val)
-{
-	while (wval >= BUFFSIZE) wval -= BUFFSIZE;
-	while (wval <  0)        wval += BUFFSIZE;
-	stream[wval++] = val;
-}
-
 float& CircularBuffer::operator[](int n)
 {
 	if (n < 0) n += BUFFSIZE;
@@ -39,7 +34,7 @@ float& CircularBuffer::operator[](int n)
 }
 
 bool AudioInput::is_connected() 
-{ 
+{
 	return bool(connections.size());
 }
 
@@ -70,4 +65,6 @@ void AudioOutput::connect(AudioInput &other)
 	connections.back() =
 	other.connections.back() =
         std::make_shared<AudioConnector>();
+}
+
 }
