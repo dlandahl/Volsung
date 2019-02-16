@@ -1,8 +1,9 @@
+
 SRCO := AudioDataflow AudioObject StringFormat Yggdrasil Patch
 OBJO := ~add ~fileout ~filter ~mult ~noise ~oscillator ~square ~crush ~delay
 STDLIB := -static-libstdc++ -std=c++17
 
-FLAG := -Wall -Wextra -Wpedantic
+FLAG := -g -Wall -Wextra -Wpedantic
 
 INTER := ../inter/
 
@@ -20,12 +21,16 @@ $(shell mkdir -p $(INTER))
 ../build/$(BINARY): $(OBJO) $(SRCO)
 	g++ $(FLAG) $(STDLIB) $^ -o $@
 
-$(INTER)%.o: %.cpp
+$(INTER)%.o: objects/%.cpp
 	g++ $(FLAG) -c $^ -o $@
 
-$(INTER)%.o: objects/%.cpp
+$(INTER)%.o: %.cpp
 	g++ $(FLAG) -c $^ -o $@
 
 .PHONY : clean
 clean:
 	rm $(INTER)*.o
+
+.PHONY : run
+run:
+	../build/$(BINARY)

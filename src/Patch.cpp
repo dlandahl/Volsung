@@ -12,7 +12,7 @@
 namespace Yggdrasil {
 
 template<class obj>
-void YggdrasilSymbolTable::create_object(std::string name, std::string args)
+void SymbolTable::create_object(std::string name, std::string args)
 {
 	if (table.count(name) == 0)
 		table[name] = std::make_unique<obj>(args);
@@ -20,7 +20,7 @@ void YggdrasilSymbolTable::create_object(std::string name, std::string args)
 		std::cout << "Symbol '" << name << "' is already used\n";
 }
 
-void YggdrasilSymbolTable::connect_objects(
+void SymbolTable::connect_objects(
 	std::unique_ptr<AudioObject> &a, uint out,
     std::unique_ptr<AudioObject> &b, uint in)
 {
@@ -31,13 +31,19 @@ void YggdrasilSymbolTable::connect_objects(
                   << a->name << ">" << b->name << "\n";
 }
 
-void YggdrasilSymbolTable::make_patch(std::istream &in_stream)
+void SymbolTable::connect_objects(SymbolTable &st,
+                                  std::string a, uint out,
+	                              std::string b, uint in)
+{
+	st.connect_objects(st.table[a], out, st.table[b], in);
+}
+
+void SymbolTable::make_patch(std::istream &in_stream)
 {
 	std::string cmd = ";";
 
-	while (cmd != "done")
+	while (getline(in_stream, cmd))
 	{
-		getline(in_stream, cmd);
 		cmd = split_by(cmd, ';')[0];
 
 		if (starts_with(cmd, "mk "))
@@ -96,8 +102,26 @@ void YggdrasilSymbolTable::make_patch(std::istream &in_stream)
 			{
 				std::cout << "Bad command\n";
 			}
+			else return;
 		}
 	}
+}
+
+void SymbolTable::get_samples(float* data, int size,
+                              std::string object, uint output)
+{
+	int samples_generated = 0;
+	std::vector<float> out_data(size);
+
+	while(samples_generated < size)
+	{
+		for (auto const& s : *this)
+			s.second->implement();
+
+		samples_generated += BLOCKSIZE;
+		auto ringbuffer = table[object]->get_out_buffer(output);
+	}
+
 }
 
 }

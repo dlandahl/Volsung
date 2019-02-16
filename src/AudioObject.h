@@ -25,19 +25,19 @@ class AudioObject
 private:
 	std::vector<CircularBuffer> in, out;
 	std::vector<linked_value> linked_values;
+	int index;
 
 protected:
 	virtual void run(buf&, buf&, int) = 0;
-	void         set_io(int inputs, int outputs);
-	void         get_float_args(std::string, std::vector<float*>);
-	void         init(int, int, std::string, std::vector<float*>);
+	void set_io(int inputs, int outputs);
+	void get_float_args(std::string, std::vector<float*>);
+	void init(int, int, std::string, std::vector<float*>);
 
-	void         set_defval(float*, float, int);
+	void set_defval(float*, float, int);
 
-	bool         is_connected(uint);
+	bool is_connected(uint);
 
 public:
-	static int index;
 	std::string name;
 
 	std::vector<AudioInput>  inputs;
@@ -46,18 +46,10 @@ public:
 	void implement();
 	virtual void finish();
 
+	CircularBuffer& get_out_buffer(uint buffer) { return out[buffer]; };
+
 	AudioObject(int, int);
 	AudioObject() = default;
-};
-
-class SymbolTableOutput : public AudioObject
-{
-
-};
-
-class SymbolTableInput : public AudioObject
-{
-
 };
 
 }

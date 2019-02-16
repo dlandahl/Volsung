@@ -9,7 +9,6 @@
 namespace Yggdrasil {
 
 void AudioObject::finish() { }
-int AudioObject::index = 0;
 
 void AudioObject::implement()
 {
@@ -17,26 +16,27 @@ void AudioObject::implement()
 	{
 		Block b = inputs[i].read_block();
 		for (uint j = 0; j < BLOCKSIZE; j++)
-			in[i][j + AudioObject::index] = b[j];
+			in[i][j + index] = b[j];
 	}
 
 	for (uint i = 0; i < BLOCKSIZE; i++)
 	{
 		for (auto const& value : linked_values)
 			if (inputs[value.input].is_connected())
-				*value.parameter = in[value.input][AudioObject::index + i];
+				*value.parameter = in[value.input][index + i];
 
-		run(in, out, AudioObject::index + i);
+		run(in, out, index + i);
 	}
 
 	for (uint i = 0; i < outputs.size(); i++)
 	{
 		Block b;
 		for (uint j = 0; j < BLOCKSIZE; j++)
-			b[j] = out[i][AudioObject::index + j];
+			b[j] = out[i][index + j];
 
 		outputs[i].write_block(b);
 	}
+	index += BLOCKSIZE;
 }
 
 bool AudioObject::is_connected(uint in)

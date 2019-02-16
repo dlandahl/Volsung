@@ -7,7 +7,7 @@
 
 #define BLOCKSIZE   200
 #define SAMPLE_RATE 44100.0f
-#define BUFFSIZE    256000
+#define BUFFSIZE    44100
 #define PI          3.14159265f
 #define TAU         6.28318530f
 

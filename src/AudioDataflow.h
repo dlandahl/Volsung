@@ -12,18 +12,16 @@ public:
 	float& operator[](uint n);
 };
 
-class BlockBuffer
+struct BlockBuffer
 {
 	std::vector<Block> block_data;
 
-public:
 	Block read_block();
 	void  write_block(Block b);
 };
 
-class AudioConnector
+struct AudioConnector
 {
-public:
 	BlockBuffer buffer;
 };
 
@@ -36,18 +34,16 @@ public:
 	float& operator[](int n);
 };
 
-class AudioInput
+struct AudioInput
 {
-public:
 	std::vector<std::shared_ptr<AudioConnector>> connections;
 	Block read_block();
 
 	bool is_connected();
 };
 
-class AudioOutput
+struct AudioOutput
 {
-public:
 	std::vector<std::shared_ptr<AudioConnector>> connections;
 	void write_block(Block);
 
