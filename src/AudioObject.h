@@ -25,7 +25,7 @@ class AudioObject
 private:
 	std::vector<CircularBuffer> in, out;
 	std::vector<linked_value> linked_values;
-	int index;
+	int index = 0;
 
 protected:
 	virtual void run(buf&, buf&, int) = 0;
@@ -50,6 +50,7 @@ public:
 
 	AudioObject(int, int);
 	AudioObject() = default;
+	virtual ~AudioObject() = default;
 };
 
 }

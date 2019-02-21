@@ -16,7 +16,7 @@ void SymbolTable::create_object(std::string name, std::string args)
 {
 	if (table.count(name) == 0)
 		table[name] = std::make_unique<obj>(args);
-	else
+   	else
 		std::cout << "Symbol '" << name << "' is already used\n";
 }
 

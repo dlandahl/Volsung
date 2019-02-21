@@ -37,6 +37,7 @@ void AudioObject::implement()
 		outputs[i].write_block(b);
 	}
 	index += BLOCKSIZE;
+	if (index >= BUFFSIZE) index -= BUFFSIZE;
 }
 
 bool AudioObject::is_connected(uint in)
