@@ -1,5 +1,10 @@
 
 .vscode/
-build/out.raw
 build/yay
 inter/
+.directory
+*.ygg
+*.raw
+
+*.exe
+*.out

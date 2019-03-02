@@ -17,8 +17,6 @@ std::string remove_spaces(std::string in)
 	return in;
 }
 
-//this is horrid
-//i'm not smart enough to do something better
 std::vector<std::string> split_by(std::string input, char delim)
 {
 	bool found_delim;

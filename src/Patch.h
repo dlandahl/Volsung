@@ -25,7 +25,8 @@ public:
 	                                          std::string, uint);
 
 	void make_patch(std::istream&);
-	void get_samples(float*, int, std::string, uint);
+	void read_samples (float* data, uint size, uint output);
+	void write_samples(float* data, uint size, uint output);
 
 	auto begin() { return std::begin(table); }
 	auto end() { return std::end(table); }

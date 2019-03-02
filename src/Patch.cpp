@@ -11,6 +11,11 @@
 
 namespace Yggdrasil {
 
+namespace {
+bool debug   = false;
+bool verbose = false;
+}
+
 template<class obj>
 void SymbolTable::create_object(std::string name, std::string args)
 {
@@ -41,15 +46,17 @@ void SymbolTable::connect_objects(SymbolTable &st,
 void SymbolTable::make_patch(std::istream &in_stream)
 {
 	std::string cmd = ";";
-
+	
 	while (getline(in_stream, cmd))
 	{
+		if (debug && verbose) std::cout << "New command read: " << cmd << '\n';
 		cmd = split_by(cmd, ';')[0];
-
+		
 		if (starts_with(cmd, "mk "))
 		{
 			auto mk_cmd = split_by(cmd, ' ');
-
+			if (debug) { std::cout << "'Make' command detected: "; for (auto const& c : mk_cmd) std::cout << c << ' '; std::cout << '\n'; }
+			
 			if (mk_cmd[1] == "osc")
 				{ create_object<OscillatorObject>(mk_cmd[2], cmd); }
 			else
@@ -83,6 +90,7 @@ void SymbolTable::make_patch(std::istream &in_stream)
 		{
 			cmd        = split_by(cmd, ' ')[1];
 			auto c_cmd = split_by(cmd, '>');
+			if (debug) std::cout << "'Connect' command detected: " << cmd << '\n';
 
 			uint in, out;
 
@@ -94,6 +102,14 @@ void SymbolTable::make_patch(std::istream &in_stream)
 			else
 				connect_objects(table[c_cmd[0]], out, table[c_cmd[1]], in);
 		}
+
+		else if (starts_with(cmd, "&"))
+		{
+			cmd = split_by(cmd, '&')[1];
+			if (debug) std::cout << "Directive detected: " << cmd << '\n';
+			if (cmd == "debug")   debug   = !debug;
+			if (cmd == "verbose") verbose = !verbose;
+		}
 		
 		else
 		{
@@ -102,26 +118,13 @@ void SymbolTable::make_patch(std::istream &in_stream)
 			{
 				std::cout << "Bad command\n";
 			}
-			else return;
+			if (cmd == "done") return;
 		}
 	}
 }
 
-void SymbolTable::get_samples(float* data, int size,
-                              std::string object, uint output)
-{
-	int samples_generated = 0;
-	std::vector<float> out_data(size);
-
-	while(samples_generated < size)
-	{
-		for (auto const& s : *this)
-			s.second->implement();
-
-		samples_generated += BLOCKSIZE;
-		auto ringbuffer = table[object]->get_out_buffer(output);
-	}
+void SymbolTable::read_samples (float* data, uint size, uint output) {}
+void SymbolTable::write_samples(float* data, uint size, uint output) {}
 
 }
 
-}
