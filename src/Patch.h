@@ -15,6 +15,7 @@ class SymbolTable
 	st_type table;
 
 public:
+
 	template<class>
 	void create_object(std::string, std::string = "");
 

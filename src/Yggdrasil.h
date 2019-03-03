@@ -5,13 +5,13 @@
 #include <unordered_map>
 #include <memory>
 
+namespace Yggdrasil {
+
+	float   SAMPLE_RATE = 44100.0f;
 #define BLOCKSIZE   200
-#define SAMPLE_RATE 44100.0f
-#define BUFFSIZE    200
+#define BUFFSIZE    44100
 #define PI          3.14159265f
 #define TAU         6.28318530f
-
-namespace Yggdrasil {
 
 class AudioObject;
 class CircularBuffer;
