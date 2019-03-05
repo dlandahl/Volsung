@@ -1,6 +1,6 @@
 
 SRCO := AudioDataflow AudioObject StringFormat Yggdrasil Patch
-OBJO := ~add ~fileout ~filter ~mult ~noise ~oscillator ~square ~crush ~delay
+OBJO := ~add ~fileout ~filter ~mult ~noise ~oscillator ~square ~crush ~delay ~drive
 STDLIB := -static-libstdc++
 
 FLAG := -g -Wall -Wextra -Wpedantic -std=c++17

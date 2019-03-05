@@ -7,8 +7,8 @@
 
 namespace Yggdrasil {
 
-	float   SAMPLE_RATE = 44100.0f;
-#define BLOCKSIZE   200
+inline float          SAMPLE_RATE = 44100.0f;
+inline unsigned const BLOCKSIZE   = 256;
 #define BUFFSIZE    44100
 #define PI          3.14159265f
 #define TAU         6.28318530f
@@ -24,6 +24,14 @@ int sign(T val)
 {
 	return (T(0) < val) - (val < T(0));
 }
+
+int debug_level;
+
+void log(std::string message, int level=0)
+{
+	if (debug_level >= level) std::cout << message << '\n';
+}
+
 
 }
 

@@ -12,16 +12,6 @@
 
 namespace Yggdrasil {
 
-namespace {
-int debug_level = 0;
-uint lines_parsed = 0;
-}
-
-void log(std::string message, int level=0)
-{
-	if (debug_level >= level) std::cout << lines_parsed << ":\t" << message << '\n';
-}
-
 template<class obj>
 void SymbolTable::create_object(std::string name, std::string args)
 {
@@ -92,6 +82,10 @@ void SymbolTable::make_patch(std::istream &in_stream)
 			else
 			if (mk_cmd[1] == "crush")
 				{ create_object<CrushObject>     (mk_cmd[2], cmd); }
+			else
+			if (mk_cmd[1] == "drive")
+				{ create_object<DriveObject>     (mk_cmd[2], cmd); }
+			
 			else { log("Bad make command"); }
 		}
 
@@ -114,25 +108,71 @@ void SymbolTable::make_patch(std::istream &in_stream)
 		else if (starts_with(cmd, "&"))
 		{
 			cmd = split_by(cmd, '&')[1];
+			auto d_cmd = split_by(cmd, ' ');
+			
+			try {
 			if (starts_with(cmd, "debug"))
 			{
-				auto d_cmd = split_by(cmd, ' ');
 				if (d_cmd.size() == 1) debug_level = !debug_level;
 				else debug_level = std::stoi(d_cmd[1]);
+				log("Setting debug level to " + std::to_string(debug_level), 1);
 			}
+			
+			else if (starts_with(cmd, "length"))
+			{
+				bool seconds = false;
+				if (cmd.back() == 's') seconds = true;
+				
+				debug_length = std::stoi(d_cmd[1]);
+				if (seconds) debug_length = SAMPLE_RATE / BLOCKSIZE * debug_length;
+				
+				log("Setting run length to " + std::to_string(debug_length) + " blocks (" + std::to_string(debug_length*BLOCKSIZE) + " samples)", 1);				
+			}
+			
+			else if (starts_with(cmd, "sampling_rate"))
+			{
+				SAMPLE_RATE = std::stoi(d_cmd[1]);
+				log("Setting sampling rate to  " + std::to_string(SAMPLE_RATE), 1);				
+			}
+
+			else if (cmd == "run")
+			{
+				log("Running patch!", 1);				
+				run();
+			}
+
+			else if (cmd == "finish")
+			{
+				log("Finishing patch!", 1);				
+				finish();
+			}
+			
 			else log("Bad directive");
+
+			} catch (...) { log("Bad directive argument (Nan?)"); }
+		    
 		}
 		
 		else
 		{
 			cmd = remove_spaces(cmd);
-			if (cmd != "" && cmd != "done")
-			{
-				log("Bad command");
-			}
-			if (cmd == "done") return;
+			if (cmd == "done") { return; }
+			if (cmd != "") log("Bad command");
 		}
 	}
+}
+
+void SymbolTable::run()
+{
+	for (uint n = 0; n < debug_length; n++)
+		for (auto const& entry : table)
+			entry.second->implement();
+}
+
+void SymbolTable::finish()
+{
+	for (auto const& entry : table)
+		entry.second->finish();
 }
 
 }

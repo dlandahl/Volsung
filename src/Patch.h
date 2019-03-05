@@ -14,8 +14,10 @@ class SymbolTable
 {
 	st_type table;
 
-public:
+	uint lines_parsed = 0;
+	uint debug_length = 100;
 
+public:
 	template<class>
 	void create_object(std::string, std::string = "");
 
@@ -26,9 +28,10 @@ public:
 	                                          std::string, uint);
 
 	void make_patch(std::istream&);
-	void read_samples (float* data, uint size, uint output);
-	void write_samples(float* data, uint size, uint output);
 
+	void run();
+	void finish();
+	
 	auto begin() { return std::begin(table); }
 	auto end() { return std::end(table); }
 };
