@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 #include <unordered_map>
 #include <memory>
 
@@ -25,9 +26,9 @@ int sign(T val)
 	return (T(0) < val) - (val < T(0));
 }
 
-int debug_level;
+inline int debug_level;
 
-void log(std::string message, int level=0)
+inline void log(std::string message, int level=0)
 {
 	if (debug_level >= level) std::cout << message << '\n';
 }

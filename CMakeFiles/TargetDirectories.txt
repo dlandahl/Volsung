@@ -1,0 +1,3 @@
+/home/dominik/Documents/Yggdrasil/CMakeFiles/rebuild_cache.dir
+/home/dominik/Documents/Yggdrasil/CMakeFiles/Yggdrasil.dir
+/home/dominik/Documents/Yggdrasil/CMakeFiles/edit_cache.dir
