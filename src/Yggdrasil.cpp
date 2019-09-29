@@ -2,10 +2,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "Patch.h"
-#include "Yggdrasil.h"
-#include "AudioObject.h"
-#include "Objects.h"
+#include "YggdrasilCore.h"
+
 
 using namespace Yggdrasil;
 

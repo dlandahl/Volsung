@@ -12,6 +12,12 @@
 
 namespace Yggdrasil {
 
+SymbolTable(int inputs, int outputs, std::string input_name = "input", std::string output_name = "output")
+{
+	
+}
+
+
 template<class obj>
 void SymbolTable::create_object(std::string name, std::string args)
 {
@@ -162,14 +168,14 @@ void SymbolTable::make_patch(std::istream &in_stream)
 	}
 }
 
-void SymbolTable::run()
+void SymbolTable<int inputs, int outputs>::run()
 {
 	for (uint n = 0; n < debug_length; n++)
 		for (auto const& entry : table)
 			entry.second->implement();
 }
 
-void SymbolTable::finish()
+void SymbolTable<>::finish()
 {
 	for (auto const& entry : table)
 		entry.second->finish();

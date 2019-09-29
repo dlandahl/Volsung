@@ -1,6 +1,6 @@
 
 .vscode/
-build/yay
+build/
 inter/
 .directory
 *.ygg

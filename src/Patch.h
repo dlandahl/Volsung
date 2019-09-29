@@ -18,6 +18,8 @@ class SymbolTable
 	uint debug_length = 100;
 
 public:
+	SymbolTable(int inputs, int outputs, std::string input_name, std::string output_name);
+
 	template<class>
 	void create_object(std::string, std::string = "");
 
