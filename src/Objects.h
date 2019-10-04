@@ -134,4 +134,18 @@ public:
 	SquareObject(std::string);
 };
 
+
+
+class UserObject : public AudioObject
+{
+	void run(buf&, buf&, int) override;
+
+public:
+	std::function<void*(void*, buf&, buf&, int)> callback = nullptr;
+	void* return_data = nullptr;
+	void* user_data = nullptr;
+
+    UserObject(std::string);
+};
+
 }

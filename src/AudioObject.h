@@ -46,8 +46,6 @@ public:
 	void implement();
 	virtual void finish();
 
-	CircularBuffer& get_out_buffer(uint buffer) { return out[buffer]; };
-
 	AudioObject(int, int);
 	AudioObject() = default;
 	virtual ~AudioObject() = default;

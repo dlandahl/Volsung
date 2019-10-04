@@ -168,4 +168,20 @@ SquareObject::SquareObject(std::string args)
 	set_defval(&pw, pw, 1);
 }
 
+
+void UserObject::run(buf& in, buf& out, int index)
+{
+	if (callback)
+		return_data = callback(user_data, in, out, index);
 }
+
+UserObject::UserObject(std::string args)
+{
+	float inputs = 0, outputs = 0;
+	get_float_args(args, { &inputs, &outputs });
+	set_io(inputs, outputs);
+}
+
+
+}
+
