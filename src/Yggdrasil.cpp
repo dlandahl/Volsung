@@ -4,7 +4,6 @@
 
 #include "YggdrasilCore.h"
 
-
 using namespace Yggdrasil;
 
 int main(int argc, char ** argv)
@@ -17,10 +16,17 @@ int main(int argc, char ** argv)
 		return nullptr;
 	};
 
+	SymbolTable::add_directive("three", [] (std::vector<std::string> args, SymbolTable*) {
+		for (auto arg: args) log(arg);
+		for (auto arg: args) log(arg);
+		for (auto arg: args) log(arg);
+	});
+
 	
 	st.create_user_object("output", 1, 0, output_callback);
 
-	debug_callback = [](std::string message){ std::cout << message; };
+	debug_callback = [] (std::string message) { std::cout << message; };
+	
  	if (argc >= 2)
  	{
  		std::ifstream file(argv[1]);

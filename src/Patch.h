@@ -13,12 +13,16 @@ namespace Yggdrasil {
 
 using st_type = std::unordered_map<std::string, std::unique_ptr<AudioObject>>;
 
+class SymbolTable;
+using directive_functor = std::function<void(std::vector<std::string>, SymbolTable*)>;
+
 class SymbolTable
 {
 	st_type table;
 
 	uint lines_parsed = 0;
 	uint debug_length = 100;
+	static inline std::map<std::string, directive_functor> custom_directives;
 
 public:
 
@@ -30,6 +34,7 @@ public:
 
 	static void connect_objects(SymbolTable&, std::string, uint, std::string, uint);
 
+	static void add_directive(std::string, directive_functor);
 	void create_user_object(std::string, uint, uint, callback_functor);
 											  
 	void make_patch(std::istream&);

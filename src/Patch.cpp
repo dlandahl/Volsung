@@ -136,6 +136,17 @@ void SymbolTable::make_patch(std::istream &in_stream)
             }
 		}
 
+		else if (starts_with(cmd, "&"))
+		{
+			auto directive_cmd = split_by(cmd, '&')[1];
+			std::vector<std::string> args = split_by(directive_cmd, ' ');
+			
+			auto cmd = args[0];
+
+			if (!custom_directives.count(cmd)) log("No such directive: " + cmd);
+			else custom_directives[cmd](args, this);
+		}
+
 		else
 		{
 			cmd = remove_spaces(cmd);
@@ -161,5 +172,11 @@ void SymbolTable::reset()
 {
 	table.clear();
 }
+
+void SymbolTable::add_directive(std::string name, directive_functor function)
+{
+	if (!custom_directives.count(name)) custom_directives[name] = function;
+}
+
 
 }

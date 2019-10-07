@@ -32,7 +32,7 @@ int sign(T val)
 
 inline int debug_level = 0;
 
-inline std::function<void(std::string)> debug_callback;
+inline std::function<void(std::string)> debug_callback = [] (std::string message) { std::cout << message; };;
 
 inline void log(std::string message, int level=0)
 {
