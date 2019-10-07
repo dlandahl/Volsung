@@ -2,9 +2,12 @@
 
 #include <memory>
 #include <istream>
+#include <typeindex>
+#include <sstream>
 
 #include "StringFormat.h"
 #include "Yggdrasil.h"
+#include "Objects.h"
 
 namespace Yggdrasil {
 
@@ -20,18 +23,20 @@ class SymbolTable
 public:
 
 	template<class>
-	void create_object(std::string, std::string = "");
+	bool create_object(std::string, std::string = "");
 
 	void connect_objects(std::unique_ptr<AudioObject>&, uint,
 	                     std::unique_ptr<AudioObject>&, uint);
 
-	static void connect_objects(SymbolTable&, std::string, uint,
-	                                          std::string, uint);
+	static void connect_objects(SymbolTable&, std::string, uint, std::string, uint);
 
+	void create_user_object(std::string, uint, uint, callback_functor);
+											  
 	void make_patch(std::istream&);
 
 	void run();
 	void finish();
+	void reset();
 	
 	auto begin() { return std::begin(table); }
 	auto end() { return std::end(table); }
@@ -40,3 +45,4 @@ public:
 using Patch = SymbolTable;
 
 }
+

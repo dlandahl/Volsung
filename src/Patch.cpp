@@ -13,15 +13,25 @@
 namespace Yggdrasil {
 
 template<class obj>
-void SymbolTable::create_object(std::string name, std::string args)
+bool SymbolTable::create_object(std::string name, std::string args)
 {
-	log("Name: " + name, 2);
-	log("Args: " + args, 2);	
-	if (table.count(name) == 0)
+	if (table.count(name) == 0) {
 		table[name] = std::make_unique<obj>(args);
-   	else
-		log("Symbol '" + name + "' is already used");
+		return true;
+	}
+	log("Symbol '" + name + "' is already used");
+	return false;
 }
+
+void SymbolTable::create_user_object(std::string name, uint inputs, uint outputs, callback_functor callback)
+{
+	bool success = create_object<UserObject>(name, "mk " + name + " " + name + " " + std::to_string(inputs) + " " + std::to_string(outputs));
+	if (!success) return;
+
+	UserObject* object = static_cast<UserObject*>(table[name].get());
+	object->callback = callback;
+}
+
 
 void SymbolTable::connect_objects(
 	std::unique_ptr<AudioObject> &a, uint out,
@@ -48,18 +58,23 @@ void SymbolTable::make_patch(std::istream &in_stream)
 	while (getline(in_stream, cmd))
 	{
 		lines_parsed++;
-		log("Reading line", 2);
-		
 		cmd = split_by(cmd, ';')[0];
+
+        for (uint n = 1; n < cmd.size(); n++) {
+            while (cmd[n] == ' ' && cmd[n-1] == ' ') cmd.erase(n, 1);
+        }
+        while (cmd.front() == ' ') cmd.erase(0, 1);
+        while (cmd.back() == ' ')  cmd.pop_back();
+
 		if (starts_with(cmd, "mk "))
 		{
 			auto mk_cmd = split_by(cmd, ' ');
 			log("Making:\t\t" + cmd, 1); 
-			
+
 			if (mk_cmd[1] == "osc")
 				{ create_object<OscillatorObject>(mk_cmd[2], cmd); }
 			else
-			if (mk_cmd[1] == "out")
+			if (mk_cmd[1] == "file")
 				{ create_object<FileoutObject>   (mk_cmd[2], cmd); }
 			else
 			if (mk_cmd[1] == "add")
@@ -85,13 +100,13 @@ void SymbolTable::make_patch(std::istream &in_stream)
 			else
 			if (mk_cmd[1] == "drive")
 				{ create_object<DriveObject>     (mk_cmd[2], cmd); }
-			
+				
 			else { log("Bad make command"); }
+
 		}
 
 		else if (starts_with(cmd, "ct "))
 		{
-			log("Connecting:\t" + cmd, 1);
 			cmd        = split_by(cmd, ' ')[1];
 			auto c_cmd = split_by(cmd, '>');
 
@@ -105,54 +120,22 @@ void SymbolTable::make_patch(std::istream &in_stream)
 			else connect_objects(table[c_cmd[0]], out, table[c_cmd[1]], in);
 		}
 
-		else if (starts_with(cmd, "&"))
+		else if (starts_with(cmd, "type"))
 		{
-			cmd = split_by(cmd, '&')[1];
-			auto d_cmd = split_by(cmd, ' ');
-			
-			try {
-			if (starts_with(cmd, "debug"))
-			{
-				if (d_cmd.size() == 1) debug_level = !debug_level;
-				else debug_level = std::stoi(d_cmd[1]);
-				log("Setting debug level to " + std::to_string(debug_level), 1);
-			}
-			
-			else if (starts_with(cmd, "length"))
-			{
-				bool seconds = false;
-				if (cmd.back() == 's') seconds = true;
-				
-				debug_length = std::stoi(d_cmd[1]);
-				if (seconds) debug_length = SAMPLE_RATE / BLOCKSIZE * debug_length;
-				
-				log("Setting run length to " + std::to_string(debug_length) + " blocks (" + std::to_string(debug_length*BLOCKSIZE) + " samples)", 1);				
-			}
-			
-			else if (starts_with(cmd, "sampling_rate"))
-			{
-				SAMPLE_RATE = std::stoi(d_cmd[1]);
-				log("Setting sampling rate to  " + std::to_string(SAMPLE_RATE), 1);				
-			}
-
-			else if (cmd == "run")
-			{
-				log("Running patch!", 1);				
-				run();
-			}
-
-			else if (cmd == "finish")
-			{
-				log("Finishing patch!", 1);				
-				finish();
-			}
-			
-			else log("Bad directive");
-
-			} catch (...) { log("Bad directive argument (Nan?)"); }
-		    
+            auto macro_cmd = split_by(cmd, ' ');
+            if      (macro_cmd.size() != 3) log("Invalid type header, should be 'type Name ['");
+            else if (macro_cmd[2] != "[") log("Invalid type header, should end in an open bracket");
+            else {
+                std::stringstream body;
+                while (std::getline(in_stream, cmd) && !starts_with(cmd, "]"))
+                {
+                    body << cmd << '\n';
+                    lines_parsed++;
+                }
+                macro_table[macro_cmd[1]] = body.str();
+            }
 		}
-		
+
 		else
 		{
 			cmd = remove_spaces(cmd);
@@ -164,15 +147,19 @@ void SymbolTable::make_patch(std::istream &in_stream)
 
 void SymbolTable::run()
 {
-	for (uint n = 0; n < debug_length; n++)
-		for (auto const& entry : table)
-			entry.second->implement();
+	for (auto const& entry : table)
+		entry.second->implement();
 }
 
 void SymbolTable::finish()
 {
 	for (auto const& entry : table)
 		entry.second->finish();
+}
+
+void SymbolTable::reset()
+{
+	table.clear();
 }
 
 }

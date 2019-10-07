@@ -172,7 +172,7 @@ SquareObject::SquareObject(std::string args)
 void UserObject::run(buf& in, buf& out, int index)
 {
 	if (callback)
-		return_data = callback(user_data, in, out, index);
+		callback(in, out, index);
 }
 
 UserObject::UserObject(std::string args)

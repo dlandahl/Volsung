@@ -1,3 +1,4 @@
+#pragma once
 
 #include "AudioObject.h"
 #include <string>
@@ -136,14 +137,14 @@ public:
 
 
 
+using callback_functor = std::function<void(buf&, buf&, int)>;
+
 class UserObject : public AudioObject
 {
 	void run(buf&, buf&, int) override;
 
 public:
-	std::function<void*(void*, buf&, buf&, int)> callback = nullptr;
-	void* return_data = nullptr;
-	void* user_data = nullptr;
+	callback_functor callback = nullptr;
 
     UserObject(std::string);
 };
