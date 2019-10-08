@@ -21,9 +21,9 @@ class SymbolTable
 	st_type table;
 
 	uint lines_parsed = 0;
-	uint debug_length = 100;
 	static inline std::map<std::string, directive_functor> custom_directives;
-
+    SymbolTable* parent = nullptr;
+    
 public:
 
 	template<class>

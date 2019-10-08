@@ -59,7 +59,13 @@ void AudioObject::get_float_args(std::string args, std::vector<float*> float_mem
 	
 	for (uint i = 0; i < float_members.size() && i < sargl.size() - 3; i++)
 	{
-   		try         { *float_members[i] = float(std::stof(sargl[i+3], nullptr)); }
+        float multiplier = 1.f;
+        if (sargl[i + 3].back() == 's') {
+            multiplier = SAMPLE_RATE;
+            if (sargl[i + 3][sargl[i + 3].size() - 2] == 'm') multiplier *= 0.001;
+        }
+        
+   		try         { *float_members[i] = float(std::stof(sargl[i+3], nullptr)) * multiplier; }
 		catch (...) { std::cout << "Failed to initialize value on " << name << "\n"; }
 	}
 }

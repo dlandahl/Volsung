@@ -38,8 +38,8 @@ int main(int argc, char ** argv)
  		st.make_patch(std::cin);
 
 	
-	for (uint n = 0; n < 10; n++) st.run();
-	for (uint n = 0; n < 10; n++) std::cout << array[n];
+	for (uint n = 0; n < 1000000; n++) st.run();
+    st.finish();
 	
 //st.create_object<UserObject>("output", "output
 
