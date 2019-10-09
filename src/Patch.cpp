@@ -175,7 +175,8 @@ void SymbolTable::reset()
 
 void SymbolTable::add_directive(std::string name, directive_functor function)
 {
-	if (!custom_directives.count(name)) custom_directives[name] = function;
+	if (!custom_directives.count(name))
+		custom_directives[name] = function;
 }
 
 

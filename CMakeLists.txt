@@ -8,6 +8,8 @@ file(GLOB code
     "src/*.cpp"
 )
 
-
 add_library( Yggdrasil STATIC
              ${code} )
+
+set_target_properties(Yggdrasil PROPERTIES
+                      ARCHIVE_OUTPUT_DIRECTORY ../lib)
