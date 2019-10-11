@@ -2,9 +2,12 @@
 .vscode/
 build/
 inter/
+
 .directory
+
 *.ygg
 *.raw
 
+*.a
 *.exe
 *.out
