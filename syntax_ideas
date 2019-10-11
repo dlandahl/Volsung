@@ -1,0 +1,42 @@
+
+mk osc: osc~ 400        ; Make a thing (object?)
+ct osc(0) -> (0)output  ; Connect a thing
+
+const x 200             ; Constants
+ct x -> osc(0)
+
+; Inline arithmetic
+mk white_noise: noise~
+mk lowpass: lpf~ 400
+
+const cutoff 20
+ct cutoff -> *10 -> lpf(0)
+ct lpf(0) -> noise(0)
+
+
+
+
+mk osc~ modulator 0.4
+alias y = (0)modulator
+
+
+func my_function: 7n - 3^n
+seq my_sequence: my_function[-5..5]
+
+grp osc_bank: my_function[5] ~osc 100*n
+
+; Named inputs and outputs
+ct modulator(0) <> osc_bank('frequency')
+ct modulator(0) -> *0.5 -> +0.5 -> osc_bank[0]('phase')
+
+type custom_object (1, 2) [
+	link frequency: _0 in(0) 100
+	ct frequency -> out(0)
+]
+
+mk custom_object thing 200
+ct x -> thing(0)
+
+ct osc_bank(0) ~> osc_bank(0)
+
+slice osc_bank [1:-2] some_of_the_oscillators
