@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 project(Yggdrasil)
+
 include_directories("src")
 set(CMAKE_CXX_STANDARD 17)
 
@@ -13,3 +14,9 @@ add_library( Yggdrasil STATIC
 
 set_target_properties(Yggdrasil PROPERTIES
                       ARCHIVE_OUTPUT_DIRECTORY ../lib)
+
+add_executable( TestProgram
+                test/Yggdrasil.cpp ) 
+
+target_link_libraries( TestProgram
+                       Yggdrasil )

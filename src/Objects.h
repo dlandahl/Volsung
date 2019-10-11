@@ -4,6 +4,7 @@
 #include <string>
 #include <random>
 #include <functional>
+#include <any>
 
 namespace Yggdrasil {
 
@@ -137,7 +138,7 @@ public:
 
 
 
-using callback_functor = std::function<void(buf&, buf&, int)>;
+using callback_functor = std::function<void(buf&, buf&, int, std::any)>;
 
 class UserObject : public AudioObject
 {
@@ -145,7 +146,7 @@ class UserObject : public AudioObject
 
 public:
 	callback_functor callback = nullptr;
-
+	std::any user_data;
     UserObject(std::string);
 };
 

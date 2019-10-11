@@ -23,13 +23,14 @@ bool SymbolTable::create_object(std::string name, std::string args)
 	return false;
 }
 
-void SymbolTable::create_user_object(std::string name, uint inputs, uint outputs, callback_functor callback)
+void SymbolTable::create_user_object(std::string name, uint inputs, uint outputs, std::any user_data, callback_functor callback)
 {
 	bool success = create_object<UserObject>(name, "mk " + name + " " + name + " " + std::to_string(inputs) + " " + std::to_string(outputs));
 	if (!success) return;
 
 	UserObject* object = static_cast<UserObject*>(table[name].get());
 	object->callback = callback;
+	object->user_data = user_data;
 }
 
 

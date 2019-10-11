@@ -35,7 +35,7 @@ public:
 	static void connect_objects(SymbolTable&, std::string, uint, std::string, uint);
 
 	static void add_directive(std::string, directive_functor);
-	void create_user_object(std::string, uint, uint, callback_functor);
+	void create_user_object(std::string, uint, uint, std::any, callback_functor);
 											  
 	void make_patch(std::istream&);
 
