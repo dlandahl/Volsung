@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.9)
 project(Yggdrasil)
 
@@ -16,7 +17,7 @@ set_target_properties(Yggdrasil PROPERTIES
                       ARCHIVE_OUTPUT_DIRECTORY ../lib)
 
 add_executable( TestProgram
-                test/Yggdrasil.cpp ) 
+                test/TestProgram.cpp ) 
 
 target_link_libraries( TestProgram
                        Yggdrasil )

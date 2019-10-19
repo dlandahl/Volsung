@@ -16,7 +16,7 @@ ct lpf(0) -> noise(0)
 
 
 
-mk osc~ modulator 0.4
+mk modulator: osc~ 0.4
 alias y = (0)modulator
 
 
@@ -34,9 +34,9 @@ type custom_object (1, 2) [
 	ct frequency -> out(0)
 ]
 
-mk custom_object thing 200
+mk thing: custom_object 200
 ct x -> thing(0)
 
 ct osc_bank(0) ~> osc_bank(0)
 
-slice osc_bank [1:-2] some_of_the_oscillators
+slice some_of_the_oscillators: osc_bank [1:-2]

@@ -12,7 +12,6 @@ namespace Yggdrasil {
 
 inline float          SAMPLE_RATE = 44100.0f;
 inline unsigned const BLOCKSIZE   = 1;
-#define BUFFSIZE    44100
 #define PI          3.14159265f
 #define TAU         6.28318530f
 

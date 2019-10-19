@@ -27,12 +27,14 @@ struct AudioConnector
 
 class CircularBuffer
 {
-	std::array<float, BUFFSIZE>* stream;
+	std::vector<float>* stream;
+	std::size_t size = BLOCKSIZE;
 	int wval;
 
 public:
 	CircularBuffer();
 	~CircularBuffer();
+	void resize_stream(int size);
 	float& operator[](int n);
 };
 

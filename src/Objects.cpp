@@ -20,6 +20,7 @@ AddObject::AddObject(std::string arg)
 }
 
 
+
 void CrushObject::run(buf &in, buf &out, int index)
 {
 	if(samples_to_repeat <= ++samples_repeated)
@@ -43,6 +44,7 @@ CrushObject::CrushObject(std::string args)
 }
 
 
+
 void DelayObject::run(buf &in, buf &out, int index)
 {
 	out[0][index] = in[0][index - sample_delay];
@@ -52,6 +54,7 @@ DelayObject::DelayObject(std::string arg)
 {
 	init(2, 1, arg, { &sample_delay });
 	set_defval(&sample_delay, sample_delay, 1);
+	request_buffer_size(sample_delay + 1);
 }
 
 
@@ -90,7 +93,6 @@ void FileoutObject::finish()
 FileoutObject::FileoutObject(std::string filename) :
 	filename(split_by(filename, ' ')[3])
 { set_io(1, 0); }
-
 
 
 
@@ -169,6 +171,7 @@ SquareObject::SquareObject(std::string args)
 }
 
 
+
 void UserObject::run(buf& in, buf& out, int index)
 {
 	if (callback)
@@ -181,6 +184,7 @@ UserObject::UserObject(std::string args)
 	get_float_args(args, { &inputs, &outputs });
 	set_io(inputs, outputs);
 }
+
 
 
 }

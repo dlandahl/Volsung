@@ -26,12 +26,14 @@ private:
 	std::vector<CircularBuffer> in, out;
 	std::vector<linked_value> linked_values;
 	int index = 0;
-
+	int buffer_size = BLOCKSIZE;
+	
 protected:
 	virtual void run(buf&, buf&, int) = 0;
 	void set_io(int inputs, int outputs);
 	void get_float_args(std::string, std::vector<float*>);
 	void init(int, int, std::string, std::vector<float*>);
+	void request_buffer_size(int requested_size);
 
 	void set_defval(float*, float, int);
 

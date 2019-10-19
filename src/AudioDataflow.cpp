@@ -28,7 +28,7 @@ void BlockBuffer::write_block(Block b)
 
 CircularBuffer::CircularBuffer()
 {
-	stream = new std::array<float, BUFFSIZE>;
+	stream = new std::vector<float>(BLOCKSIZE);
 }
 
 CircularBuffer::~CircularBuffer()
@@ -38,9 +38,15 @@ CircularBuffer::~CircularBuffer()
 	
 float& CircularBuffer::operator[](int n)
 {
-	while (n < 0) n += BUFFSIZE;
-	while (n >= BUFFSIZE) n -= BUFFSIZE;
+	while (n < 0) n += size;
+	while (n >= size) n -= size;
 	return (*stream)[n];
+}
+
+void CircularBuffer::resize_stream(int new_size)
+{
+	size = new_size;
+	stream->resize(new_size);
 }
 
 bool AudioInput::is_connected() 

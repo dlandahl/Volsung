@@ -70,7 +70,6 @@ void SymbolTable::make_patch(std::istream &in_stream)
 		if (starts_with(cmd, "mk "))
 		{
 			auto mk_cmd = split_by(cmd, ' ');
-			log("Making:\t\t" + cmd, 1); 
 
 			if (mk_cmd[1] == "osc")
 				{ create_object<OscillatorObject>(mk_cmd[2], cmd); }
@@ -102,7 +101,7 @@ void SymbolTable::make_patch(std::istream &in_stream)
 			if (mk_cmd[1] == "drive")
 				{ create_object<DriveObject>     (mk_cmd[2], cmd); }
 				
-			else { log("Bad make command"); }
+			else { log("Bad make command\n" + cmd); }
 
 		}
 

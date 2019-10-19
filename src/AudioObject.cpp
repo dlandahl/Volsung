@@ -37,7 +37,7 @@ void AudioObject::implement()
 		outputs[i].write_block(b);
 	}
 	index += BLOCKSIZE;
-	if (index >= BUFFSIZE) index -= BUFFSIZE;
+	if (index >= buffer_size) index -= buffer_size;
 }
 
 bool AudioObject::is_connected(uint in)
@@ -77,6 +77,13 @@ void AudioObject::set_io(int num_inputs, int num_outputs)
 
 	out.resize(num_outputs);
 	in.resize(num_inputs);
+}
+
+void AudioObject::request_buffer_size(int count)
+{
+	for (auto& buffer : in) buffer.resize_stream(count);
+	for (auto& buffer : out) buffer.resize_stream(count);
+	buffer_size = count;
 }
 
 void AudioObject::set_defval(float* parameter, float default_value, int input)
