@@ -13,7 +13,7 @@
 namespace Yggdrasil {
 
 template<class obj>
-bool SymbolTable::create_object(std::string name, std::string args)
+bool Program::create_object(std::string name, std::string args)
 {
 	if (table.count(name) == 0) {
 		table[name] = std::make_unique<obj>(args);
@@ -23,7 +23,7 @@ bool SymbolTable::create_object(std::string name, std::string args)
 	return false;
 }
 
-void SymbolTable::create_user_object(std::string name, uint inputs, uint outputs, std::any user_data, callback_functor callback)
+void Program::create_user_object(std::string name, uint inputs, uint outputs, std::any user_data, callback_functor callback)
 {
 	bool success = create_object<UserObject>(name, "mk " + name + " " + name + " " + std::to_string(inputs) + " " + std::to_string(outputs));
 	if (!success) return;
@@ -34,7 +34,7 @@ void SymbolTable::create_user_object(std::string name, uint inputs, uint outputs
 }
 
 
-void SymbolTable::connect_objects(
+void Program::connect_objects(
 	std::unique_ptr<AudioObject> &a, uint out,
     std::unique_ptr<AudioObject> &b, uint in)
 {
@@ -45,14 +45,14 @@ void SymbolTable::connect_objects(
 			+ a->name + ">" + b->name);
 }
 
-void SymbolTable::connect_objects(SymbolTable &st,
+void Program::connect_objects(Program &st,
                                   std::string a, uint out,
 	                              std::string b, uint in)
 {
 	st.connect_objects(st.table[a], out, st.table[b], in);
 }
 
-void SymbolTable::make_patch(std::istream &in_stream)
+void Program::make_graph(std::istream &in_stream)
 {
 	std::string cmd = ";";
 	
@@ -156,24 +156,24 @@ void SymbolTable::make_patch(std::istream &in_stream)
 	}
 }
 
-void SymbolTable::run()
+void Program::run()
 {
 	for (auto const& entry : table)
 		entry.second->implement();
 }
 
-void SymbolTable::finish()
+void Program::finish()
 {
 	for (auto const& entry : table)
 		entry.second->finish();
 }
 
-void SymbolTable::reset()
+void Program::reset()
 {
 	table.clear();
 }
 
-void SymbolTable::add_directive(std::string name, directive_functor function)
+void Program::add_directive(std::string name, directive_functor function)
 {
 	if (!custom_directives.count(name))
 		custom_directives[name] = function;
