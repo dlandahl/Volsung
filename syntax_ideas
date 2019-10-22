@@ -1,6 +1,6 @@
 
-mk osc: osc~ 400        ; Make a thing (object?)
-ct osc(0) -> (0)output  ; Connect a thing
+mk my_osc: osc~ 400        ; Make a thing (object?)
+ct my_osc(0) -> (0)output  ; Connect a thing
 
 const x 200             ; Constants
 ct x -> osc(0)
