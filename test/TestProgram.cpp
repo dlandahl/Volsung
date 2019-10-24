@@ -9,9 +9,9 @@ using namespace Yggdrasil;
 
 int main(int argc, char ** argv)
 {
-	Program st;
+	Program prog;
 
-	st.configure_io(1, 1);
+	prog.configure_io(1, 1);
 	
 	debug_callback = [] (std::string message) { std::cout << message; };
 
@@ -27,8 +27,8 @@ int main(int argc, char ** argv)
  		st.make_graph(std::cin);
 	*/
 
-	std::string code = "mk mult mult 5\nct input0>mult0\nct mult0>output0\ndone\n";
-	st.make_graph(std::stringstream(code));
+	std::string code = "mk mult mult 5\nmk delay delay 10\nct input0>mult0\nct mult0>delay0\nct delay0>output0\ndone\n";
+	prog.make_graph(std::stringstream(code));
 	
-	for (uint n = 0; n < 100; n++) std::cout << st.run(n) << '\n';
+	for (uint n = 0; n < 100; n++) std::cout << prog.run(n) << '\n';
 }

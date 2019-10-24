@@ -62,7 +62,7 @@ void Program::make_graph(std::istream &&in_stream)
 		cmd = split_by(cmd, ';')[0];
 
         for (uint n = 1; n < cmd.size(); n++) {
-            while (cmd[n] == ' ' && cmd[n-1] == ' ') cmd.erase(n, 1);
+            while (cmd[n] == cmd[n-1] == ' ') cmd.erase(n, 1);
         }
         while (cmd.front() == ' ') cmd.erase(0, 1);
         while (cmd.back() == ' ')  cmd.pop_back();

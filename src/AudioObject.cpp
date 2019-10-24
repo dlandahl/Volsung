@@ -18,7 +18,6 @@ void AudioObject::implement()
 		in[n][index] = value;
 	}
 
-
 	for (auto const& value : linked_values)
 		if (inputs[value.input].is_connected())
 			*value.parameter = in[value.input][index];

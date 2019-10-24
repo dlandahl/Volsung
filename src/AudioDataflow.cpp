@@ -3,28 +3,17 @@
 #include "AudioDataflow.h"
 
 namespace Yggdrasil {
-
-CircularBuffer::CircularBuffer()
-{
-	stream = new std::vector<float>(BLOCKSIZE);
-}
-
-CircularBuffer::~CircularBuffer()
-{
-	delete stream;
-}
 	
 float& CircularBuffer::operator[](int n)
 {
-	while (n < 0) n += size;
-	while (n >= size) n -= size;
-	return (*stream)[n];
+	while (n < 0) n += stream.size();
+	while (n >= stream.size()) n -= stream.size();
+	return stream[n];
 }
 
 void CircularBuffer::resize_stream(int new_size)
 {
-	size = new_size;
-	stream->resize(new_size);
+	stream.resize(new_size);
 }
 
 bool AudioInput::is_connected() 

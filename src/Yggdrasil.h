@@ -11,7 +11,6 @@
 namespace Yggdrasil {
 
 inline float          SAMPLE_RATE = 44100.0f;
-inline unsigned const BLOCKSIZE   = 1;
 #define PI          3.14159265f
 #define TAU         6.28318530f
 
@@ -31,7 +30,7 @@ int sign(T val)
 
 inline int debug_level = 0;
 
-inline std::function<void(std::string)> debug_callback = [] (std::string message) { std::cout << message; };;
+inline std::function<void(std::string)> debug_callback = [] (std::string message) { std::cout << message; };
 
 inline void log(std::string message, int level=0)
 {

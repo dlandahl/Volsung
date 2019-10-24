@@ -26,7 +26,7 @@ private:
 	std::vector<CircularBuffer> in, out;
 	std::vector<linked_value> linked_values;
 	int index = 0;
-	int buffer_size = BLOCKSIZE;
+	int buffer_size = 1;
 	
 protected:
 	virtual void run(buf&, buf&, int) = 0;
