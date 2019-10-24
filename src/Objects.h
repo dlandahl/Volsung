@@ -1,10 +1,12 @@
 #pragma once
 
-#include "AudioObject.h"
+#include <any>
 #include <string>
 #include <random>
 #include <functional>
-#include <any>
+
+#include "Patch.h"
+#include "AudioObject.h"
 
 namespace Yggdrasil {
 
@@ -143,11 +145,22 @@ using callback_functor = std::function<void(buf&, buf&, int, std::any)>;
 class UserObject : public AudioObject
 {
 	void run(buf&, buf&, int) override;
+	friend void Program::create_user_object(std::string, uint, uint, std::any, callback_functor);
 
-public:
 	callback_functor callback = nullptr;
 	std::any user_data;
+public:
     UserObject(std::string);
+};
+
+
+
+class AudioInputObject : public AudioObject
+{
+	void run(buf&, buf&, int) override;
+	std::queue<float> data;
+public:
+	
 };
 
 }
