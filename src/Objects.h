@@ -4,9 +4,10 @@
 #include <string>
 #include <random>
 #include <functional>
+#include <queue>
 
-#include "Patch.h"
 #include "AudioObject.h"
+#include "Patch.h"
 
 namespace Yggdrasil {
 
@@ -140,7 +141,7 @@ public:
 
 
 
-using callback_functor = std::function<void(buf&, buf&, int, std::any)>;
+
 
 class UserObject : public AudioObject
 {
@@ -158,9 +159,20 @@ public:
 class AudioInputObject : public AudioObject
 {
 	void run(buf&, buf&, int) override;
-	std::queue<float> data;
-public:
 	
+public:
+	std::vector<float> data;
+	AudioInputObject(std::string);
 };
+
+class AudioOutputObject : public AudioObject
+{
+	void run(buf&, buf&, int) override;
+
+public:
+	std::vector<float> data;
+	AudioOutputObject(std::string);
+};
+
 
 }

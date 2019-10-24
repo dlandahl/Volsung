@@ -28,11 +28,10 @@ void Program::create_user_object(std::string name, uint inputs, uint outputs, st
 	bool success = create_object<UserObject>(name, "mk " + name + " " + name + " " + std::to_string(inputs) + " " + std::to_string(outputs));
 	if (!success) return;
 
-	UserObject* object = static_cast<UserObject*>(table[name].get());
+	UserObject* object = get_audio_object_raw_pointer<UserObject>(name);
 	object->callback = callback;
 	object->user_data = user_data;
 }
-
 
 void Program::connect_objects(
 	std::unique_ptr<AudioObject> &a, uint out,
@@ -52,8 +51,9 @@ void Program::connect_objects(Program &st,
 	st.connect_objects(st.table[a], out, st.table[b], in);
 }
 
-void Program::make_graph(std::istream &in_stream)
+void Program::make_graph(std::istream &&in_stream)
 {
+	reset();
 	std::string cmd = ";";
 	
 	while (getline(in_stream, cmd))
@@ -162,6 +162,23 @@ void Program::run()
 		entry.second->implement();
 }
 
+float Program::run(float sample)
+{
+	if (inputs) {
+		AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
+		object->data = { 0 };
+		object->data[0] = sample;
+	}
+	run();
+	float out = 0;
+	
+	if (outputs) {
+		AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
+		out = object->data[0];
+	}
+	return out;
+}
+
 void Program::finish()
 {
 	for (auto const& entry : table)
@@ -171,12 +188,29 @@ void Program::finish()
 void Program::reset()
 {
 	table.clear();
+	
+	if (inputs) {
+		create_object<AudioInputObject>("input", "mk input input " + std::to_string(inputs));
+		AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
+		object->data.resize(inputs);
+	}
+	if (outputs) {
+		create_object<AudioOutputObject>("output", "mk output output " + std::to_string(outputs));
+		AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
+		object->data.resize(outputs);
+	}	
 }
 
 void Program::add_directive(std::string name, directive_functor function)
 {
 	if (!custom_directives.count(name))
 		custom_directives[name] = function;
+}
+
+void Program::configure_io(uint i, uint o)
+{
+	inputs = i;
+	outputs = o;
 }
 
 

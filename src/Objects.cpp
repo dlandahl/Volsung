@@ -187,5 +187,32 @@ UserObject::UserObject(std::string args)
 
 
 
+void AudioInputObject::run(buf& in, buf& out, int index)
+{
+	for (auto& output : out) output[index] = data[index];
+}
+
+AudioInputObject::AudioInputObject(std::string args)
+{
+	float outputs = 0;
+	get_float_args(args, { &outputs });
+	set_io(0, outputs);
+}
+
+
+
+void AudioOutputObject::run(buf& in, buf& out, int index)
+{
+	for (auto& input : in) data[index] = input[index];
+}
+
+AudioOutputObject::AudioOutputObject(std::string args)
+{
+	float inputs = 0;
+	get_float_args(args, { &inputs });
+	set_io(inputs, 0);
+}
+
+
 }
 

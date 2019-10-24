@@ -7,35 +7,15 @@
 
 using namespace Yggdrasil;
 
-struct UserData {
-	std::array<float, 10> data = { 0 };
-};
-
 int main(int argc, char ** argv)
 {
 	Program st;
-	UserData data;
 
-	callback_functor output_callback = [] (buf& input, buf&, int n, std::any user_data) {
-		UserData array = std::any_cast<UserData>(user_data);
-		static int count = 0;
-		if (count < array.data.size()) {
-			array.data[count] = input[0][n];
-			count++;
-		}
-	};
-
-	Program::add_directive("three", [] (std::vector<std::string> args, Program*) {
-		for (auto arg: args) log(arg);
-		for (auto arg: args) log(arg);
-		for (auto arg: args) log(arg);
-	});
-
+	st.configure_io(1, 1);
 	
-	st.create_user_object("output", 1, 0, data, output_callback);
-
 	debug_callback = [] (std::string message) { std::cout << message; };
-	
+
+	/*
  	if (argc >= 2)
  	{
  		std::ifstream file(argv[1]);
@@ -45,9 +25,10 @@ int main(int argc, char ** argv)
  	}
  	else
  		st.make_graph(std::cin);
+	*/
 
+	std::string code = "mk mult mult 5\nct input0>mult0\nct mult0>output0\ndone\n";
+	st.make_graph(std::stringstream(code));
 	
-	for (uint n = 0; n < 1000000; n++) st.run();
-    st.finish();
-
+	for (uint n = 0; n < 100; n++) std::cout << st.run(n) << '\n';
 }
