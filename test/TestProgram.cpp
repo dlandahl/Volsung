@@ -13,7 +13,7 @@ struct UserData {
 
 int main(int argc, char ** argv)
 {
-	Patch st;
+	Program st;
 	UserData data;
 
 	callback_functor output_callback = [] (buf& input, buf&, int n, std::any user_data) {
@@ -25,7 +25,7 @@ int main(int argc, char ** argv)
 		}
 	};
 
-	SymbolTable::add_directive("three", [] (std::vector<std::string> args, SymbolTable*) {
+	Program::add_directive("three", [] (std::vector<std::string> args, Program*) {
 		for (auto arg: args) log(arg);
 		for (auto arg: args) log(arg);
 		for (auto arg: args) log(arg);
@@ -40,11 +40,11 @@ int main(int argc, char ** argv)
  	{
  		std::ifstream file(argv[1]);
  
- 		if (file) st.make_patch(file);
+ 		if (file) st.make_graph(file);
  		else std::cout << "What?\n";
  	}
  	else
- 		st.make_patch(std::cin);
+ 		st.make_graph(std::cin);
 
 	
 	for (uint n = 0; n < 1000000; n++) st.run();

@@ -13,12 +13,8 @@ const cutoff 20
 ct cutoff -> *10 -> lpf(0)
 ct lpf(0) -> noise(0)
 
-
-
-
 mk modulator: osc~ 0.4
 alias y = (0)modulator
-
 
 func my_function: 7n - 3^n
 seq my_sequence: my_function[-5..5]
@@ -40,3 +36,4 @@ ct x -> thing(0)
 ct osc_bank(0) ~> osc_bank(0)
 
 slice some_of_the_oscillators: osc_bank [1:-2]
+
