@@ -12,31 +12,27 @@ void AudioObject::finish() { }
 
 void AudioObject::implement()
 {
-	for (uint i = 0; i < inputs.size(); i++)
+	for (uint n = 0; n < inputs.size(); n++)
 	{
-		Block b = inputs[i].read_block();
-		for (uint j = 0; j < BLOCKSIZE; j++)
-			in[i][j + index] = b[j];
+		float value = inputs[n].read_value();
+		in[n][index] = value;
 	}
 
-	for (uint i = 0; i < BLOCKSIZE; i++)
+
+	for (auto const& value : linked_values)
+		if (inputs[value.input].is_connected())
+			*value.parameter = in[value.input][index];
+
+	run(in, out, index);
+
+	for (uint n = 0; n < outputs.size(); n++)
 	{
-		for (auto const& value : linked_values)
-			if (inputs[value.input].is_connected())
-				*value.parameter = in[value.input][index + i];
+		float value = out[n][index];
 
-		run(in, out, index + i);
+		outputs[n].write_value(value);
 	}
-
-	for (uint i = 0; i < outputs.size(); i++)
-	{
-		Block b;
-		for (uint j = 0; j < BLOCKSIZE; j++)
-			b[j] = out[i][index + j];
-
-		outputs[i].write_block(b);
-	}
-	index += BLOCKSIZE;
+	
+	index++;
 	if (index >= buffer_size) index -= buffer_size;
 }
 

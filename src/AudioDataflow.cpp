@@ -4,28 +4,6 @@
 
 namespace Yggdrasil {
 
-float& Block::operator[](uint n)
-{
-	return sample_data[n];
-}
-
-Block BlockBuffer::read_block()
-{
-	Block b;
-
-	if (block_data.size())
-	{
-		b = block_data[0];
-		block_data.erase(block_data.begin());
-	}
-	return b;
-}
-
-void BlockBuffer::write_block(Block b)
-{
-	block_data.push_back(b);
-}
-
 CircularBuffer::CircularBuffer()
 {
 	stream = new std::vector<float>(BLOCKSIZE);
@@ -54,23 +32,21 @@ bool AudioInput::is_connected()
 	return bool(connections.size());
 }
 
-Block AudioInput::read_block()
+float AudioInput::read_value()
 {
-	Block b;
+	float value = 0;
 
 	if (is_connected())
-	{
-		for (uint j = 0; j < connections.size(); j++)
-			b = connections[j]->buffer.read_block();
-	}
+		for (uint n = 0; n < connections.size(); n++)
+			value += connections[n]->stored_value;
 
-	return b;
+	return value;
 }
 
-void AudioOutput::write_block(Block b)
+void AudioOutput::write_value(float value)
 {
-	for (uint i = 0; i < connections.size(); i++)
-		connections[i]->buffer.write_block(b);
+	for (uint n = 0; n < connections.size(); n++)
+		connections[n]->stored_value = value;
 }
 
 void AudioOutput::connect(AudioInput &other)

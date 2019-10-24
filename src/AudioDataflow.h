@@ -5,24 +5,9 @@
 
 namespace Yggdrasil {
 
-class Block
-{
-	std::array<float, BLOCKSIZE> sample_data = { 0 };
-public:
-	float& operator[](uint n);
-};
-
-struct BlockBuffer
-{
-	std::vector<Block> block_data;
-
-	Block read_block();
-	void  write_block(Block b);
-};
-
 struct AudioConnector
 {
-	BlockBuffer buffer;
+	float stored_value;
 };
 
 class CircularBuffer
@@ -41,7 +26,7 @@ public:
 struct AudioInput
 {
 	std::vector<std::shared_ptr<AudioConnector>> connections;
-	Block read_block();
+	float read_value();
 
 	bool is_connected();
 };
@@ -49,7 +34,7 @@ struct AudioInput
 struct AudioOutput
 {
 	std::vector<std::shared_ptr<AudioConnector>> connections;
-	void write_block(Block);
+	void write_value(float);
 
 	void connect(AudioInput &other);
 };
