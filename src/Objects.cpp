@@ -189,7 +189,9 @@ UserObject::UserObject(std::string args)
 
 void AudioInputObject::run(buf& in, buf& out, int index)
 {
-	for (auto& output : out) output[index] = data[index];
+	for (auto& output : out) {
+		output[index] = data[index];
+	}
 }
 
 AudioInputObject::AudioInputObject(std::string args)

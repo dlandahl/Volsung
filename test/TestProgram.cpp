@@ -27,7 +27,18 @@ int main(int argc, char ** argv)
  		st.make_graph(std::cin);
 	*/
 
-	std::string code = "mk mult mult 5\nmk delay delay 10\nct input0>mult0\nct mult0>delay0\nct delay0>output0\ndone\n";
+	std::string code =
+R"(
+
+mk mult mult 5
+mk delay delay 10
+ct input0>mult0
+ct mult0>delay0
+ct delay0>output0
+done
+
+)";
+	
 	prog.make_graph(std::stringstream(code));
 	
 	for (uint n = 0; n < 100; n++) std::cout << prog.run(n) << '\n';

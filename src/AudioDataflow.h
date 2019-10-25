@@ -12,7 +12,7 @@ struct AudioConnector
 
 class CircularBuffer
 {
-	std::vector<float> stream;
+	std::vector<float> stream = { 0.f };
 	int wval;
 
 public:

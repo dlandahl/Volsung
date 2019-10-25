@@ -158,8 +158,9 @@ void Program::make_graph(std::istream &&in_stream)
 
 void Program::run()
 {
-	for (auto const& entry : table)
+	for (auto const& entry : table) {
 		entry.second->implement();
+	}
 }
 
 float Program::run(float sample)
