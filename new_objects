@@ -1,12 +1,5 @@
-tresh~ ; Outputs 1s if input is above a certain threshold
-comp~ ; Outputs 1s if a is greater than b
-timer~ ; Outputs the time in seconds since it received a high gate
-clock~ ; Outputs a gate at specified regular intervals
-mod~ ; Floating point modulo
-abs~ ; Absolute value of input
+
 nan~ ; Outputs 1 when recieving non-real floats
-div~ ; Divide
-sub~ ; Subtract
 log~ ; Invokes the log function at rising edge
 eg~ ; Generates an envelope stage
 hpf~ ; Highpass filter
@@ -18,6 +11,8 @@ edge~ ; Edge detector
 table~ ; Stores a table
 env~ ; Peaking envelope follower
 rms~ ; Get the RMS of the signal
+saw~ ; Saw oscillator
+tri~ ; Triangle oscillatorv 
 
 Completed:
 
@@ -30,3 +25,10 @@ file~ ; Writes a signal to a file
 noise~ ; Generates white noise
 square~ ; Generates a pulse wave with variable duty cycle
 filter~ ; First order lowpass filter
+comp~ ; Outputs 1s if a is greater than b
+timer~ ; Outputs the time in seconds since it received a high gate
+clock~ ; Outputs a gate at specified regular intervals
+mod~ ; Floating point modulo
+abs~ ; Absolute value of input
+div~ ; Divide
+sub~ ; Subtract

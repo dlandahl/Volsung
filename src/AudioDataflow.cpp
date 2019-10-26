@@ -6,6 +6,7 @@ namespace Yggdrasil {
 	
 float& CircularBuffer::operator[](int n)
 {
+	n += pointer;
 	while (n < 0) n += stream.size();
 	while (n >= stream.size()) n -= stream.size();
 	return stream[n];
@@ -13,7 +14,13 @@ float& CircularBuffer::operator[](int n)
 
 void CircularBuffer::resize_stream(int new_size)
 {
-	stream.resize(new_size);
+	if (new_size >= 2) stream.resize(new_size);
+}
+
+void CircularBuffer::increment_pointer()
+{
+	pointer++;
+	if (pointer >= stream.size()) pointer -= stream.size();
 }
 
 bool AudioInput::is_connected() 

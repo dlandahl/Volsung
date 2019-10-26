@@ -71,35 +71,53 @@ void Program::make_graph(std::istream &&in_stream)
 		{
 			auto mk_cmd = split_by(cmd, ' ');
 
-			if (mk_cmd[1] == "osc")
+			if (mk_cmd[1] == "osc~")
 				{ create_object<OscillatorObject>(mk_cmd[2], cmd); }
 			else
-			if (mk_cmd[1] == "file")
+			if (mk_cmd[1] == "file~")
 				{ create_object<FileoutObject>   (mk_cmd[2], cmd); }
 			else
-			if (mk_cmd[1] == "add")
+			if (mk_cmd[1] == "add~")
 				{ create_object<AddObject>       (mk_cmd[2], cmd); }
 			else
-			if (mk_cmd[1] == "mult")
+			if (mk_cmd[1] == "mult~")
 				{ create_object<MultObject>      (mk_cmd[2], cmd); }
 			else
-			if (mk_cmd[1] == "noise")
+			if (mk_cmd[1] == "noise~")
 				{ create_object<NoiseObject>     (mk_cmd[2], cmd); }
 			else
-			if (mk_cmd[1] == "filter")
+			if (mk_cmd[1] == "filter~")
 				{ create_object<FilterObject>    (mk_cmd[2], cmd); }
 			else
-			if (mk_cmd[1] == "delay")
+			if (mk_cmd[1] == "delay~")
 				{ create_object<DelayObject>     (mk_cmd[2], cmd); }
 			else
-			if (mk_cmd[1] == "square")
+			if (mk_cmd[1] == "square~")
 				{ create_object<SquareObject>    (mk_cmd[2], cmd); }
 			else
-			if (mk_cmd[1] == "crush")
-				{ create_object<CrushObject>     (mk_cmd[2], cmd); }
-			else
-			if (mk_cmd[1] == "drive")
+			if (mk_cmd[1] == "drive~")
 				{ create_object<DriveObject>     (mk_cmd[2], cmd); }
+			else
+			if (mk_cmd[1] == "comp~")
+				{ create_object<ComparatorObject>(mk_cmd[2], cmd); }
+			else
+			if (mk_cmd[1] == "timer~")
+				{ create_object<TimerObject>     (mk_cmd[2], cmd); }
+			else
+			if (mk_cmd[1] == "clock~")
+				{ create_object<ClockObject>     (mk_cmd[2], cmd); }
+			else
+			if (mk_cmd[1] == "div~")
+				{ create_object<DivisionObject>  (mk_cmd[2], cmd); }
+			else
+			if (mk_cmd[1] == "sub~")
+				{ create_object<SubtractionObject>(mk_cmd[2], cmd); }
+			else
+			if (mk_cmd[1] == "mod~")
+				{ create_object<ModuloObject>    (mk_cmd[2], cmd); }
+			else
+			if (mk_cmd[1] == "abs~")
+				{ create_object<AbsoluteValueObject>(mk_cmd[2], cmd); }
 				
 			else { log("Bad make command\n" + cmd); }
 

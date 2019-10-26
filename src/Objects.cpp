@@ -1,16 +1,16 @@
 
 #include <fstream>
-#include <math.h>
 #include <vector>
+#include <cmath>
 
 #include "StringFormat.h"
 #include "Objects.h"
 
 namespace Yggdrasil {
 
-void AddObject::run(buf &in, buf &out, int index)
+void AddObject::run(buf &in, buf &out)
 {
-	out[0][index] = in[0][index] + default_value;
+	out[0][0] = in[0][0] + default_value;
 }
 
 AddObject::AddObject(std::string arg)
@@ -21,33 +21,9 @@ AddObject::AddObject(std::string arg)
 
 
 
-void CrushObject::run(buf &in, buf &out, int index)
+void DelayObject::run(buf &in, buf &out)
 {
-	if(samples_to_repeat <= ++samples_repeated)
-	{
-		val = in[0][index];
-
-		val *= resolution; val = (int)val;
-		val = ((float)val) / resolution;
-
-		samples_repeated = 0;
-	}
-	
-	out[0][index] = val;
-}
-
-CrushObject::CrushObject(std::string args)
-{
-	init(3, 1, args, { &resolution, &samples_to_repeat });
-	set_defval(&resolution, resolution, 1);
-	set_defval(&samples_to_repeat, samples_to_repeat, 2);
-}
-
-
-
-void DelayObject::run(buf &in, buf &out, int index)
-{
-	out[0][index] = in[0][index - sample_delay];
+	out[0][0] = in[0][-sample_delay];
 }
 
 DelayObject::DelayObject(std::string arg)
@@ -59,9 +35,9 @@ DelayObject::DelayObject(std::string arg)
 
 
 
-void DriveObject::run(buf& in, buf& out, int n)
+void DriveObject::run(buf& in, buf& out)
 {
-	out[0][n] = tanh(pregain * in[0][n]) * postgain;
+	out[0][0] = tanh(pregain * in[0][0]) * postgain;
 }
 
 DriveObject::DriveObject(std::string args)
@@ -73,18 +49,18 @@ DriveObject::DriveObject(std::string args)
 
 
 
-void FileoutObject::run(buf &in, buf &, int index)
+void FileoutObject::run(buf &in, buf &)
 {
-	data.push_back(in[0][index]);
+	data.push_back(in[0][0]);
 }
 
 void FileoutObject::finish()
 {
 	std::fstream file(filename, std::fstream::out | std::fstream::binary);
 
-	for (uint i = 0; i < data.size(); i++)
+	for (uint n = 0; n < data.size(); n++)
 	{
-		file.write((const char*)& data[i], sizeof(float));
+		file.write((const char*)& data[n], sizeof(float));
 	}
 
 	file.close();
@@ -96,13 +72,13 @@ FileoutObject::FileoutObject(std::string filename) :
 
 
 
-void FilterObject::run(buf& x, buf& y, int i)
+void FilterObject::run(buf& x, buf& y)
 {
 	b = 2 - cos(TAU * frequency / SAMPLE_RATE);
 	b = sqrt(b*b - 1) - b;
 	a = 1 + b;
 
-	y[0][i] = a*x[0][i] - b*y[0][i - 1];
+	y[0][0] = a*x[0][0] - b*y[0][-1];
 }
 
 FilterObject::FilterObject(std::string args)
@@ -113,9 +89,9 @@ FilterObject::FilterObject(std::string args)
 
 
 
-void MultObject::run(buf &in, buf &out, int i)
+void MultObject::run(buf &in, buf &out)
 {
-	out[0][i] = in[0][i] * default_value;
+	out[0][0] = in[0][0] * default_value;
 }
 
 MultObject::MultObject(std::string arg)
@@ -126,9 +102,9 @@ MultObject::MultObject(std::string arg)
 
 
 
-void NoiseObject::run(buf &, buf &out, int index)
+void NoiseObject::run(buf &, buf &out)
 {
-	out[0][index] = distribution(generator);
+	out[0][0] = distribution(generator);
 }
 
 NoiseObject::NoiseObject(std::string) :
@@ -137,9 +113,9 @@ NoiseObject::NoiseObject(std::string) :
 
 
 
-void OscillatorObject::run(buf &, buf &out, int index)
+void OscillatorObject::run(buf &, buf &out)
 {
-	out[0][index] = sinf(TAU * phase);
+	out[0][0] = sinf(TAU * phase);
 
 	phase = phase + frequency / SAMPLE_RATE;
 
@@ -154,9 +130,9 @@ OscillatorObject::OscillatorObject(std::string args) :  phase(0)
 
 
 
-void SquareObject::run(buf &, buf &out, int index)
+void SquareObject::run(buf &, buf &out)
 {	
-	out[0][index] = (float)sign<float>(sinf(TAU * phase) + pw);
+	out[0][0] = (float)sign<float>(sinf(TAU * phase) + pw);
 
 	phase = phase + frequency / SAMPLE_RATE;
 
@@ -172,10 +148,10 @@ SquareObject::SquareObject(std::string args)
 
 
 
-void UserObject::run(buf& in, buf& out, int index)
+void UserObject::run(buf& in, buf& out)
 {
 	if (callback)
-		callback(in, out, index, user_data);
+		callback(in, out, user_data);
 }
 
 UserObject::UserObject(std::string args)
@@ -187,10 +163,10 @@ UserObject::UserObject(std::string args)
 
 
 
-void AudioInputObject::run(buf& in, buf& out, int index)
+void AudioInputObject::run(buf& in, buf& out)
 {
 	for (auto& output : out) {
-		output[index] = data[index];
+		output[0] = data[0];
 	}
 }
 
@@ -203,9 +179,9 @@ AudioInputObject::AudioInputObject(std::string args)
 
 
 
-void AudioOutputObject::run(buf& in, buf& out, int index)
+void AudioOutputObject::run(buf& in, buf& out)
 {
-	for (auto& input : in) data[index] = input[index];
+	for (auto& input : in) data[0] = input[0];
 }
 
 AudioOutputObject::AudioOutputObject(std::string args)
@@ -214,6 +190,99 @@ AudioOutputObject::AudioOutputObject(std::string args)
 	get_float_args(args, { &inputs });
 	set_io(inputs, 0);
 }
+
+
+
+void ComparatorObject::run(buf &in, buf &out)
+{
+	if (in[0][0] > value) out[0][0] = 1.f;
+	else out[0][0] = 0.f;
+}
+
+ComparatorObject::ComparatorObject(std::string arg)
+{
+	init(2, 1, arg, { &value });
+	set_defval(&value, value, 1);
+}
+
+
+void TimerObject::run(buf&, buf &out)
+{
+	out[0][0] = value;
+	value += 1.f / SAMPLE_RATE;
+	if (gate_opened(0)) value = 0.f;
+}
+
+TimerObject::TimerObject(std::string arg)
+{
+	set_io(1, 1);
+}
+
+
+void ClockObject::run(buf&, buf &out)
+{
+	out[0][0] = 0;
+	if (elapsed >= interval) {
+		out[0][0] = 1;
+		elapsed = 0.f;
+	}
+	
+	elapsed += 1.f;
+}
+
+ClockObject::ClockObject(std::string arg)
+{
+	init(1, 1, arg, { &interval });
+	set_defval(&interval, interval, 0);
+}
+
+
+void DivisionObject::run(buf &in, buf &out)
+{
+	out[0][0] = in[0][0] / divisor;
+}
+
+DivisionObject::DivisionObject(std::string arg)
+{
+	init(2, 1, arg, { &divisor });
+	set_defval(&divisor, divisor, 1);
+}
+
+
+void SubtractionObject::run(buf &in, buf &out)
+{
+	out[0][0] = in[0][0] - subtrahend;
+}
+
+SubtractionObject::SubtractionObject(std::string arg)
+{
+	init(2, 1, arg, { &subtrahend });
+	set_defval(&subtrahend, subtrahend, 1);
+}
+
+
+void ModuloObject::run(buf &in, buf &out)
+{
+	out[0][0] = std::fmod(in[0][0], divisor);
+}
+
+ModuloObject::ModuloObject(std::string arg)
+{
+	init(2, 1, arg, { &divisor });
+	set_defval(&divisor, divisor, 1);
+}
+
+
+void AbsoluteValueObject::run(buf &in, buf &out)
+{
+	out[0][0] = std::fabs(in[0][0]);
+}
+
+AbsoluteValueObject::AbsoluteValueObject(std::string arg)
+{
+	set_io(1, 1);
+}
+
 
 
 }

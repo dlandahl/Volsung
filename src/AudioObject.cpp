@@ -15,23 +15,21 @@ void AudioObject::implement()
 	for (uint n = 0; n < inputs.size(); n++)
 	{
 		float value = inputs[n].read_value();
-		in[n][index] = value;
+		in[n][0] = value;
+		in[n].increment_pointer();
 	}
 
 	for (auto const& value : linked_values)
 		if (inputs[value.input].is_connected())
-			*value.parameter = in[value.input][index];
-	run(in, out, index);
+			*value.parameter = in[value.input][0];
+	run(in, out);
 
 	for (uint n = 0; n < outputs.size(); n++)
 	{
-		float value = out[n][index];
-
+		float value = out[n][0];
 		outputs[n].write_value(value);
+		out[n].increment_pointer();
 	}
-	
-	index++;
-	if (index >= buffer_size) index -= buffer_size;
 }
 
 bool AudioObject::is_connected(uint in)
@@ -83,6 +81,26 @@ void AudioObject::request_buffer_size(int count)
 void AudioObject::set_defval(float* parameter, float default_value, int input)
 {
 	linked_values.push_back(linked_value(parameter, default_value, input));
+}
+
+bool AudioObject::is_gate_high(uint input)
+{
+	if (in[input][0] >= AudioObject::gate_threshold) return true;
+	return false;
+}
+
+bool AudioObject::gate_opened(uint input)
+{
+	if (in[input][0] >= AudioObject::gate_threshold &&
+		in[input][-1] < AudioObject::gate_threshold) return true;
+	return false;
+}
+
+bool AudioObject::gate_closed(uint input)
+{
+	if (in[input][0] <   AudioObject::gate_threshold &&
+		in[input][-1] >= AudioObject::gate_threshold) return true;
+	return false;
 }
 
 }

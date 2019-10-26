@@ -12,10 +12,11 @@ struct AudioConnector
 
 class CircularBuffer
 {
-	std::vector<float> stream = { 0.f };
-	int wval;
+	std::vector<float> stream = { 0.f, 0.f };
+	uint pointer = 0;
 
 public:
+	void increment_pointer();
 	void resize_stream(int size);
 	float& operator[](int n);
 };

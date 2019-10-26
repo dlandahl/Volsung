@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <memory>
@@ -15,7 +16,7 @@ using st_type = std::unordered_map<std::string, std::unique_ptr<AudioObject>>;
 
 class Program;
 using directive_functor = std::function<void(std::vector<std::string>, Program*)>;
-using callback_functor = std::function<void(buf&, buf&, int, std::any)>;
+using callback_functor = std::function<void(buf&, buf&, std::any)>;
 
 class Program
 {
