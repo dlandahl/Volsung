@@ -1,5 +1,4 @@
 
-nan~ ; Outputs 1 when recieving non-real floats
 log~ ; Invokes the log function at rising edge
 eg~ ; Generates an envelope stage
 hpf~ ; Highpass filter
@@ -12,7 +11,11 @@ table~ ; Stores a table
 env~ ; Peaking envelope follower
 rms~ ; Get the RMS of the signal
 saw~ ; Saw oscillator
-tri~ ; Triangle oscillatorv 
+tri~ ; Triangle oscillator
+floor~ ; Floor function
+ceil~ ; Ceiling function
+int~ ; Round to the nearest integer
+apf~ ; Allpass filter
 
 Completed:
 

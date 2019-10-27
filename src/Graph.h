@@ -21,17 +21,16 @@ using callback_functor = std::function<void(buf&, buf&, std::any)>;
 class Program
 {
 	st_type table;
-
 	uint lines_parsed = 0;
 	static inline std::map<std::string, directive_functor> custom_directives;
     Program* parent = nullptr;
 
 	uint inputs = 0;
 	uint outputs = 0;
-public:
 
+public:
 	template<class>
-	bool create_object(std::string, std::string = "");
+	bool create_object(std::string);
 
 	template<class T>
 	T* get_audio_object_raw_pointer(std::string);
@@ -65,6 +64,18 @@ T* Program::get_audio_object_raw_pointer(std::string name)
 {
 	static_assert(std::is_base_of<AudioObject, T>::value, "Type must be audio object");
 	return static_cast<T*>(table[name].get());
+}
+
+template<class object>
+bool Program::create_object(std::string command)
+{
+	std::string name = split_by(command, ' ') [2];
+	if (table.count(name) == 0) {
+		table[name] = std::make_unique<object>(command);
+		return true;
+	}
+	log("Symbol '" + name + "' is already used");
+	return false;
 }
 
 }

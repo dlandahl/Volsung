@@ -23,27 +23,19 @@ R"(
 ; hello
 ; how goes it
 mk    osc~ osc 1234
-ct osc  0 >     output3487; we got stuff goin on
-done
+mk delay~ ddl 10
+ct osc  0 >     ddl0; we got stuff goin on
+ct ddl0>output0
 
 )";
 	
 	//prog.make_graph(std::stringstream(code));
 	//for (uint n = 0; n < 100; n++) std::cout << prog.run(n) << '\n';
 
-	Lexer lexer;
-	lexer.source_code = code;
+	Parser parser;
+	parser.source_code = code;
+	parser.parse_program(prog);
 
-	Token token;
-	while (true) {
-		std::cin.get();
-		token = lexer.get_next_token();
-
-		std::cout << token.type << std::endl;
-		if (std::holds_alternative<std::string>(token.value))
-			std::cout << std::get<std::string>(token.value) << std::endl;
-			
-		if (std::holds_alternative<int>(token.value))
-			std::cout << std::get<int>(token.value) << std::endl;
-	}
+	for (uint n = 0; n < 100; n++) std::cout << prog.run(n) << '\n';
+	
 }

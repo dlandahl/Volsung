@@ -10,7 +10,6 @@ cutoff -> *10 -> lpf(0)
 lpf(0) -> noise(0)
 
 modulator: osc~ 0.4
-y = (0)modulator
 
 my_function: 7*n - 3^n
 my_sequence: my_function[-5..5]
@@ -31,5 +30,11 @@ x -> thing(0)
 
 osc_bank(0) ~> osc_bank(0)
 
-some_of_the_oscillators: osc_bank [1:-2]
 
+
+list: [1, 2, 3]
+other_list: [list, 3, 4, 5]
+melody: seq~ [list, 10..20|2, 4, 3, 2, list]
+
+g(x) = 2x + x^2 + 4
+transform: func~ g

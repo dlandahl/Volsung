@@ -1,11 +1,15 @@
 
 #pragma once
+
 #include <variant>
 
 #include "Yggdrasil.h"
+#include "Graph.h"
+
+namespace Yggdrasil {
 
 enum TokenType {
-	weird,
+	nothing,
     identifier,
     object,
     numeric_literal,
@@ -13,6 +17,11 @@ enum TokenType {
     keyword,
 	newline,
 	eof
+};
+
+enum Keyword {
+	mk,
+	ct,
 };
 
 struct Token
@@ -23,49 +32,30 @@ struct Token
 
 class Lexer
 {
-public:
-    std::string source_code;
     int position = 0;
-    Token get_next_token();
-	char current() { return source_code[position]; }
-	bool is_digit() { return current() >= '0' && current() <= '9'; }
-	bool is_char() { return current() >= 'a' && current() <= 'z' || current() == '_'; }
+	char current();
+	bool is_digit();
+	bool is_char();
+
+protected:
+	Token get_next_token();
+	virtual ~Lexer() = 0;
+	uint line = 1;
+
+public:
+	std::string source_code;
 };
 
-inline Token Lexer::get_next_token()
+class Parser : public Lexer
 {
-	if (position >= source_code.size()) return Token { eof, 0 };
-	position++;
+	Token current = { nothing, 0 };
+	void error(std::string);
+	void expect(TokenType);
+	void parse_mk_command(Graph&);
+	void parse_ct_command(Graph&);
 	
-	while (current() == ' ') position++;
-	if (current() == ';') while (current() != '\n') position++;
-	if (current() == '\n') return { newline, 0 };
-	if (current() == '>') return { arrow, 0 };
-	
-	if (is_digit()) {
-		int value = 0;
-		while (is_digit()) {
-			value *= 10;
-			value += current() - '0';
-			position++;
-		}
-		position--;
-		return { numeric_literal, value };
-	}
+public:
+	void parse_program(Graph&);
+};
 
-	if (is_char()) {
-		std::string id;
-		while (is_char()) {
-			id += current();
-			position++;
-		}
-		if (id == "mk") return { keyword, 0 };
-		if (id == "ct") return { keyword, 1 };
-		if (id == "done") return { keyword, 2 };
-		if (current() == '~') { position++; return { object, id }; };
-		position--;
-		return { identifier, id };
-	}
-
-	return Token { weird, 0 };
 }

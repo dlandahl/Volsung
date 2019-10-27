@@ -7,7 +7,7 @@
 #include <queue>
 
 #include "AudioObject.h"
-#include "Patch.h"
+#include "Graph.h"
 
 namespace Yggdrasil {
 
