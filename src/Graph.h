@@ -20,7 +20,6 @@ using callback_functor = std::function<void(buf&, buf&, std::any)>;
 
 class Program
 {
-	st_type table;
 	uint lines_parsed = 0;
 	static inline std::map<std::string, directive_functor> custom_directives;
     Program* parent = nullptr;
@@ -29,6 +28,7 @@ class Program
 	uint outputs = 0;
 
 public:
+	st_type table;
 	template<class>
 	bool create_object(std::string);
 

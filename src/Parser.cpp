@@ -6,7 +6,7 @@ namespace Yggdrasil {
 
 Token Lexer::get_next_token()
 {
-	if (position >= source_code.size() - 1) return Token { eof, 0 };
+	if (position >= source_code.size() - 1) return { eof, 0 };
 	position++;
 	
 	while (current() == ' ') position++;
@@ -15,7 +15,13 @@ Token Lexer::get_next_token()
 		line++;
 		return { newline, 0 };
 	}
-	if (current() == '>') return { arrow, 0 };
+	if (current() == '-') {
+		position++;
+		if (current() == '>') return { arrow, 0 };
+		else return { error, 0 };
+	}
+	if (current() == '(') return { open_paren, 0 };
+	if (current() == ')') return { close_paren, 0 };
 	
 	if (is_digit()) {
 		int value = 0;
@@ -43,7 +49,7 @@ Token Lexer::get_next_token()
 	
 	log("Lexical Error");
 	std::cout << int(current()) << std::endl;
-	return Token { nothing, 0 };
+	return Token { error, 0 };
 }
 
 char Lexer::current()
@@ -117,6 +123,8 @@ void Parser::parse_mk_command(Graph& graph)
 
 	if (object_type == "osc") graph.create_object<OscillatorObject>(arguments);
 	else if (object_type == "add")   graph.create_object<AddObject>(arguments);
+	else if (object_type == "square")   graph.create_object<SquareObject>(arguments);
+	else if (object_type == "delay") graph.create_object<DelayObject>(arguments);
 	else if (object_type == "mult")  graph.create_object<MultObject>(arguments);
 	else if (object_type == "sub")   graph.create_object<SubtractionObject>(arguments);
 	else if (object_type == "div")   graph.create_object<DivisionObject>(arguments);
@@ -128,6 +136,7 @@ void Parser::parse_mk_command(Graph& graph)
 	else if (object_type == "comp")  graph.create_object<ComparatorObject>(arguments);
 	else if (object_type == "filter")graph.create_object<FilterObject>(arguments);
 	else if (object_type == "file")  graph.create_object<FileoutObject>(arguments);
+	else error("No such object type");
 }
 
 void Parser::parse_ct_command(Graph& graph)
@@ -135,15 +144,19 @@ void Parser::parse_ct_command(Graph& graph)
 	expect(identifier);
 	std::string output_object = std::get<std::string>(current.value);
 
+	expect(open_paren);
 	expect(numeric_literal);
 	int output_index = std::get<int>(current.value);
-
+	expect(close_paren);
+	
 	expect(arrow);
 	expect(identifier);
 	std::string input_object = std::get<std::string>(current.value);
 
+	expect(open_paren);
 	expect(numeric_literal);
 	int input_index = std::get<int>(current.value);
+	expect(close_paren);
 	
 	Program::connect_objects(graph, output_object, output_index, input_object, input_index);
 }

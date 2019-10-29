@@ -9,11 +9,13 @@
 namespace Yggdrasil {
 
 enum TokenType {
-	nothing,
+	error,
     identifier,
     object,
     numeric_literal,
     arrow,
+	open_paren,
+	close_paren,
     keyword,
 	newline,
 	eof
@@ -48,7 +50,7 @@ public:
 
 class Parser : public Lexer
 {
-	Token current = { nothing, 0 };
+	Token current = { TokenType::error, 0 };
 	void error(std::string);
 	void expect(TokenType);
 	void parse_mk_command(Graph&);

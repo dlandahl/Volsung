@@ -8,7 +8,7 @@ bell~ ; Bell filter
 snh~ ; Sample and hold
 edge~ ; Edge detector
 table~ ; Stores a table
-env~ ; Peaking envelope follower
+env~ ; Peak envelope follower
 rms~ ; Get the RMS of the signal
 saw~ ; Saw oscillator
 tri~ ; Triangle oscillator

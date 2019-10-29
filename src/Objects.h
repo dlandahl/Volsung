@@ -235,4 +235,16 @@ class AbsoluteValueObject : public AudioObject
 public:
 	AbsoluteValueObject(std::string);
 };
+
+
+class BiquadObject : public AudioObject
+{
+protected:
+	float alpha;
+	float cos_omega;
+
+	virtual void calculate_coeffs() = 0;
+	float filter(float);
+};
+
 }
