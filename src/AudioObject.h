@@ -31,8 +31,8 @@ private:
 protected:
 	virtual void run(buf&, buf&) = 0;
 	void set_io(int inputs, int outputs);
-	void get_float_args(std::string, std::vector<float*>);
-	void init(int, int, std::string, std::vector<float*>);
+	void get_float_args(std::vector<std::string>, std::vector<float*>);
+	void init(int, int, std::vector<std::string>, std::vector<float*>);
 	void request_buffer_size(int requested_size);
 
 	void set_defval(float*, float, int);

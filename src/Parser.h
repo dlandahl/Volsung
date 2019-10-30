@@ -14,22 +14,18 @@ enum TokenType {
     object,
     numeric_literal,
     arrow,
+	colon,
 	open_paren,
 	close_paren,
-    keyword,
-	newline,
+  	newline,
+	comma,
 	eof
-};
-
-enum Keyword {
-	mk,
-	ct,
 };
 
 struct Token
 {
     TokenType type;
-    std::variant<int, std::string> value;
+    std::string value = "";
 };
 
 class Lexer
@@ -50,11 +46,11 @@ public:
 
 class Parser : public Lexer
 {
-	Token current = { TokenType::error, 0 };
+	Token current = { TokenType::error, "" };
 	void error(std::string);
 	void expect(TokenType);
-	void parse_mk_command(Graph&);
-	void parse_ct_command(Graph&);
+	void parse_declaration(Graph&, std::string);
+	void parse_connection(Graph&, std::string);
 	
 public:
 	void parse_program(Graph&);

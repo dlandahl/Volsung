@@ -17,7 +17,7 @@ class AddObject : public AudioObject
 	float default_value = 1;
 
 public:
-	AddObject(std::string);
+	AddObject(std::vector<std::string>);
 };
 
 
@@ -28,7 +28,7 @@ class DelayObject : public AudioObject
 	float sample_delay = SAMPLE_RATE/5;
 
 public:
-	DelayObject(std::string);
+	DelayObject(std::vector<std::string>);
 };
 
 
@@ -41,7 +41,7 @@ class DriveObject : public AudioObject
 	void run(buf&, buf&) override;
 
 public:
-	DriveObject(std::string);
+	DriveObject(std::vector<std::string>);
 };
 
 
@@ -55,7 +55,7 @@ class FileoutObject : public AudioObject
 	std::string filename;
 	
 public:
-	FileoutObject(std::string);
+	FileoutObject(std::vector<std::string>);
 };
 
 
@@ -69,7 +69,7 @@ class FilterObject : public AudioObject
 	void run(buf&, buf&) override;
 
 public:
-	FilterObject(std::string);
+	FilterObject(std::vector<std::string>);
 };
 
 
@@ -80,7 +80,7 @@ class MultObject : public AudioObject
 	void run(buf&, buf&) override;
 
 public:
-	MultObject(std::string);
+	MultObject(std::vector<std::string>);
 };
 
 
@@ -93,7 +93,7 @@ class NoiseObject : public AudioObject
 	void run(buf&, buf&) override;
 
 public:
-	NoiseObject(std::string);
+	NoiseObject(std::vector<std::string>);
 };
 
 
@@ -106,7 +106,7 @@ class OscillatorObject : public AudioObject
 	float frequency = 100;
 
 public:
-	OscillatorObject(std::string);
+	OscillatorObject(std::vector<std::string>);
 };
 
 
@@ -120,7 +120,7 @@ class SquareObject : public AudioObject
 	float frequency = 100;
 
 public:
-	SquareObject(std::string);
+	SquareObject(std::vector<std::string>);
 };
 
 
@@ -133,7 +133,7 @@ class UserObject : public AudioObject
 	callback_functor callback = nullptr;
 	std::any user_data;
 public:
-    UserObject(std::string);
+    UserObject(std::vector<std::string>);
 };
 
 
@@ -144,7 +144,7 @@ class AudioInputObject : public AudioObject
 	
 public:
 	std::vector<float> data;
-	AudioInputObject(std::string);
+	AudioInputObject(std::vector<std::string>);
 };
 
 class AudioOutputObject : public AudioObject
@@ -153,7 +153,7 @@ class AudioOutputObject : public AudioObject
 
 public:
 	std::vector<float> data;
-	AudioOutputObject(std::string);
+	AudioOutputObject(std::vector<std::string>);
 };
 
 
@@ -167,7 +167,7 @@ class ComparatorObject : public AudioObject
 	float value = 0.f;
 
 public:
-	ComparatorObject(std::string);
+	ComparatorObject(std::vector<std::string>);
 };
 
 
@@ -178,7 +178,7 @@ class TimerObject : public AudioObject
 	float value = 0;
 
 public:
-	TimerObject(std::string);
+	TimerObject(std::vector<std::string>);
 };
 
 
@@ -190,7 +190,7 @@ class ClockObject : public AudioObject
 	float elapsed = 0;
 
 public:
-	ClockObject(std::string);
+	ClockObject(std::vector<std::string>);
 };
 
 
@@ -201,7 +201,7 @@ class DivisionObject : public AudioObject
 	float divisor = 0;
 
 public:
-	DivisionObject(std::string);
+	DivisionObject(std::vector<std::string>);
 };
 
 
@@ -212,7 +212,7 @@ class SubtractionObject : public AudioObject
 	float subtrahend = 0;
 
 public:
-	SubtractionObject(std::string);
+	SubtractionObject(std::vector<std::string>);
 };
 
 
@@ -223,7 +223,7 @@ class ModuloObject : public AudioObject
 	float divisor = 0;
 
 public:
-	ModuloObject(std::string);
+	ModuloObject(std::vector<std::string>);
 };
 
 
@@ -233,7 +233,7 @@ class AbsoluteValueObject : public AudioObject
 	void run(buf&, buf&) override;
 
 public:
-	AbsoluteValueObject(std::string);
+	AbsoluteValueObject(std::vector<std::string>);
 };
 
 

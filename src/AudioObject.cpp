@@ -38,27 +38,19 @@ bool AudioObject::is_connected(uint in)
 }
 
 void AudioObject::init(int num_inputs, int num_outputs,
-                       std::string args, std::vector<float*> float_members)
+                       std::vector<std::string> args, std::vector<float*> float_members)
 {
 	set_io(num_inputs, num_outputs);
 	get_float_args(args, float_members);
 }
 
-void AudioObject::get_float_args(std::string args, std::vector<float*> float_members)
+void AudioObject::get_float_args(std::vector<std::string> args, std::vector<float*> float_members)
 {
-	std::vector<std::string> sargl = split_by(args, ' ');
-	name = sargl[2];
-	
-	for (uint i = 0; i < float_members.size() && i < sargl.size() - 3; i++)
-	{
-        float multiplier = 1.f;
-        if (sargl[i + 3].back() == 's') {
-            multiplier = SAMPLE_RATE;
-            if (sargl[i + 3][sargl[i + 3].size() - 2] == 'm') multiplier *= 0.001;
-        }
-        
-   		try         { *float_members[i] = float(std::stof(sargl[i+3], nullptr)) * multiplier; }
-		catch (...) { std::cout << "Failed to initialize value on " << name << "\n"; }
+
+	for (uint n = 0; n < float_members.size() && n < args.size(); n++)
+	{     
+   		try         { *float_members[n] = float(std::stof(args[n], nullptr)); }
+		catch (const std::invalid_argument&) { std::cout << "Failed to initialize value on " << name << "\n"; }
 	}
 }
 

@@ -16,7 +16,7 @@ namespace Yggdrasil {
 
 void Program::create_user_object(std::string name, uint inputs, uint outputs, std::any user_data, callback_functor callback)
 {
-	bool success = create_object<UserObject>("mk " + name + " " + name + " " + std::to_string(inputs) + " " + std::to_string(outputs));
+	bool success = create_object<UserObject>(name, { std::to_string(inputs), std::to_string(outputs) });
 	if (!success) return;
 
 	UserObject* object = get_audio_object_raw_pointer<UserObject>(name);
@@ -39,7 +39,9 @@ void Program::connect_objects(Program &st,
                                   std::string a, uint out,
 	                              std::string b, uint in)
 {
-	st.connect_objects(st.table[a], out, st.table[b], in);
+	if (!st.table.count(a)) log("Object " + a + " has not been declared");
+	else if (!st.table.count(b)) log("Object " + b + " has not been declared");
+	else st.connect_objects(st.table[a], out, st.table[b], in);
 }
 
 void Program::make_graph(std::istream &&in_stream)
@@ -60,58 +62,6 @@ void Program::make_graph(std::istream &&in_stream)
 
 		if (starts_with(cmd, "mk "))
 		{
-			auto mk_cmd = split_by(cmd, ' ');
-
-			if (mk_cmd[1] == "osc~")
-				{ create_object<OscillatorObject>(cmd); }
-			else
-			if (mk_cmd[1] == "file~")
-				{ create_object<FileoutObject>   (cmd); }
-			else
-			if (mk_cmd[1] == "add~")
-				{ create_object<AddObject>       (cmd); }
-			else
-			if (mk_cmd[1] == "mult~")
-				{ create_object<MultObject>      (cmd); }
-			else
-			if (mk_cmd[1] == "noise~")
-				{ create_object<NoiseObject>     (cmd); }
-			else
-			if (mk_cmd[1] == "filter~")
-				{ create_object<FilterObject>    (cmd); }
-			else
-			if (mk_cmd[1] == "delay~")
-				{ create_object<DelayObject>     (cmd); }
-			else
-			if (mk_cmd[1] == "square~")
-				{ create_object<SquareObject>    (cmd); }
-			else
-			if (mk_cmd[1] == "drive~")
-				{ create_object<DriveObject>     (cmd); }
-			else
-			if (mk_cmd[1] == "comp~")
-				{ create_object<ComparatorObject>(cmd); }
-			else
-			if (mk_cmd[1] == "timer~")
-				{ create_object<TimerObject>     (cmd); }
-			else
-			if (mk_cmd[1] == "clock~")
-				{ create_object<ClockObject>     (cmd); }
-			else
-			if (mk_cmd[1] == "div~")
-				{ create_object<DivisionObject>  (cmd); }
-			else
-			if (mk_cmd[1] == "sub~")
-				{ create_object<SubtractionObject>(cmd); }
-			else
-			if (mk_cmd[1] == "mod~")
-				{ create_object<ModuloObject>    (cmd); }
-			else
-			if (mk_cmd[1] == "abs~")
-				{ create_object<AbsoluteValueObject>(cmd); }
-				
-			else { log("Bad make command\n" + cmd); }
-
 		}
 
 		else if (starts_with(cmd, "ct "))
@@ -200,14 +150,10 @@ void Program::reset()
 	table.clear();
 	
 	if (inputs) {
-		create_object<AudioInputObject>("mk input input " + std::to_string(inputs));
-		AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
-		object->data.resize(inputs);
+		create_object<AudioInputObject>("input", { std::to_string(inputs) });
 	}
 	if (outputs) {
-		create_object<AudioOutputObject>("mk output output " + std::to_string(outputs));
-		AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
-		object->data.resize(outputs);
+		create_object<AudioOutputObject>("output", { std::to_string(outputs) });
 	}	
 }
 

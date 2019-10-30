@@ -30,7 +30,7 @@ class Program
 public:
 	st_type table;
 	template<class>
-	bool create_object(std::string);
+	bool create_object(std::string, std::vector<std::string>);
 
 	template<class T>
 	T* get_audio_object_raw_pointer(std::string);
@@ -66,12 +66,11 @@ T* Program::get_audio_object_raw_pointer(std::string name)
 	return static_cast<T*>(table[name].get());
 }
 
-template<class object>
-bool Program::create_object(std::string command)
+template<class Object>
+bool Program::create_object(std::string name, std::vector<std::string> arguments)
 {
-	std::string name = split_by(command, ' ') [2];
 	if (table.count(name) == 0) {
-		table[name] = std::make_unique<object>(command);
+		table[name] = std::make_unique<Object>(arguments);
 		return true;
 	}
 	log("Symbol '" + name + "' is already used");
