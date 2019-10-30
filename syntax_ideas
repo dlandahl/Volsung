@@ -14,7 +14,7 @@ modulator: osc~ 0.4
 my_function: 7*n - 3^n
 my_sequence: my_function[-5..5]
 
-osc_bank: my_function[5] ~osc 100*n
+osc_bank: [my_function(5)] ~osc 100*n
 
 ; Named inputs and outputs
 modulator(0) <> osc_bank('frequency')
