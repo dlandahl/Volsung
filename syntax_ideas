@@ -1,40 +1,50 @@
 
-my_osc: osc~ 400        ; Make a thing (object?)
-my_osc(0) -> (0)output  ; Connect a thing
+my_osc: osc~ 400        ; Make a thing {object?}
+my_osc{0} -> {0}output  ; Connect a thing
 
 ; Inline arithmetic
 white_noise: noise~
 lowpass: lpf~ 400
 
-cutoff -> *10 -> lpf(0)
-lpf(0) -> noise(0)
+cutoff -> *10 -> lpf{0}
+lpf{0} -> noise{0}
 
 modulator: osc~ 0.4
 
-my_function: 7*n - 3^n
-my_sequence: my_function[-5..5]
+my_function(n): 7*n - 3^n
+my_sequence: my_function(-5..5)
 
-osc_bank: [my_function(5)] ~osc 100*n
+osc_bank_a: [5] ~osc my_function(n)
+osc_bank_b: [5] ~osc my_function(2*n)
 
 ; Named inputs and outputs
-modulator(0) <> osc_bank('frequency')
-modulator(0) -> *0.5 -> +0.5 -> osc_bank[0]('phase')
+modulator{0} <> osc_bank{'frequency'}
+modulator{0} -> *0.5 -> +0.5 -> osc_bank[0]{'phase'}
 
-custom_object: (1, 2) [
-	link frequency: _0 in(0) 100
-	ct frequency -> out(0)
+custom_object: {1, 2} [
+	link frequency: _0 in{0} 100
+	ct frequency -> out{0}
 ]
 
 thing: custom_object 200
-x -> thing(0)
+x -> thing{0}
 
-osc_bank(0) ~> osc_bank(0)
+osc_bank{0} ~> osc_bank{0}
 
 
 
 list: [1, 2, 3]
-other_list: [list, 3, 4, 5]
-melody: seq~ [list, 10..20|2, 4, 3, 2, list]
+other_list: [list, [3, 4, 5]] !cat !rev
+melody: seq~ [list, 10..20|2, [4, 3, 2], list] !cat
 
-g(x) = 2x + x^2 + 4
+g(x): 2x + x^2 + 4
 transform: func~ g
+
+; Sequence processors:
+; !cat
+; !rev
+; !interleave|other_sequence, third_sequence
+; !insert|5, 3
+; !sort
+; !rep|n
+; !loop|n

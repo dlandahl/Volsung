@@ -31,8 +31,7 @@ void Program::connect_objects(
 	if (a->outputs.size() > out && b->inputs.size() > in)
 		a->outputs[out].connect(b->inputs[in]);
 	else
-		log("Index out of range for connection "
-			+ a->name + ">" + b->name);
+		log("Index out of range for connection");
 }
 
 void Program::connect_objects(Program &st,

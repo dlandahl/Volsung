@@ -50,7 +50,7 @@ void AudioObject::get_float_args(std::vector<std::string> args, std::vector<floa
 	for (uint n = 0; n < float_members.size() && n < args.size(); n++)
 	{     
    		try         { *float_members[n] = float(std::stof(args[n], nullptr)); }
-		catch (const std::invalid_argument&) { std::cout << "Failed to initialize value on " << name << "\n"; }
+		catch (const std::invalid_argument&) { log("Failed to initialize object parameter"); }
 	}
 }
 

@@ -13,11 +13,14 @@ file(GLOB code
 add_library( Yggdrasil STATIC
              ${code} )
 
-set_target_properties(Yggdrasil PROPERTIES
-                      ARCHIVE_OUTPUT_DIRECTORY ../lib)
+set_target_properties( Yggdrasil PROPERTIES
+                       ARCHIVE_OUTPUT_DIRECTORY ../lib )
 
 add_executable( TestProgram
                 test/TestProgram.cpp ) 
 
 target_link_libraries( TestProgram
                        Yggdrasil )
+                       
+target_include_directories( TestProgram PUBLIC
+                            ../include )

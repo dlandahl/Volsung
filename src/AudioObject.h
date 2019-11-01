@@ -43,7 +43,7 @@ protected:
 
 public:
 	static constexpr float gate_threshold = .75f;
-	std::string name;
+
 
 	std::vector<AudioInput>  inputs;
 	std::vector<AudioOutput> outputs;

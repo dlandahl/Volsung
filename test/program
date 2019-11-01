@@ -1,6 +1,6 @@
 
 
-infrared_noise (1, 1): [
+infrared_noise (0, 1): [
 	
 	osc: noise~
 	filters: [5] filter~
@@ -22,16 +22,16 @@ tone{0} -> file{0}
 
 ;=========================================
 
-noise~ osc
+osc: noise~
 
-filter~ a 5
-filter~ b 5
-filter~ c 5
-filter~ d 5
-filter~ e 5
+a: filter~ 5
+b: filter~ 5
+c: filter~ 5
+d: filter~ 5
+e: filter~ 5
 
-mult~ gain 100000
-add~ offset 500
+gain: mult~ 100000
+offset: add~ 500
 
 osc{0} -> a{0}
 a{0} -> b{0}
@@ -42,10 +42,10 @@ d{0} -> e{0}
 e{0} -> gain{0}
 gain{0} -> offset{0}
 
-osc~ tone
+tone: osc~
 offset{0} -> tone{0}
 
-file~ file output.raw
+file: file~ output.raw
 tone{0} -> file{0}
 
 ;=========================================
@@ -53,16 +53,17 @@ tone{0} -> file{0}
 chord: [4] saw~ 100*n
 
 N: 20
+Q: 4
 transform(x): 40 * 2^x
 
-carrier_bands: [N] bpf~ transform(n), 4
+carrier_bands: [N] bpf~ transform(n), Q
 amps: [N] mult~
 
 chord{0}         x> carrier_bands{0}
 carrier_bands{0} => amps{0}
 
 
-mod_bands: [N] bpf~ transform(n), 4
+mod_bands: [N] bpf~ transform(n), Q
 mod_followers: [N] env~ 20ms, 20ms
 
 mod_bands{0}     => mod_followers{0}
