@@ -4,7 +4,6 @@
 #include <iostream>
 
 #include "AudioObject.h"
-#include "StringFormat.h"
 
 namespace Yggdrasil {
 

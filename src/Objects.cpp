@@ -3,7 +3,6 @@
 #include <vector>
 #include <cmath>
 
-#include "StringFormat.h"
 #include "Objects.h"
 
 namespace Yggdrasil {
