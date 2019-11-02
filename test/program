@@ -24,11 +24,13 @@ tone{0} -> file{0}
 
 osc: noise~
 
-a: filter~ 5
-b: filter~ 5
-c: filter~ 5
-d: filter~ 5
-e: filter~ 5
+corner: 5
+
+a: filter~ corner
+b: filter~ corner
+c: filter~ corner
+d: filter~ corner
+e: filter~ corner
 
 gain: mult~ 100000
 offset: add~ 500

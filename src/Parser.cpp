@@ -20,11 +20,13 @@ Token Lexer::get_next_token()
 		if (current() == '>') return { arrow, "" };
 		return { error, "" };
 	}
-	if (current() == '{') return { open_paren, "" };
-	if (current() == '}') return { close_paren, "" };
+	if (current() == '{') return { open_brace, "" };
+	if (current() == '}') return { close_brace, "" };
 	if (current() == ':') return { colon, "" };
 	if (current() == ',') return { comma, "" };
 	if (current() == '&') return { ampersand, "" };
+	if (current() == '*') return { asterisk, "" };
+	if (current() == '+') return { plus, "" };
 	
 	if (is_digit() || current() == '-') {
 		std::string value;
@@ -96,7 +98,7 @@ void Parser::parse_program(Graph& graph)
 
 			current = get_next_token();
 			if (current.type == colon) parse_declaration(id);
-			else if (current.type == open_paren) parse_connection(id);
+			else if (current.type == open_brace) parse_connection(id);
 		}
 		else if (current.type == ampersand) {
 			expect(identifier);
@@ -140,13 +142,10 @@ void Parser::parse_declaration(std::string name)
 	current = get_next_token();
 	if (!line_end()) {
 		arguments.push_back(parse_parameter());
-		current = get_next_token();
-
 		while (!line_end()) {
 			if (current.type != comma) error("Expected comma");
 			current = get_next_token();
 			arguments.push_back(parse_parameter());
-			current = get_next_token();
 		}
 	}
 
@@ -172,11 +171,21 @@ std::string Parser::parse_parameter()
 {
 	if (current.type == identifier) {
 		if (!program->symbol_exists(current.value)) return "Unknown symbol";
-		return program->get_symbol_value_string(current.value);
+		if (program->symbol_is_type<float>(current.value)) return std::to_string(parse_expression());
+		if (program->symbol_is_type<std::string>(current.value)) {
+			std::string argument = program->get_symbol_value_string(current.value);
+			current = get_next_token();
+			return argument;
+		}
 	}
 	
-	else if (current.type == numeric_literal) return current.value;
-	else if (current.type == string_literal) return current.value;
+	else if (current.type == numeric_literal) return std::to_string(parse_expression());
+	else if (current.type == string_literal)
+	{
+		std::string argument = current.value;
+		current = get_next_token();
+		return argument;
+	}
 	else error("Invalid argument for declaration");
 	return "Invalid";
 }
@@ -187,18 +196,51 @@ void Parser::parse_connection(std::string name)
 
 	expect(numeric_literal);
 	int output_index = std::stoi(current.value);
-	expect(close_paren);
+	expect(close_brace);
 	
 	expect(arrow);
 	expect(identifier);
 	std::string input_object = current.value;
 
-	expect(open_paren);
+	expect(open_brace);
 	expect(numeric_literal);
 	int input_index = std::stoi(current.value);
-	expect(close_paren);
+	expect(close_brace);
 	
 	Program::connect_objects(*program, output_object, output_index, input_object, input_index);
+}
+
+float Parser::parse_expression()
+{
+	float value = parse_product();
+	while (current.type == plus) {
+		current = get_next_token();
+		value += parse_product();
+	}
+	return value;
+}
+
+float Parser::parse_factor()
+{
+	float value = 0;
+	if (current.type == identifier) {
+		if (program->symbol_is_type<float>(current.value)) value = std::get<float>(program->symbol_table[current.value].value);
+	}
+	else if (current.type == numeric_literal) value = std::stof(current.value);
+	else error("Couldn't get value of expression factor");
+
+	current = get_next_token();
+	return value;
+}
+
+float Parser::parse_product()
+{
+	float value = parse_factor();
+	while (current.type == asterisk) {
+		current = get_next_token();
+		value *= parse_factor();
+	}
+	return value;
 }
 
 bool Parser::line_end()

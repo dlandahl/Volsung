@@ -16,11 +16,15 @@ enum TokenType {
 	string_literal,
     arrow,
 	colon,
-	open_paren,
-	close_paren,
+	open_brace,
+	close_brace,
   	newline,
 	comma,
 	ampersand,
+	plus,
+	minus,
+	slash,
+	asterisk,
 	eof
 };
 
@@ -54,6 +58,11 @@ class Parser : public Lexer
 	bool line_end();
 	void parse_declaration(std::string);
 	void parse_connection(std::string);
+
+	float parse_expression();
+	float parse_factor();
+	float parse_product();
+
 	std::string parse_parameter();
 
 	Graph* program;

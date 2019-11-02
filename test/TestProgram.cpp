@@ -24,14 +24,13 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-file_name: "My_File.raw"
-frequency: 360
+f: 220
+m: 2
+file: "test_data.raw"
 
-source: osc~ frequency
-disk: file~ file_name
+source: osc~ f * 0.5 * m
+disk: file~ file
 source{0} -> disk{0}
-
-&length 3
 
 )";
 	
@@ -39,7 +38,8 @@ source{0} -> disk{0}
 	parser.source_code = code;
 	parser.parse_program(prog);
 
-	for (uint n = 0; n < time; n++) std::cout << prog.run(n) << '\n';
+	for (uint n = 0; n < SAMPLE_RATE; n++) prog.run(n);
 	prog.finish();
 }
+
 
