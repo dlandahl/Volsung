@@ -13,6 +13,7 @@ enum TokenType {
     identifier,
     object,
     numeric_literal,
+	string_literal,
     arrow,
 	colon,
 	open_paren,
@@ -51,6 +52,7 @@ class Parser : public Lexer
 	void expect(TokenType);
 	void parse_declaration(Graph&, std::string);
 	void parse_connection(Graph&, std::string);
+	std::string parse_parameter();
 	
 public:
 	void parse_program(Graph&);

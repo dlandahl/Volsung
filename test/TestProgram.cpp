@@ -20,7 +20,7 @@ int main(int argc, char ** argv)
 R"(
 
 source: osc~ 500
-disk: file~ output
+disk: file~ "output.raw"
 source{0} -> disk{0}
 
 )";
@@ -32,7 +32,7 @@ source{0} -> disk{0}
 	parser.source_code = code;
 	parser.parse_program(prog);
 
-	for (uint n = 0; n < SAMPLE_RATE; n++) std::cout << prog.run(n) << '\n';
+	for (uint n = 0; n < 10; n++) std::cout << prog.run(n) << '\n';
 	prog.finish();
 }
 

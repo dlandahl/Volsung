@@ -7,7 +7,6 @@
 #include <sstream>
 #include <any>
 
-#include "StringFormat.h"
 #include "Yggdrasil.h"
 
 namespace Yggdrasil {
@@ -18,17 +17,31 @@ class Program;
 using directive_functor = std::function<void(std::vector<std::string>, Program*)>;
 using callback_functor = std::function<void(buf&, buf&, std::any)>;
 
+enum class Type {
+	number,
+	sequence,
+	function,
+	string
+};
+
+struct Symbol
+{
+	Type type;
+    
+};
+
 class Program
 {
 	uint lines_parsed = 0;
 	static inline std::map<std::string, directive_functor> custom_directives;
+	std::map<std::string, Symbol> symbol_table;
     Program* parent = nullptr;
 
 	uint inputs = 0;
 	uint outputs = 0;
+	st_type table;
 
 public:
-	st_type table;
 	template<class>
 	bool create_object(std::string, std::vector<std::string>);
 
@@ -42,7 +55,7 @@ public:
 
 	static void add_directive(std::string, directive_functor);
 	void create_user_object(std::string, uint, uint, std::any, callback_functor);
-											  
+
 	void make_graph(std::istream&&);
 	void configure_io(uint, uint);
 	

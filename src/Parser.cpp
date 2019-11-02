@@ -43,9 +43,19 @@ Token Lexer::get_next_token()
 			id += current();
 			position++;
 		}
-		if (current() == '~') { return { object, id }; };
+		if (current() == '~') return { object, id };
 		position--;
 		return { identifier, id };
+	}
+
+	if (current() == '"') {
+		std::string string;
+		position++;
+		while (current() != '"') {
+			string += current();
+			position++;
+		}
+		return { string_literal, string };
 	}
 	
 	log("Lexical Error");
@@ -112,13 +122,13 @@ void Parser::parse_declaration(Graph& graph, std::string name)
 	std::vector<std::string> arguments;
 	current = get_next_token();
 	if (current.type != newline && current.type != eof) {
-		arguments.push_back(current.value);
+		arguments.push_back(parse_parameter());
 		current = get_next_token();
 
 		while (current.type != newline && current.type != eof) {
 			if (current.type != comma) error("Expected comma");
 			current = get_next_token();
-			arguments.push_back(current.value);
+			arguments.push_back(parse_parameter());
 			current = get_next_token();
 		}
 	}
@@ -139,6 +149,15 @@ void Parser::parse_declaration(Graph& graph, std::string name)
 	else if (object_type == "filter")graph.create_object<FilterObject>(object_name, arguments);
 	else if (object_type == "file")  graph.create_object<FileoutObject>(object_name, arguments);
 	else error("No such object type");
+}
+
+std::string Parser::parse_parameter()
+{
+	if (current.type == identifier) return "Identifier";
+	else if (current.type == numeric_literal) return current.value;
+	else if (current.type == string_literal) return current.value;
+	else error("Invalid argument for declaration");
+	return "Invalid";
 }
 
 void Parser::parse_connection(Graph& graph, std::string name)
