@@ -18,12 +18,13 @@ Token Lexer::get_next_token()
 	if (current() == '-') {
 		position++;
 		if (current() == '>') return { arrow, "" };
-		else return { error, "" };
+		return { error, "" };
 	}
 	if (current() == '{') return { open_paren, "" };
 	if (current() == '}') return { close_paren, "" };
 	if (current() == ':') return { colon, "" };
 	if (current() == ',') return { comma, "" };
+	if (current() == '&') return { ampersand, "" };
 	
 	if (is_digit() || current() == '-') {
 		std::string value;
@@ -82,50 +83,66 @@ Lexer::~Lexer() {};
 
 
 
-
-void Parser::error(std::string error)
-{
-	log(std::to_string(line) + ": " + error);
-}
-
-void Parser::expect(TokenType expected)
-{
-	current = get_next_token();
-	if (current.type != expected) error("Expected something different " + std::to_string(expected));
-}
-
 void Parser::parse_program(Graph& graph)
 {
-	graph.reset();
+	program = &graph;
+	program->reset();
 	while (current.type != eof) {
 		current = get_next_token();
 
-		if (current.type == newline || current.type == eof) continue;
+		if (line_end()) continue;
 		else if (current.type == identifier) {
 			std::string id = current.value;
 
 			current = get_next_token();
-			if (current.type == colon) parse_declaration(graph, id);
-			if (current.type == open_paren) parse_connection(graph, id);
+			if (current.type == colon) parse_declaration(id);
+			else if (current.type == open_paren) parse_connection(id);
+		}
+		else if (current.type == ampersand) {
+			expect(identifier);
+			std::string directive = current.value;
+			std::vector<std::string> arguments;
+			current = get_next_token();
+			while (!line_end()) {
+				arguments.push_back(current.value);
+				current = get_next_token();
+			}
+			program->invoke_directive(directive, arguments);
 		}
 		else error("Expected declaration or connection" + std::to_string(current.type));
 	}
 }
 
-void Parser::parse_declaration(Graph& graph, std::string name)
+void Parser::parse_declaration(std::string name)
 {
 	std::string object_name = name;
 
-	expect(object);
+	current = get_next_token();
+
+	if (current.type == numeric_literal) {
+		float value = std::stof(current.value);
+		program->symbol_table[name] = { value };
+		expect(newline);
+		return;
+	} else if (current.type == string_literal) {
+		std::string value = current.value;
+		program->symbol_table[name] = { value };
+		expect(newline);
+		return;
+	} else if (current.type != object) {
+		error("Declaration is not an object or number");
+		return;
+	}
+	
 	std::string object_type = current.value;
 
 	std::vector<std::string> arguments;
 	current = get_next_token();
-	if (current.type != newline && current.type != eof) {
+	if (!line_end()) {
 		arguments.push_back(parse_parameter());
 		current = get_next_token();
 
-		while (current.type != newline && current.type != eof) {
+		while (!line_end()) {
 			if (current.type != comma) error("Expected comma");
 			current = get_next_token();
 			arguments.push_back(parse_parameter());
@@ -133,34 +150,38 @@ void Parser::parse_declaration(Graph& graph, std::string name)
 		}
 	}
 
-	if (object_type == "osc") graph.create_object<OscillatorObject>(object_name, arguments);
-	else if (object_type == "add")   graph.create_object<AddObject>(object_name, arguments);
-	else if (object_type == "square")   graph.create_object<SquareObject>(object_name, arguments);
-	else if (object_type == "delay") graph.create_object<DelayObject>(object_name, arguments);
-	else if (object_type == "mult")  graph.create_object<MultObject>(object_name, arguments);
-	else if (object_type == "sub")   graph.create_object<SubtractionObject>(object_name, arguments);
-	else if (object_type == "div")   graph.create_object<DivisionObject>(object_name, arguments);
-	else if (object_type == "noise") graph.create_object<NoiseObject>(object_name, arguments);
-	else if (object_type == "clock") graph.create_object<ClockObject>(object_name, arguments);
-	else if (object_type == "timer") graph.create_object<TimerObject>(object_name, arguments);
-	else if (object_type == "mod")   graph.create_object<ModuloObject>(object_name, arguments);
-	else if (object_type == "abs")   graph.create_object<AbsoluteValueObject>(object_name, arguments);
-	else if (object_type == "comp")  graph.create_object<ComparatorObject>(object_name, arguments);
-	else if (object_type == "filter")graph.create_object<FilterObject>(object_name, arguments);
-	else if (object_type == "file")  graph.create_object<FileoutObject>(object_name, arguments);
+	if (object_type == "osc") program->create_object<OscillatorObject>(object_name, arguments);
+	else if (object_type == "add")   program->create_object<AddObject>(object_name, arguments);
+	else if (object_type == "square")program->create_object<SquareObject>(object_name, arguments);
+	else if (object_type == "delay") program->create_object<DelayObject>(object_name, arguments);
+	else if (object_type == "mult")  program->create_object<MultObject>(object_name, arguments);
+	else if (object_type == "sub")   program->create_object<SubtractionObject>(object_name, arguments);
+	else if (object_type == "div")   program->create_object<DivisionObject>(object_name, arguments);
+	else if (object_type == "noise") program->create_object<NoiseObject>(object_name, arguments);
+	else if (object_type == "clock") program->create_object<ClockObject>(object_name, arguments);
+	else if (object_type == "timer") program->create_object<TimerObject>(object_name, arguments);
+	else if (object_type == "mod")   program->create_object<ModuloObject>(object_name, arguments);
+	else if (object_type == "abs")   program->create_object<AbsoluteValueObject>(object_name, arguments);
+	else if (object_type == "comp")  program->create_object<ComparatorObject>(object_name, arguments);
+	else if (object_type == "filter")program->create_object<FilterObject>(object_name, arguments);
+	else if (object_type == "file")  program->create_object<FileoutObject>(object_name, arguments);
 	else error("No such object type");
 }
 
 std::string Parser::parse_parameter()
 {
-	if (current.type == identifier) return "Identifier";
+	if (current.type == identifier) {
+		if (!program->symbol_exists(current.value)) return "Unknown symbol";
+		return program->get_symbol_value_string(current.value);
+	}
+	
 	else if (current.type == numeric_literal) return current.value;
 	else if (current.type == string_literal) return current.value;
 	else error("Invalid argument for declaration");
 	return "Invalid";
 }
 
-void Parser::parse_connection(Graph& graph, std::string name)
+void Parser::parse_connection(std::string name)
 {
 	std::string output_object = name;
 
@@ -174,12 +195,27 @@ void Parser::parse_connection(Graph& graph, std::string name)
 
 	expect(open_paren);
 	expect(numeric_literal);
-	int input_index = stoi(current.value);
+	int input_index = std::stoi(current.value);
 	expect(close_paren);
 	
-	Program::connect_objects(graph, output_object, output_index, input_object, input_index);
+	Program::connect_objects(*program, output_object, output_index, input_object, input_index);
 }
 
+bool Parser::line_end()
+{
+	return (current.type == newline || current.type == eof);
+}
+
+void Parser::error(std::string error)
+{
+	log(std::to_string(line) + ": " + error);
+}
+
+void Parser::expect(TokenType expected)
+{
+	current = get_next_token();
+	if (current.type != expected) error("Expected something different " + std::to_string(expected));
+}
 
 }
 

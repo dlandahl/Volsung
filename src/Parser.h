@@ -20,6 +20,7 @@ enum TokenType {
 	close_paren,
   	newline,
 	comma,
+	ampersand,
 	eof
 };
 
@@ -50,12 +51,15 @@ class Parser : public Lexer
 	Token current = { TokenType::error, "" };
 	void error(std::string);
 	void expect(TokenType);
-	void parse_declaration(Graph&, std::string);
-	void parse_connection(Graph&, std::string);
+	bool line_end();
+	void parse_declaration(std::string);
+	void parse_connection(std::string);
 	std::string parse_parameter();
-	
+
+	Graph* program;
 public:
 	void parse_program(Graph&);
 };
 
 }
+

@@ -91,11 +91,39 @@ void Program::add_directive(std::string name, directive_functor function)
 		custom_directives[name] = function;
 }
 
+void Program::invoke_directive(std::string name, std::vector<std::string> arguments)
+{
+	if (!custom_directives.count(name)) {
+		log("Unknown directive");
+		return;
+	}
+
+	custom_directives[name](arguments, this);
+}
+
 void Program::configure_io(uint i, uint o)
 {
 	inputs = i;
 	outputs = o;
 }
 
+void Program::add_symbol(std::string identifier, symbol_value value)
+{
+	symbol_table[identifier].value = value;
+}
+
+std::string Program::get_symbol_value_string(std::string identifier)
+{
+	if (!symbol_table.count(identifier)) return "No symbol value string: symbol not in symbol table";
+	if (symbol_is_type<float>(identifier)) return std::to_string(std::get<float>(symbol_table[identifier].value));
+	if (symbol_is_type<std::string>(identifier)) return std::get<std::string>(symbol_table[identifier].value);
+	//if (symbol_is_type<Sequence>(identifier)) return symbol_table[identifier.value];
+	return "";
+}
+
+bool Program::symbol_exists(std::string identifier)
+{
+	return symbol_table.count(identifier) == 1;
+}
 
 }

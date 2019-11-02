@@ -16,23 +16,30 @@ int main(int argc, char ** argv)
 	
 	debug_callback = [] (std::string message) { std::cout << message; };
 
+	uint time = 10;
+	Program::add_directive("length", [&time] (std::vector<std::string> arguments, Program*) {
+		time = std::stof(arguments[0]);
+	});
+
 	std::string code =
 R"(
 
-source: osc~ 500
-disk: file~ "output.raw"
+file_name: "My_File.raw"
+frequency: 360
+
+source: osc~ frequency
+disk: file~ file_name
 source{0} -> disk{0}
+
+&length 3
 
 )";
 	
-	//prog.make_graph(std::stringstream(code));
-	//for (uint n = 0; n < 100; n++) std::cout << prog.run(n) << '\n';
-
 	Parser parser;
 	parser.source_code = code;
 	parser.parse_program(prog);
 
-	for (uint n = 0; n < 10; n++) std::cout << prog.run(n) << '\n';
+	for (uint n = 0; n < time; n++) std::cout << prog.run(n) << '\n';
 	prog.finish();
 }
 
