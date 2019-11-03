@@ -18,6 +18,8 @@ enum TokenType {
 	colon,
 	open_brace,
 	close_brace,
+	open_paren,
+	close_paren,
   	newline,
 	comma,
 	ampersand,
@@ -64,7 +66,7 @@ class Parser : public Lexer
 	float parse_product();
 
 	std::string parse_parameter();
-
+	int inline_object_index = 0;
 	Graph* program;
 public:
 	void parse_program(Graph&);

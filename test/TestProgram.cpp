@@ -24,13 +24,13 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-f: 220
-m: 2
-file: "test_data.raw"
+f: 400
+gain: -0.5+1*4
 
-source: osc~ f * 0.5 * m
-disk: file~ file
-source{0} -> disk{0}
+source: osc~ f
+disk: file~ "output.raw"
+
+source{0} -> *-gain*-0.01 -> disk{0}
 
 )";
 	
@@ -41,5 +41,4 @@ source{0} -> disk{0}
 	for (uint n = 0; n < SAMPLE_RATE; n++) prog.run(n);
 	prog.finish();
 }
-
 
