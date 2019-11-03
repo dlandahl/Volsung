@@ -30,7 +30,7 @@ gain: -0.5
 source: osc~ f
 disk: file~ "output.raw"
 
-source{0} -> *0.5 -> disk{0}
+source{0} -> *-gain -> disk{0}
 
 )";
 	

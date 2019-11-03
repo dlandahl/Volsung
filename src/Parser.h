@@ -30,6 +30,28 @@ enum TokenType {
 	eof
 };
 
+inline std::map<TokenType, std::string> debug_names = {
+{ error, "Unrecognised Token" },
+{ identifier, "Identifier" },
+{ object, "Object Type" },
+{ numeric_literal, "Number" },
+{ string_literal, "String" },
+{ arrow, "Arrow" },
+{ colon, "Colon" },
+{ open_brace, "Open Brace" },
+{ close_brace, "Close Brace" },
+{ open_paren, "Open Parenthesis" },
+{ close_paren, "Close Parenthesis" },
+{ newline, "Newline" },
+{ comma, "Comma" },
+{ ampersand, "Ampersand" },
+{ plus, "Plus" },
+{ minus, "Minus" },
+{ slash, "Slash" },
+{ asterisk, "Asterisk" },
+{ eof, "End of File" }
+};
+
 struct Token
 {
     TokenType type;

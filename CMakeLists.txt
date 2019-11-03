@@ -9,7 +9,7 @@ file(GLOB code
     "src/*.h"
     "src/*.cpp"
 )
-
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors")
 add_library( Yggdrasil STATIC
              ${code} )
 
