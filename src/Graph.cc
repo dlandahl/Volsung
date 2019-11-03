@@ -5,9 +5,9 @@
 #include <string>
 #include <map>
 
-#include "Volsung.h"
-#include "Graph.h"
-#include "Objects.h"
+#include "Volsung.hh"
+#include "Graph.hh"
+#include "Objects.hh"
 
 namespace Volsung {
 

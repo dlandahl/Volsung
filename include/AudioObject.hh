@@ -5,8 +5,8 @@
 #include <string>
 #include <map>
 
-#include "Volsung.h"
-#include "AudioDataflow.h"
+#include "Volsung.hh"
+#include "AudioDataflow.hh"
 
 namespace Volsung {
 

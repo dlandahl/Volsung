@@ -3,8 +3,8 @@
 
 #include <variant>
 
-#include "Volsung.h"
-#include "Graph.h"
+#include "Volsung.hh"
+#include "Graph.hh"
 
 namespace Volsung {
 

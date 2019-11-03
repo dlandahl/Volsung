@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 
-#include "AudioObject.h"
+#include "AudioObject.hh"
 
 namespace Volsung {
 

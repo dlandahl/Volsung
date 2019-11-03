@@ -6,8 +6,8 @@
 #include <functional>
 #include <queue>
 
-#include "AudioObject.h"
-#include "Graph.h"
+#include "AudioObject.hh"
+#include "Graph.hh"
 
 namespace Volsung {
 

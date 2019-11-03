@@ -4,7 +4,6 @@
 #include <array>
 
 #include "Volsung.hh"
-#include "Parser.h"
 
 using namespace Volsung;
 
@@ -24,15 +23,15 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-f = 100
-path = "~/Documents/output.raw"
-fn(x) = -x*x
-my_seq = [0, 3, 6, 1]
+f: 100
+path: "~/Documents/output.raw"
+;fn(x): -x*x
+;my_seq: [0, 3, 6, 1]
 
 source: osc~ f
 disk: file~ path
 
-source{0} -> /2 -> disk{0}
+source{0} -> /-0.01 -> output{0}
 
 &length 10
 

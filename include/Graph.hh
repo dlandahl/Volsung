@@ -8,7 +8,7 @@
 #include <sstream>
 #include <any>
 
-#include "Volsung.h"
+#include "Volsung.hh"
 
 namespace Volsung {
 
@@ -27,6 +27,7 @@ struct Function
 {
 	std::function<float(float)> function;
 };
+
 using symbol_value = std::variant<float, Sequence, Function, std::string>;
 
 enum class Type {

@@ -1,6 +1,6 @@
 
-#include "Parser.h"
-#include "Objects.h"
+#include "Parser.hh"
+#include "Objects.hh"
 
 namespace Volsung {
 
@@ -238,9 +238,11 @@ void Parser::parse_connection(std::string name)
 float Parser::parse_expression()
 {
 	float value = parse_product();
+
 	while (current.type == plus || current.type == minus) {
 		bool subtract = current.type == minus;
 		current = get_next_token();
+
 		if (subtract) value -= parse_product();
 		else value += parse_product();
 	}
