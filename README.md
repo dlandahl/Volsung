@@ -1,49 +1,35 @@
 
+### The language that does bleep bloop
+
+Syntax:
 ```
-;
-;       Karplus-Strong
-; physical modelling synthesis
-;
-
-; === Amp Envelope ===
-; generate an envelope
-; it should be above zero to avoid phase inversion
-square env 3 -0.9995
-add shift 1
-mult div 0.5
-filter smooth 50
-
-env0>shift0
-shift0>div0
-div0>smooth0
-
-== Oscillator ===
-he volume will be controlled by the envelope
-noise osc
-mult amp 0
-osc0>amp0
-smooth0>amp1
-
-== Filtered Delay ===
-elay line with feedback loop
-delay ddl 100.227272727
-mult fb 0.95
-add sum 0
-filter lop 880
-
-amp0>sum0
-sum0>ddl0
-ddl0>lop0
-lop0>fb0
-fb0>sum1
-
-rite the output of the delay to a file
-file out out.raw
-filter soft 300
-
-ddl0>soft0
-soft0>out0
-
-done
+my_source: osc~ 400
+my_output: file~ "~/Documents/output.raw"
+my_source{0} -> my_output{0}
 ```
 
+Constants and expressions:
+```
+f: 440
+source: osc~ f
+octave: osc~ f*2
+
+disk: file~ "~/Documents/output.raw"
+source{0} -> disk{0}
+octave{0} -> disk{0}
+```
+
+Inline arithmetic and string constants:
+```
+output_path: "~/Documents/output.raw"
+
+source: noise~
+mod: osc~ 0.5
+gain: mult~
+
+source{0} -> mult{0}
+mod{0} -> *0.5 -> +0.5 -> mult{1}
+
+disk: file~ output_path
+mult{0} -> disk{0}
+```

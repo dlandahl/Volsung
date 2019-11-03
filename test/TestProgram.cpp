@@ -25,12 +25,12 @@ int main(int argc, char ** argv)
 R"(
 
 f: 400
-gain: -0.5+1*4
+gain: -0.5
 
 source: osc~ f
 disk: file~ "output.raw"
 
-source{0} -> *-gain*-0.01 -> disk{0}
+source{0} -> *0.5 -> disk{0}
 
 )";
 	
