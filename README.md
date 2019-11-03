@@ -8,7 +8,7 @@ my_output: file~ "~/Documents/output.raw"
 my_source{0} -> my_output{0}
 ```
 
-Constants and expressions:
+Constants, expressions, and comments:
 ```
 f: 440
 source: osc~ f
@@ -16,7 +16,8 @@ octave: osc~ f*2
 
 disk: file~ "~/Documents/output.raw"
 source{0} -> disk{0}
-octave{0} -> disk{0}
+octave{0} -> disk{0} ; This will cause clipping
+; Not a problem because we use 32bit PCM
 ```
 
 Inline arithmetic and string constants:
