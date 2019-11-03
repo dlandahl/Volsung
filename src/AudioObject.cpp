@@ -5,7 +5,7 @@
 
 #include "AudioObject.h"
 
-namespace Yggdrasil {
+namespace Volsung {
 
 void AudioObject::finish() { }
 

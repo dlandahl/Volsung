@@ -3,10 +3,10 @@
 #include <fstream>
 #include <array>
 
-#include "../include/YggdrasilCore.h"
+#include "Volsung.hh"
 #include "Parser.h"
 
-using namespace Yggdrasil;
+using namespace Volsung;
 
 int main(int argc, char ** argv)
 {
@@ -24,13 +24,17 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-f: 400
-gain: -0.5
+f = 100
+path = "~/Documents/output.raw"
+fn(x) = -x*x
+my_seq = [0, 3, 6, 1]
 
 source: osc~ f
-disk: file~ "output.raw"
+disk: file~ path
 
-source{0} -> *-gain -> disk{0}
+source{0} -> /2 -> disk{0}
+
+&length 10
 
 )";
 	
@@ -38,7 +42,7 @@ source{0} -> *-gain -> disk{0}
 	parser.source_code = code;
 	parser.parse_program(prog);
 
-	for (uint n = 0; n < SAMPLE_RATE; n++) prog.run(n);
+	for (uint n = 0; n < time; n++) log(std::to_string(prog.run(0.f)));
 	prog.finish();
 }
 

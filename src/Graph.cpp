@@ -5,11 +5,11 @@
 #include <string>
 #include <map>
 
-#include "Yggdrasil.h"
+#include "Volsung.h"
 #include "Graph.h"
 #include "Objects.h"
 
-namespace Yggdrasil {
+namespace Volsung {
 
 
 

@@ -8,7 +8,7 @@
 #include <functional>
 #include <map>
 
-namespace Yggdrasil {
+namespace Volsung {
 
 inline float          SAMPLE_RATE = 44100.0f;
 #define PI          3.14159265f
@@ -39,4 +39,4 @@ inline void log(std::string message, int level=0)
 
 }
 
-namespace ygg = Yggdrasil;
+namespace vlsng = Volsung;

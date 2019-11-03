@@ -8,9 +8,9 @@
 #include <sstream>
 #include <any>
 
-#include "Yggdrasil.h"
+#include "Volsung.h"
 
-namespace Yggdrasil {
+namespace Volsung {
 
 using st_type = std::unordered_map<std::string, std::unique_ptr<AudioObject>>;
 

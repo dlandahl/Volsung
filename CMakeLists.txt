@@ -1,6 +1,6 @@
 
 cmake_minimum_required(VERSION 3.9)
-project(Yggdrasil)
+project(Volsung)
 
 include_directories("src")
 set(CMAKE_CXX_STANDARD 17)
@@ -10,17 +10,18 @@ file(GLOB code
     "src/*.cpp"
 )
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors")
-add_library( Yggdrasil STATIC
+add_library( Volsung STATIC
              ${code} )
 
-set_target_properties( Yggdrasil PROPERTIES
+set_target_properties( Volsung PROPERTIES
                        ARCHIVE_OUTPUT_DIRECTORY ../lib )
 
 add_executable( TestProgram
                 test/TestProgram.cpp ) 
+target_include_directories( TestProgram PUBLIC
+                            include )
 
 target_link_libraries( TestProgram
-                       Yggdrasil )
+                       Volsung )
                        
-target_include_directories( TestProgram PUBLIC
-                            ../include )
+

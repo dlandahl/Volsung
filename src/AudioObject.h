@@ -5,10 +5,10 @@
 #include <string>
 #include <map>
 
-#include "Yggdrasil.h"
+#include "Volsung.h"
 #include "AudioDataflow.h"
 
-namespace Yggdrasil {
+namespace Volsung {
 
 struct linked_value
 {

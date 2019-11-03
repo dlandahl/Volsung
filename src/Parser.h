@@ -3,10 +3,10 @@
 
 #include <variant>
 
-#include "Yggdrasil.h"
+#include "Volsung.h"
 #include "Graph.h"
 
-namespace Yggdrasil {
+namespace Volsung {
 
 enum TokenType {
 	error,

@@ -2,7 +2,7 @@
 #include "Parser.h"
 #include "Objects.h"
 
-namespace Yggdrasil {
+namespace Volsung {
 
 Token Lexer::get_next_token()
 {

@@ -9,7 +9,7 @@
 #include "AudioObject.h"
 #include "Graph.h"
 
-namespace Yggdrasil {
+namespace Volsung {
 
 class AddObject : public AudioObject
 {

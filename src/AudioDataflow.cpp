@@ -1,8 +1,8 @@
 
-#include "Yggdrasil.h"
+#include "Volsung.h"
 #include "AudioDataflow.h"
 
-namespace Yggdrasil {
+namespace Volsung {
 	
 float& CircularBuffer::operator[](int n)
 {

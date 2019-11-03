@@ -3,7 +3,7 @@
 #include <memory>
 #include <array>
 
-namespace Yggdrasil {
+namespace Volsung {
 
 struct AudioConnector
 {

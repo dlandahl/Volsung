@@ -5,7 +5,7 @@
 
 #include "Objects.h"
 
-namespace Yggdrasil {
+namespace Volsung {
 
 void AddObject::run(buf &in, buf &out)
 {
