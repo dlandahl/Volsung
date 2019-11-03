@@ -28,9 +28,9 @@ source: noise~
 mod: osc~ 0.5
 gain: mult~
 
-source{0} -> mult{0}
-mod{0} -> *0.5 -> +0.5 -> mult{1}
+source{0} -> gain{0}
+mod{0} -> *0.5 -> +0.5 -> gain{1}
 
 disk: file~ output_path
-mult{0} -> disk{0}
+gain{0} -> disk{0}
 ```
