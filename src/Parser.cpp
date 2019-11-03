@@ -136,7 +136,7 @@ void Parser::parse_declaration(std::string name)
 		expect(newline);
 		return;
 	} else if (current.type != object) {
-		error("Declaration is not an object or number");
+		error("RHS of declaration is " + debug_names[current.type] + ", should be string, object, or expression.");
 		return;
 	}
 	
@@ -168,7 +168,7 @@ void Parser::parse_declaration(std::string name)
 	else if (object_type == "comp")  program->create_object<ComparatorObject>(object_name, arguments);
 	else if (object_type == "filter")program->create_object<FilterObject>(object_name, arguments);
 	else if (object_type == "file")  program->create_object<FileoutObject>(object_name, arguments);
-	else error("No such object type");
+	else error("No such object type: " + object_type);
 }
 
 std::string Parser::parse_parameter()
