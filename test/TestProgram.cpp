@@ -23,9 +23,9 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-f: --100
+f: -100
 
-source: add~ (f-f*3+50)*-1
+source: add~ f
 source{0} -> output{0}
 
 &length 10

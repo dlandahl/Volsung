@@ -84,6 +84,16 @@ bool Lexer::is_char()
 	return current() >= 'a' && current() <= 'z' || current() == '_';
 }
 
+bool Lexer::peek(TokenType expected)
+{
+	int old_position = position;
+	bool ret;
+	if (get_next_token().type == expected) ret = true;
+	else ret = false;
+	position = old_position;
+	return ret;
+}
+
 Lexer::~Lexer() {};
 
 
@@ -128,6 +138,7 @@ void Parser::parse_declaration(std::string name)
 	next_token();
 	if (current.type == numeric_literal || current.type == minus) {
 		float value = parse_expression();
+		next_token();
 		program->symbol_table[name] = { value };
 		return;
 	} else if (current.type == string_literal) {
@@ -146,10 +157,12 @@ void Parser::parse_declaration(std::string name)
 	next_token();
 	if (!line_end()) {
 		arguments.push_back(std::to_string(parse_expression()));
+		next_token();
 		while (!line_end()) {
-			verify(comma);
+			expect(comma);
 			next_token();
 			arguments.push_back(std::to_string(parse_expression()));
+			next_token();
 		}
 	}
 
@@ -200,7 +213,7 @@ void Parser::parse_connection(std::string name)
 		Program::connect_objects(*program, output_object, output_index, name, 0);
 		output_index = 0;
 		output_object = name;
-		verify(arrow);
+		expect(arrow);
 		next_token();
 	}
 	std::string input_object = current.value;
@@ -216,11 +229,10 @@ void Parser::parse_connection(std::string name)
 float Parser::parse_expression()
 {
 	float value = parse_product();
-
-	while (current.type == plus || current.type == minus) {
+	while (peek(plus) || peek(minus)) {
+		next_token();
 		bool subtract = current.type == minus;
 		next_token();
-
 		if (subtract) value -= parse_product();
 		else value += parse_product();
 	}
@@ -230,7 +242,8 @@ float Parser::parse_expression()
 float Parser::parse_product()
 {
 	float value = parse_factor();
-	while (current.type == asterisk || current.type == slash) {
+	while (peek(asterisk) || peek(slash)) {
+		next_token();
 		bool divide = current.type == slash;
 		next_token();
 		if (divide) value /= parse_factor();
@@ -251,15 +264,14 @@ float Parser::parse_factor()
 	else if (current.type == open_paren) {
 		next_token();
 		value = parse_expression();
-		verify(close_paren);
+		expect(close_paren);
 	}
 	else if (current.type == minus) {
 		next_token();
-		return -parse_product();
+		value = -parse_product();
 	}
 	else error("Couldn't get value of expression factor of type " + debug_names[current.type]);
 
-	next_token();
 	return value;
 }
 
