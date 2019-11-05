@@ -109,21 +109,17 @@ void Program::configure_io(uint i, uint o)
 
 void Program::add_symbol(std::string identifier, TypedValue value)
 {
-	symbol_table[identifier].value = value;
-}
-
-std::string Program::get_symbol_value_string(std::string identifier)
-{
-	if (!symbol_table.count(identifier)) return "No symbol value string: symbol not in symbol table";
-	if (symbol_is_type<float>(identifier)) return std::to_string(std::get<float>(symbol_table[identifier].value));
-	if (symbol_is_type<std::string>(identifier)) return std::get<std::string>(symbol_table[identifier].value);
-	//if (symbol_is_type<Sequence>(identifier)) return symbol_table[identifier.value];
-	return "";
+	symbol_table[identifier] = value;
 }
 
 bool Program::symbol_exists(std::string identifier)
 {
 	return symbol_table.count(identifier) == 1;
+}
+
+TypedValue Program::get_symbol_value(std::string identifier)
+{
+	return symbol_table[identifier];
 }
 
 }

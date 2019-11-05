@@ -24,9 +24,10 @@ int main(int argc, char ** argv)
 R"(
 
 f: -100
+; seq: [0, 10, 123, 5120, 10, 30]{:3}
 
-source: add~ f
-source{0} -> output{0}
+source: add~ f-f/2
+source{0} -> --f -> output{0}
 
 &length 10
 

@@ -20,15 +20,11 @@ using callback_functor = std::function<void(buf&, buf&, std::any)>;
 
 struct Sequence
 {
-	std::vector<float> sequence;
+	std::vector<float> data;
+	int size() { return data.size(); }
 };
 
-struct Function
-{
-	std::function<float(float)> function;
-};
-
-using TypedValue = std::variant<float, Sequence, Function, std::string>;
+using TypedValue = std::variant<float, std::string>;
 
 enum class Type {
 	number,
@@ -51,6 +47,7 @@ class Program
 	uint inputs = 0;
 	uint outputs = 0;
 	st_type table;
+	std::map<std::string, TypedValue> symbol_table;
 
 public:
 	template<class>
@@ -82,12 +79,13 @@ public:
 	auto end() { return std::end(table); }
 
 	
-	std::map<std::string, Symbol> symbol_table;
 
 	template<class>
 	bool symbol_is_type(std::string);
+	template<class T>
+	T get_symbol_value(std::string);
+	TypedValue get_symbol_value(std::string);
 	void add_symbol(std::string, TypedValue);
-	std::string get_symbol_value_string(std::string);
 	bool symbol_exists(std::string);
 };
 
@@ -115,8 +113,21 @@ bool Program::create_object(std::string name, std::vector<std::string> arguments
 template<class T>
 bool Program::symbol_is_type(std::string identifier)
 {
-	return (std::holds_alternative<T>(symbol_table[identifier].value));
+	if (!symbol_exists(identifier)) {
+		log("Symbol " + identifier + " does not exist, attempted to verify type");
+		return false;
+	}
+	return (std::holds_alternative<T>(symbol_table[identifier]));
 }
 
+template<class T>
+T Program::get_symbol_value(std::string identifier)
+{
+	if (!symbol_exists(identifier)) {
+		log("Symbol " + identifier + " does not exist, attempted to read value");
+	}
+	if (symbol_is_type<T>(identifier))
+		return std::get<T>(symbol_table[identifier]);	
+}
 
 }

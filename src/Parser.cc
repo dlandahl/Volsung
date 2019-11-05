@@ -103,8 +103,8 @@ void Parser::parse_program(Graph& graph)
 {
 	program = &graph;
 	program->reset();
-	program->symbol_table["sf"] = { SAMPLE_RATE };
-	program->symbol_table["tau"] = { 6.28318530f };
+	program->add_symbol("sf", SAMPLE_RATE);
+	program->add_symbol("tau", TAU);
 	while (current.type != eof) {
 		next_token();
 
@@ -139,11 +139,11 @@ void Parser::parse_declaration(std::string name)
 	if (current.type == numeric_literal || current.type == minus) {
 		float value = parse_expression();
 		next_token();
-		program->symbol_table[name] = { value };
+		program->add_symbol(name, value);;
 		return;
 	} else if (current.type == string_literal) {
 		std::string value = current.value;
-		program->symbol_table[name] = { value };
+		program->add_symbol(name, value);;
 		expect(newline);
 		return;
 	} else if (current.type != object) {
@@ -256,8 +256,8 @@ float Parser::parse_factor()
 {
 	float value = 0;
 	if (current.type == identifier) {
-		if (program->symbol_exists(current.value) && program->symbol_is_type<float>(current.value))
-			value = std::get<float>(program->symbol_table[current.value].value);
+		if (program->symbol_is_type<float>(current.value))
+			value = program->get_symbol_value<float>(current.value);
 		else error("Symbol not found: " + current.value);
 	}
 	else if (current.type == numeric_literal) value = std::stof(current.value);
@@ -294,7 +294,7 @@ Token Parser::next_token()
 void Parser::expect(TokenType expected)
 {
 	next_token();
-	if (current.type != expected) error("Got " + debug_names[current.type] + ", expected " + debug_names[expected]);
+	verify(expected);
 }
 
 void Parser::verify(TokenType expected)
