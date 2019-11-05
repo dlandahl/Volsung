@@ -107,7 +107,7 @@ void Program::configure_io(uint i, uint o)
 	outputs = o;
 }
 
-void Program::add_symbol(std::string identifier, symbol_value value)
+void Program::add_symbol(std::string identifier, TypedValue value)
 {
 	symbol_table[identifier].value = value;
 }

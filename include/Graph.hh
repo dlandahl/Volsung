@@ -28,7 +28,7 @@ struct Function
 	std::function<float(float)> function;
 };
 
-using symbol_value = std::variant<float, Sequence, Function, std::string>;
+using TypedValue = std::variant<float, Sequence, Function, std::string>;
 
 enum class Type {
 	number,
@@ -39,7 +39,7 @@ enum class Type {
 
 struct Symbol
 {
-    symbol_value value;
+    TypedValue value;
 };
 
 class Program
@@ -86,7 +86,7 @@ public:
 
 	template<class>
 	bool symbol_is_type(std::string);
-	void add_symbol(std::string, symbol_value);
+	void add_symbol(std::string, TypedValue);
 	std::string get_symbol_value_string(std::string);
 	bool symbol_exists(std::string);
 };

@@ -96,13 +96,13 @@ void Parser::parse_program(Graph& graph)
 	program->symbol_table["sf"] = { SAMPLE_RATE };
 	program->symbol_table["tau"] = { 6.28318530f };
 	while (current.type != eof) {
-		current = get_next_token();
+		next_token();
 
 		if (line_end()) continue;
 		else if (current.type == identifier) {
 			std::string id = current.value;
 
-			current = get_next_token();
+			next_token();
 			if (current.type == colon) parse_declaration(id);
 			else if (current.type == open_brace) parse_connection(id);
 		}
@@ -110,10 +110,10 @@ void Parser::parse_program(Graph& graph)
 			expect(identifier);
 			std::string directive = current.value;
 			std::vector<std::string> arguments;
-			current = get_next_token();
+			next_token();
 			while (!line_end()) {
 				arguments.push_back(current.value);
-				current = get_next_token();
+				next_token();
 			}
 			program->invoke_directive(directive, arguments);
 		}
@@ -125,7 +125,7 @@ void Parser::parse_declaration(std::string name)
 {
 	std::string object_name = name;
 
-	current = get_next_token();
+	next_token();
 	if (current.type == numeric_literal || current.type == minus) {
 		float value = parse_expression();
 		program->symbol_table[name] = { value };
@@ -143,13 +143,13 @@ void Parser::parse_declaration(std::string name)
 	std::string object_type = current.value;
 
 	std::vector<std::string> arguments;
-	current = get_next_token();
+	next_token();
 	if (!line_end()) {
-		arguments.push_back(parse_parameter());
+		arguments.push_back(std::to_string(parse_expression()));
 		while (!line_end()) {
-			if (current.type != comma) error("Expected Comma or Newline, got " + debug_names[current.type]);
-			current = get_next_token();
-			arguments.push_back(parse_parameter());
+			verify(comma);
+			next_token();
+			arguments.push_back(std::to_string(parse_expression()));
 		}
 	}
 
@@ -171,28 +171,6 @@ void Parser::parse_declaration(std::string name)
 	else error("No such object type: " + object_type);
 }
 
-std::string Parser::parse_parameter()
-{
-	if (current.type == identifier || current.type == minus) {
-		if (!program->symbol_exists(current.value)) return "Unknown symbol";
-		if (program->symbol_is_type<float>(current.value)) return std::to_string(parse_expression());
-		if (program->symbol_is_type<std::string>(current.value)) {
-			std::string argument = program->get_symbol_value_string(current.value);
-			current = get_next_token();
-			return argument;
-		}
-	}
-	else if (current.type == numeric_literal) return std::to_string(parse_expression());
-	else if (current.type == string_literal)
-	{
-		std::string argument = current.value;
-		current = get_next_token();
-		return argument;
-	}
-	else error("Invalid argument for declaration: " + debug_names[current.type] + ". Expected literal or identifier");
-	return "Invalid";
-}
-
 void Parser::parse_connection(std::string name)
 {
 	std::string output_object = name;
@@ -202,11 +180,11 @@ void Parser::parse_connection(std::string name)
 	expect(close_brace);
 	
 	expect(arrow);
-	current = get_next_token();
+	next_token();
 	while (current.type != identifier)
 	{
 		TokenType operation = current.type;
-		current = get_next_token();
+		next_token();
 		float value = parse_expression();
 		std::string name = "inline_object" + std::to_string(inline_object_index++);
 		std::vector<std::string> argument = { std::to_string(value) };
@@ -222,8 +200,8 @@ void Parser::parse_connection(std::string name)
 		Program::connect_objects(*program, output_object, output_index, name, 0);
 		output_index = 0;
 		output_object = name;
-		if (current.type != arrow) error("Expected arrow, got " + debug_names[current.type]);
-		current = get_next_token();
+		verify(arrow);
+		next_token();
 	}
 	std::string input_object = current.value;
 
@@ -241,7 +219,7 @@ float Parser::parse_expression()
 
 	while (current.type == plus || current.type == minus) {
 		bool subtract = current.type == minus;
-		current = get_next_token();
+		next_token();
 
 		if (subtract) value -= parse_product();
 		else value += parse_product();
@@ -254,7 +232,7 @@ float Parser::parse_product()
 	float value = parse_factor();
 	while (current.type == asterisk || current.type == slash) {
 		bool divide = current.type == slash;
-		current = get_next_token();
+		next_token();
 		if (divide) value /= parse_factor();
 		else value *= parse_factor();
 	}
@@ -271,17 +249,17 @@ float Parser::parse_factor()
 	}
 	else if (current.type == numeric_literal) value = std::stof(current.value);
 	else if (current.type == open_paren) {
-		current = get_next_token();
+		next_token();
 		value = parse_expression();
-		if (current.type != close_paren) error("Expected ')', got: " + debug_names[current.type]);
+		verify(close_paren);
 	}
 	else if (current.type == minus) {
-		current = get_next_token();
+		next_token();
 		return -parse_product();
 	}
 	else error("Couldn't get value of expression factor of type " + debug_names[current.type]);
 
-	current = get_next_token();
+	next_token();
 	return value;
 }
 
@@ -295,9 +273,20 @@ void Parser::error(std::string error)
 	log(std::to_string(line) + ": " + error);
 }
 
-void Parser::expect(TokenType expected)
+Token Parser::next_token()
 {
 	current = get_next_token();
+	return current;
+}
+
+void Parser::expect(TokenType expected)
+{
+	next_token();
+	if (current.type != expected) error("Got " + debug_names[current.type] + ", expected " + debug_names[expected]);
+}
+
+void Parser::verify(TokenType expected)
+{
 	if (current.type != expected) error("Got " + debug_names[current.type] + ", expected " + debug_names[expected]);
 }
 

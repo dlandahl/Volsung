@@ -23,15 +23,10 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-f: 100
-path: "~/Documents/output.raw"
-;fn(x): -x*x
-;my_seq: [0, 3, 6, 1]
+f: --100
 
-source: osc~ f
-disk: file~ path
-
-source{0} -> /-0.01 -> output{0}
+source: add~ (f-f*3+50)*-1
+source{0} -> output{0}
 
 &length 10
 

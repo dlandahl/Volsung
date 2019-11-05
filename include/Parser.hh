@@ -77,8 +77,10 @@ public:
 class Parser : public Lexer
 {
 	Token current = { TokenType::error, "" };
+	Token next_token();
 	void error(std::string);
 	void expect(TokenType);
+	void verify(TokenType);
 	bool line_end();
 	void parse_declaration(std::string);
 	void parse_connection(std::string);
@@ -87,7 +89,6 @@ class Parser : public Lexer
 	float parse_factor();
 	float parse_product();
 
-	std::string parse_parameter();
 	int inline_object_index = 0;
 	Graph* program;
 public:
