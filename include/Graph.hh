@@ -18,6 +18,13 @@ class Program;
 using directive_functor = std::function<void(std::vector<std::string>, Program*)>;
 using callback_functor = std::function<void(buf&, buf&, std::any)>;
 
+enum class Type {
+	number,
+	sequence,
+	function,
+	string
+};
+
 struct Sequence
 {
 	std::vector<float> data;
@@ -34,13 +41,13 @@ public:
 
 	template<class>
 	bool is_type();
-};
 
-enum class Type {
-	number,
-	sequence,
-	function,
-	string
+	Type get_type();
+
+	void operator+=(TypedValue);
+	void operator-=(TypedValue);
+	void operator*=(TypedValue);
+	void operator/=(TypedValue);
 };
 
 class Program
@@ -122,7 +129,7 @@ bool Program::symbol_is_type(std::string identifier)
 		log("Symbol " + identifier + " does not exist, attempted to verify type");
 		return false;
 	}
-	return symbol_table[identifier].is_type<float>();
+	return symbol_table[identifier].is_type<T>();
 }
 
 template<class T>

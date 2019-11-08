@@ -11,6 +11,38 @@
 
 namespace Volsung {
 
+Type TypedValue::get_type()
+{
+	if (is_type<float>()) return Type::number;
+	if (is_type<Sequence>()) return Type::sequence;
+	return Type::string;
+}
+
+void TypedValue::operator+=(TypedValue other)
+{
+	if (is_type<std::string>() && other.is_type<float>()) {
+		*this = get_value<std::string>() + std::to_string((int)other.get_value<float>());
+	}
+	else *this = TypedValue(get_value<float>() + other.get_value<float>());
+}
+
+
+void TypedValue::operator-=(TypedValue other)
+{
+	*this = TypedValue(get_value<float>() + other.get_value<float>());
+}
+
+void TypedValue::operator*=(TypedValue other)
+{
+	*this = TypedValue(get_value<float>() + other.get_value<float>());
+}
+
+void TypedValue::operator/=(TypedValue other)
+{
+	*this = TypedValue(get_value<float>() + other.get_value<float>());
+}
+
+
 
 
 void Program::create_user_object(std::string name, uint inputs, uint outputs, std::any user_data, callback_functor callback)

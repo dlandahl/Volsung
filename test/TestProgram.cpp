@@ -23,10 +23,11 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-f: 100
-source: osc~ f
-source{0} -> output{0}
-hello: "string"
+name: "Hello"
+other: 45
+source: osc~ 100
+disk: file~ name + other
+source{0} -> disk{0}
 
 )";
 	

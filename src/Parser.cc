@@ -154,7 +154,6 @@ void Parser::parse_declaration(std::string name)
 	next_token();
 	if (current.type == numeric_literal || current.type == minus || current.type == string_literal) {
 		TypedValue value = parse_expression();
-		next_token();
 		program->add_symbol(name, value);;
 		return;
 	} else if (current.type != object) {
@@ -247,14 +246,9 @@ TypedValue Parser::parse_expression()
 		next_token();
 		TypedValue operand = parse_product();
 
-		if (value.is_type<float>() && operand.is_type<float>())
-		{
-			float v = value.get_value<float>();
-			if (subtract) v -= operand.get_value<float>();
-			else v += operand.get_value<float>();
-			value = v;
-		}
-		else error("We only sum floats");
+		if (subtract) value -= operand;
+		else value += operand;
+		log(value.get_value<std::string>());
 	}
 	return value;
 }
@@ -268,14 +262,8 @@ TypedValue Parser::parse_product()
 		next_token();
 		TypedValue operand = parse_factor();
 
-		if (value.is_type<float>() && operand.is_type<float>())
-		{
-			float v = value.get_value<float>();
-			if (divide) v /= operand.get_value<float>();
-			else v *= operand.get_value<float>();
-			value = v;
-		}
-		else error("We only multiply floats");
+		if (divide) value /= operand;
+		else value *= operand;
 	}
 	return value;
 }
