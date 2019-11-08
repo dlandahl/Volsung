@@ -13,18 +13,21 @@ Token Lexer::get_next_token()
 {
 	if (position >= source_code.size() - 1) return { eof, "" };
 	position++;
+
 	while (current() == ' ') position++;
 	if (current() == ';') while (current() != '\n') position++;
 	if (current() == '\n') {
 		line++;
 		return { newline, "" };
 	}
+
 	if (current() == '-') {
 		position++;
 		if (current() == '>') return { arrow, "" };
 		position--;
 		return { minus, "" };
 	}
+
 	if (current() == '{') return { open_brace, "" };
 	if (current() == '}') return { close_brace, "" };
 	if (current() == '(') return { open_paren, "" };
@@ -112,7 +115,7 @@ void Parser::parse_program(Graph& graph)
 	program->add_symbol("sf", SAMPLE_RATE);
 	program->add_symbol("tau", TAU);
 	try {
-	
+
 	while (current.type != eof) {
 		next_token();
 
@@ -138,7 +141,7 @@ void Parser::parse_program(Graph& graph)
 		}
 		else error("Expected declaration or connection, got " + debug_names[current.type]);
 	}
-	
+
 	} catch (const ParseException& exception) {
 		log(std::string(exception.what()));
 	}
@@ -166,6 +169,7 @@ void Parser::parse_declaration(std::string name)
 	if (!line_end()) {
 		arguments.push_back(parse_expression());
 		next_token();
+		
 		while (!line_end()) {
 			expect(comma);
 			next_token();
@@ -206,7 +210,7 @@ void Parser::parse_connection(std::string name)
 	{
 		TokenType operation = current.type;
 		next_token();
-		TypedValue value = std::get<float>(parse_expression());
+		TypedValue value = parse_expression();
 		std::string name = "inline_object" + std::to_string(inline_object_index++);
 		std::vector<TypedValue> argument = { value };
 
@@ -230,7 +234,7 @@ void Parser::parse_connection(std::string name)
 	expect(numeric_literal);
 	int input_index = std::stoi(current.value);
 	expect(close_brace);
-
+	expect(newline);
 	Program::connect_objects(*program, output_object, output_index, input_object, input_index);
 }
 
@@ -243,11 +247,11 @@ TypedValue Parser::parse_expression()
 		next_token();
 		TypedValue operand = parse_product();
 
-		if (std::holds_alternative<float>(value) && std::holds_alternative<float>(operand))
+		if (value.is_type<float>() && operand.is_type<float>())
 		{
-			float v = std::get<float>(value);
-			if (subtract) v -= std::get<float>(operand);
-			else v += std::get<float>(operand);
+			float v = value.get_value<float>();
+			if (subtract) v -= operand.get_value<float>();
+			else v += operand.get_value<float>();
 			value = v;
 		}
 		else error("We only sum floats");
@@ -264,11 +268,11 @@ TypedValue Parser::parse_product()
 		next_token();
 		TypedValue operand = parse_factor();
 
-		if (std::holds_alternative<float>(value) && std::holds_alternative<float>(operand))
+		if (value.is_type<float>() && operand.is_type<float>())
 		{
-			float v = std::get<float>(value);
-			if (divide) v /= std::get<float>(operand);
-			else v *= std::get<float>(operand);
+			float v = value.get_value<float>();
+			if (divide) v /= operand.get_value<float>();
+			else v *= operand.get_value<float>();
 			value = v;
 		}
 		else error("We only multiply floats");
@@ -287,8 +291,10 @@ TypedValue Parser::parse_factor()
 
 		else error("Symbol not found: " + current.value);
 	}
+
 	else if (current.type == numeric_literal) value = std::stof(current.value);
 	else if (current.type == string_literal) value = current.value;
+
 	else if (current.type == open_paren) {
 		next_token();
 		value = parse_expression();
@@ -296,7 +302,7 @@ TypedValue Parser::parse_factor()
 	}
 	else if (current.type == minus) {
 		next_token();
-		value = -std::get<float>(parse_product());
+		value = -parse_product().get_value<float>();
 	}
 	else error("Couldn't get value of expression factor of type " + debug_names[current.type]);
 
@@ -311,6 +317,7 @@ bool Parser::line_end()
 void Parser::error(std::string error)
 {
 	log(std::to_string(line) + ": " + error);
+	program->reset();
 	throw ParseException();
 }
 

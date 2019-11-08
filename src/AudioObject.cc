@@ -51,9 +51,9 @@ bool AudioObject::verify_argument_types(std::vector<Type> recieved, std::vector<
 	for (uint n = 0; n < expected.size(); n++) {
 		Type value = recieved[n];
 		switch (value) {
-			case(Type::number): success &= std::holds_alternative<float>(expected[n]); break;
-			case(Type::sequence): success &= std::holds_alternative<Sequence>(expected[n]); break;
-			case(Type::string): success &= std::holds_alternative<std::string>(expected[n]); break;
+			case(Type::number): success &= expected[n].is_type<float>(); break;
+			case(Type::sequence): success &= expected[n].is_type<Sequence>(); break;
+			case(Type::string): success &= expected[n].is_type<std::string>(); break;
 		}
 	}
 	if (!success) log("Invalid argument type on object");
@@ -65,7 +65,7 @@ void AudioObject::init(int ins, int outs, std::vector<TypedValue> arguments, std
 	set_io(ins, outs);
 
 	for (uint n = 0; n < values.size(); n++) {
-		*values[n] = std::get<float>(arguments[n]);
+		*values[n] = arguments[n].get_value<float>();
 	}
 }
 

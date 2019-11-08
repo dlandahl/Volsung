@@ -22,14 +22,12 @@ int main(int argc, char ** argv)
 
 	std::string code =
 R"(
-f: 100
-a:20
-b:20
-c:12353
-d:234
 
+f: 100
 source: osc~ f
-error
+source{0} -> output{0}
+hello: "string"
+
 )";
 	
 	Parser parser;

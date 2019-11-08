@@ -77,12 +77,8 @@ void Program::reset()
 {
 	table.clear();
 	
-	if (inputs) {
-		create_object<AudioInputObject>("input", { inputs });
-	}
-	if (outputs) {
-		create_object<AudioOutputObject>("output", { outputs });
-	}	
+	if (inputs) create_object<AudioInputObject>("input", { inputs });
+	if (outputs) create_object<AudioOutputObject>("output", { outputs });
 }
 
 void Program::add_directive(std::string name, directive_functor function)

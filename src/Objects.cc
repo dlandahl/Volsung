@@ -67,7 +67,7 @@ void FileoutObject::finish()
 
 FileoutObject::FileoutObject(std::vector<TypedValue> args)
 {
-	filename = std::get<std::string>(args[0]);
+	filename = args[0].get_value<std::string>();
 	set_io(1, 0);
 }
 
@@ -158,8 +158,8 @@ void UserObject::run(buf& in, buf& out)
 UserObject::UserObject(std::vector<TypedValue> args)
 {
 	float inputs = 0, outputs = 0;
-	inputs  = std::get<float>(args[0]);
-	outputs = std::get<float>(args[1]);
+	inputs  = args[0].get_value<float>();
+	outputs = args[1].get_value<float>();
 	set_io(inputs, outputs);
 }
 
@@ -175,7 +175,7 @@ void AudioInputObject::run(buf& in, buf& out)
 AudioInputObject::AudioInputObject(std::vector<TypedValue> args)
 {
 	float outputs = 0;
-	outputs = std::get<float>(args[0]);
+	outputs = args[0].get_value<float>();
 	set_io(0, outputs);
 	data.resize(outputs);
 }
@@ -190,7 +190,7 @@ void AudioOutputObject::run(buf& in, buf& out)
 AudioOutputObject::AudioOutputObject(std::vector<TypedValue> args)
 {
 	float inputs = 0;
-	inputs = std::get<float>(args[0]);
+	inputs = args[0].get_value<float>();
 	set_io(inputs, 0);
 	data.resize(inputs);
 }

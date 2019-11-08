@@ -24,18 +24,23 @@ struct Sequence
 	int size() { return data.size(); }
 };
 
-using TypedValue = std::variant<float, std::string, Sequence>;
+using TypedValueBase = std::variant<float, std::string, Sequence>;
+class TypedValue : private TypedValueBase
+{
+	using TypedValueBase::TypedValueBase;
+public:
+	template<class T>
+	T get_value();
+
+	template<class>
+	bool is_type();
+};
 
 enum class Type {
 	number,
 	sequence,
 	function,
 	string
-};
-
-struct Symbol
-{
-    TypedValue value;
 };
 
 class Program
@@ -117,7 +122,7 @@ bool Program::symbol_is_type(std::string identifier)
 		log("Symbol " + identifier + " does not exist, attempted to verify type");
 		return false;
 	}
-	return (std::holds_alternative<T>(symbol_table[identifier]));
+	return symbol_table[identifier].is_type<float>();
 }
 
 template<class T>
@@ -127,7 +132,20 @@ T Program::get_symbol_value(std::string identifier)
 		log("Symbol " + identifier + " does not exist, attempted to read value");
 	if (!symbol_is_type<T>(identifier))
 		log("Symbol " + identifier + " is wrong type");
-	return std::get<T>(symbol_table[identifier]);	
+	return symbol_table[identifier].get_value<T>();	
+}
+
+template<class T>
+T TypedValue::get_value()
+{
+	return std::get<T>(*this);
+}
+
+template<class T>
+bool TypedValue::is_type()
+{
+	return std::holds_alternative<T>(*this);
 }
 
 }
+
