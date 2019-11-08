@@ -4,11 +4,15 @@
 
 namespace Volsung {
 
+const char* ParseException::what() const noexcept
+{
+	return "Volsung has encountered an error during parsing of the provided program and will exit the parsing stage.";
+}
+
 Token Lexer::get_next_token()
 {
 	if (position >= source_code.size() - 1) return { eof, "" };
 	position++;
-	
 	while (current() == ' ') position++;
 	if (current() == ';') while (current() != '\n') position++;
 	if (current() == '\n') {
@@ -31,7 +35,7 @@ Token Lexer::get_next_token()
 	if (current() == '*') return { asterisk, "" };
 	if (current() == '+') return { plus, "" };
 	if (current() == '/') return { slash, "" };
-	
+
 	if (is_digit()) {
 		std::string value;
 		value += current();
@@ -64,7 +68,7 @@ Token Lexer::get_next_token()
 		}
 		return { string_literal, string };
 	}
-	
+
 	log("Lexical Error");
 	return Token { error, "" };
 }
@@ -87,10 +91,12 @@ bool Lexer::is_char()
 bool Lexer::peek(TokenType expected)
 {
 	int old_position = position;
+	int old_lines = line;
 	bool ret;
 	if (get_next_token().type == expected) ret = true;
 	else ret = false;
 	position = old_position;
+	line = old_lines;
 	return ret;
 }
 
@@ -105,6 +111,8 @@ void Parser::parse_program(Graph& graph)
 	program->reset();
 	program->add_symbol("sf", SAMPLE_RATE);
 	program->add_symbol("tau", TAU);
+	try {
+	
 	while (current.type != eof) {
 		next_token();
 
@@ -115,6 +123,7 @@ void Parser::parse_program(Graph& graph)
 			next_token();
 			if (current.type == colon) parse_declaration(id);
 			else if (current.type == open_brace) parse_connection(id);
+			else error("Expected colon or open brace, got " + debug_names[current.type]);
 		}
 		else if (current.type == ampersand) {
 			expect(identifier);
@@ -129,6 +138,10 @@ void Parser::parse_program(Graph& graph)
 		}
 		else error("Expected declaration or connection, got " + debug_names[current.type]);
 	}
+	
+	} catch (const ParseException& exception) {
+		log(std::string(exception.what()));
+	}
 }
 
 void Parser::parse_declaration(std::string name)
@@ -136,32 +149,27 @@ void Parser::parse_declaration(std::string name)
 	std::string object_name = name;
 
 	next_token();
-	if (current.type == numeric_literal || current.type == minus) {
-		float value = parse_expression();
+	if (current.type == numeric_literal || current.type == minus || current.type == string_literal) {
+		TypedValue value = parse_expression();
 		next_token();
 		program->add_symbol(name, value);;
-		return;
-	} else if (current.type == string_literal) {
-		std::string value = current.value;
-		program->add_symbol(name, value);;
-		expect(newline);
 		return;
 	} else if (current.type != object) {
 		error("RHS of declaration is " + debug_names[current.type] + ", should be string, object, or expression.");
 		return;
 	}
-	
+
 	std::string object_type = current.value;
 
-	std::vector<std::string> arguments;
+	std::vector<TypedValue> arguments;
 	next_token();
 	if (!line_end()) {
-		arguments.push_back(std::to_string(parse_expression()));
+		arguments.push_back(parse_expression());
 		next_token();
 		while (!line_end()) {
 			expect(comma);
 			next_token();
-			arguments.push_back(std::to_string(parse_expression()));
+			arguments.push_back(parse_expression());
 			next_token();
 		}
 	}
@@ -191,16 +199,16 @@ void Parser::parse_connection(std::string name)
 	expect(numeric_literal);
 	int output_index = std::stoi(current.value);
 	expect(close_brace);
-	
+
 	expect(arrow);
 	next_token();
 	while (current.type != identifier)
 	{
 		TokenType operation = current.type;
 		next_token();
-		float value = parse_expression();
+		TypedValue value = std::get<float>(parse_expression());
 		std::string name = "inline_object" + std::to_string(inline_object_index++);
-		std::vector<std::string> argument = { std::to_string(value) };
+		std::vector<TypedValue> argument = { value };
 
 		switch (operation) {
 			case (plus):     program->create_object<AddObject>(name, argument); break;
@@ -209,7 +217,7 @@ void Parser::parse_connection(std::string name)
 			case (slash):    program->create_object<DivisionObject>(name, argument); break;
 			default: error("Invalid token for inline operation: " + debug_names[(TokenType) operation] + ". Expected arithmetic operator");
 		}
-		
+
 		Program::connect_objects(*program, output_object, output_index, name, 0);
 		output_index = 0;
 		output_object = name;
@@ -222,45 +230,65 @@ void Parser::parse_connection(std::string name)
 	expect(numeric_literal);
 	int input_index = std::stoi(current.value);
 	expect(close_brace);
-	
+
 	Program::connect_objects(*program, output_object, output_index, input_object, input_index);
 }
 
-float Parser::parse_expression()
+TypedValue Parser::parse_expression()
 {
-	float value = parse_product();
+	TypedValue value = parse_product();
 	while (peek(plus) || peek(minus)) {
 		next_token();
 		bool subtract = current.type == minus;
 		next_token();
-		if (subtract) value -= parse_product();
-		else value += parse_product();
+		TypedValue operand = parse_product();
+
+		if (std::holds_alternative<float>(value) && std::holds_alternative<float>(operand))
+		{
+			float v = std::get<float>(value);
+			if (subtract) v -= std::get<float>(operand);
+			else v += std::get<float>(operand);
+			value = v;
+		}
+		else error("We only sum floats");
 	}
 	return value;
 }
 
-float Parser::parse_product()
+TypedValue Parser::parse_product()
 {
-	float value = parse_factor();
+	TypedValue value = parse_factor();
 	while (peek(asterisk) || peek(slash)) {
 		next_token();
 		bool divide = current.type == slash;
 		next_token();
-		if (divide) value /= parse_factor();
-		else value *= parse_factor();
+		TypedValue operand = parse_factor();
+
+		if (std::holds_alternative<float>(value) && std::holds_alternative<float>(operand))
+		{
+			float v = std::get<float>(value);
+			if (divide) v /= std::get<float>(operand);
+			else v *= std::get<float>(operand);
+			value = v;
+		}
+		else error("We only multiply floats");
 	}
 	return value;
 }
 
-float Parser::parse_factor()
+TypedValue Parser::parse_factor()
 {
-	float value = 0;
+	TypedValue value = 0;
 	if (current.type == identifier) {
 		if (program->symbol_is_type<float>(current.value))
 			value = program->get_symbol_value<float>(current.value);
+		else if (program->symbol_is_type<std::string>(current.value))
+			value = program->get_symbol_value<std::string>(current.value);
+
 		else error("Symbol not found: " + current.value);
 	}
 	else if (current.type == numeric_literal) value = std::stof(current.value);
+	else if (current.type == string_literal) value = current.value;
 	else if (current.type == open_paren) {
 		next_token();
 		value = parse_expression();
@@ -268,7 +296,7 @@ float Parser::parse_factor()
 	}
 	else if (current.type == minus) {
 		next_token();
-		value = -parse_product();
+		value = -std::get<float>(parse_product());
 	}
 	else error("Couldn't get value of expression factor of type " + debug_names[current.type]);
 
@@ -283,6 +311,7 @@ bool Parser::line_end()
 void Parser::error(std::string error)
 {
 	log(std::to_string(line) + ": " + error);
+	throw ParseException();
 }
 
 Token Parser::next_token()

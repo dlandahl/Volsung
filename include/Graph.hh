@@ -24,7 +24,7 @@ struct Sequence
 	int size() { return data.size(); }
 };
 
-using TypedValue = std::variant<float, std::string>;
+using TypedValue = std::variant<float, std::string, Sequence>;
 
 enum class Type {
 	number,
@@ -51,7 +51,7 @@ class Program
 
 public:
 	template<class>
-	bool create_object(std::string, std::vector<std::string>);
+	bool create_object(std::string, std::vector<TypedValue>);
 
 	template<class T>
 	T* get_audio_object_raw_pointer(std::string);
@@ -78,12 +78,12 @@ public:
 	auto begin() { return std::begin(table); }
 	auto end() { return std::end(table); }
 
-	
-
 	template<class>
 	bool symbol_is_type(std::string);
+	
 	template<class T>
 	T get_symbol_value(std::string);
+	
 	TypedValue get_symbol_value(std::string);
 	void add_symbol(std::string, TypedValue);
 	bool symbol_exists(std::string);
@@ -100,7 +100,7 @@ T* Program::get_audio_object_raw_pointer(std::string name)
 }
 
 template<class Object>
-bool Program::create_object(std::string name, std::vector<std::string> arguments)
+bool Program::create_object(std::string name, std::vector<TypedValue> arguments)
 {
 	if (table.count(name) == 0) {
 		table[name] = std::make_unique<Object>(arguments);
@@ -123,11 +123,11 @@ bool Program::symbol_is_type(std::string identifier)
 template<class T>
 T Program::get_symbol_value(std::string identifier)
 {
-	if (!symbol_exists(identifier)) {
+	if (!symbol_exists(identifier))
 		log("Symbol " + identifier + " does not exist, attempted to read value");
-	}
-	if (symbol_is_type<T>(identifier))
-		return std::get<T>(symbol_table[identifier]);	
+	if (!symbol_is_type<T>(identifier))
+		log("Symbol " + identifier + " is wrong type");
+	return std::get<T>(symbol_table[identifier]);	
 }
 
 }

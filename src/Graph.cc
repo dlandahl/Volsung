@@ -15,7 +15,7 @@ namespace Volsung {
 
 void Program::create_user_object(std::string name, uint inputs, uint outputs, std::any user_data, callback_functor callback)
 {
-	bool success = create_object<UserObject>(name, { std::to_string(inputs), std::to_string(outputs) });
+	bool success = create_object<UserObject>(name, { TypedValue(inputs), TypedValue(outputs) });
 	if (!success) return;
 
 	UserObject* object = get_audio_object_raw_pointer<UserObject>(name);
@@ -34,8 +34,8 @@ void Program::connect_objects(
 }
 
 void Program::connect_objects(Program &st,
-                                  std::string a, uint out,
-	                              std::string b, uint in)
+                              std::string a, uint out,
+	                          std::string b, uint in)
 {
 	if (!st.table.count(a)) log("Object " + a + " has not been declared");
 	else if (!st.table.count(b)) log("Object " + b + " has not been declared");
@@ -78,10 +78,10 @@ void Program::reset()
 	table.clear();
 	
 	if (inputs) {
-		create_object<AudioInputObject>("input", { std::to_string(inputs) });
+		create_object<AudioInputObject>("input", { inputs });
 	}
 	if (outputs) {
-		create_object<AudioOutputObject>("output", { std::to_string(outputs) });
+		create_object<AudioOutputObject>("output", { outputs });
 	}	
 }
 

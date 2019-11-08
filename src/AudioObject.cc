@@ -36,23 +36,6 @@ bool AudioObject::is_connected(uint in)
 	return inputs[in].is_connected();
 }
 
-void AudioObject::init(int num_inputs, int num_outputs,
-                       std::vector<std::string> args, std::vector<float*> float_members)
-{
-	set_io(num_inputs, num_outputs);
-	get_float_args(args, float_members);
-}
-
-void AudioObject::get_float_args(std::vector<std::string> args, std::vector<float*> float_members)
-{
-
-	for (uint n = 0; n < float_members.size() && n < args.size(); n++)
-	{     
-   		try         { *float_members[n] = float(std::stof(args[n], nullptr)); }
-		catch (const std::invalid_argument&) { log("Failed to initialize object parameter"); }
-	}
-}
-
 void AudioObject::set_io(int num_inputs, int num_outputs)
 {
 	outputs.resize(num_outputs);
@@ -60,6 +43,30 @@ void AudioObject::set_io(int num_inputs, int num_outputs)
 
 	out.resize(num_outputs);
 	in.resize(num_inputs);
+}
+
+bool AudioObject::verify_argument_types(std::vector<Type> recieved, std::vector<TypedValue> expected)
+{
+	bool success = true;
+	for (uint n = 0; n < expected.size(); n++) {
+		Type value = recieved[n];
+		switch (value) {
+			case(Type::number): success &= std::holds_alternative<float>(expected[n]); break;
+			case(Type::sequence): success &= std::holds_alternative<Sequence>(expected[n]); break;
+			case(Type::string): success &= std::holds_alternative<std::string>(expected[n]); break;
+		}
+	}
+	if (!success) log("Invalid argument type on object");
+	return success;
+}
+
+void AudioObject::init(int ins, int outs, std::vector<TypedValue> arguments, std::vector<float*> values)
+{
+	set_io(ins, outs);
+
+	for (uint n = 0; n < values.size(); n++) {
+		*values[n] = std::get<float>(arguments[n]);
+	}
 }
 
 void AudioObject::request_buffer_size(int count)

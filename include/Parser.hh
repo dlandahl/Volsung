@@ -2,6 +2,7 @@
 #pragma once
 
 #include <variant>
+#include <exception>
 
 #include "Volsung.hh"
 #include "Graph.hh"
@@ -52,6 +53,12 @@ inline std::map<TokenType, std::string> debug_names = {
 { eof, "End of File" }
 };
 
+class ParseException : public std::exception
+{
+public:
+	virtual const char* what() const noexcept override;
+};
+
 struct Token
 {
     TokenType type;
@@ -69,7 +76,7 @@ protected:
 	Token get_next_token();
 	bool peek(TokenType);
 	virtual ~Lexer() = 0;
-	uint line = 1;
+	uint line = 0;
 
 public:
 	std::string source_code;
@@ -86,9 +93,9 @@ class Parser : public Lexer
 	void parse_declaration(std::string);
 	void parse_connection(std::string);
 
-	float parse_expression();
-	float parse_factor();
-	float parse_product();
+	TypedValue parse_expression();
+	TypedValue parse_factor();
+	TypedValue parse_product();
 
 	int inline_object_index = 0;
 	Graph* program;

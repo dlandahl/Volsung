@@ -30,29 +30,26 @@ private:
 	
 protected:
 	virtual void run(buf&, buf&) = 0;
-	void set_io(int inputs, int outputs);
-	void get_float_args(std::vector<std::string>, std::vector<float*>);
-	void init(int, int, std::vector<std::string>, std::vector<float*>);
-	void request_buffer_size(int requested_size);
-
+	void request_buffer_size(int);
+	bool verify_argument_types(std::vector<Type>, std::vector<TypedValue>);
+	void set_io(int, int);
+	void init(int, int, std::vector<TypedValue>, std::vector<float*>);
 	void set_defval(float*, float, int);
+
 	bool is_gate_high(uint);
 	bool gate_opened(uint);
 	bool gate_closed(uint);
 	bool is_connected(uint);
 
 public:
+	void implement();
 	static constexpr float gate_threshold = .75f;
-
-
+	
 	std::vector<AudioInput>  inputs;
 	std::vector<AudioOutput> outputs;
-
-	void implement();
-	virtual void finish();
-
-	AudioObject(int, int);
 	AudioObject() = default;
+
+	virtual void finish();
 	virtual ~AudioObject() = default;
 };
 
