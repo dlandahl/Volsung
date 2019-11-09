@@ -21,6 +21,8 @@ enum TokenType {
 	close_brace,
 	open_paren,
 	close_paren,
+	open_bracket,
+	close_bracket,
   	newline,
 	comma,
 	ampersand,
@@ -28,6 +30,7 @@ enum TokenType {
 	minus,
 	slash,
 	asterisk,
+	subscript,
 	eof
 };
 
@@ -43,6 +46,8 @@ inline std::map<TokenType, std::string> debug_names = {
 { close_brace, "Close Brace" },
 { open_paren, "Open Parenthesis" },
 { close_paren, "Close Parenthesis" },
+{ open_bracket, "Open Bracket" },
+{ close_bracket, "Close Bracket" },
 { newline, "Newline" },
 { comma, "Comma" },
 { ampersand, "Ampersand" },
@@ -50,6 +55,7 @@ inline std::map<TokenType, std::string> debug_names = {
 { minus, "Minus" },
 { slash, "Slash" },
 { asterisk, "Asterisk" },
+{ subscript, "Subscript" },
 { eof, "End of File" }
 };
 
@@ -92,6 +98,8 @@ class Parser : public Lexer
 	bool line_end();
 	void parse_declaration(std::string);
 	void parse_connection(std::string);
+
+	Sequence parse_sequence();
 
 	TypedValue parse_expression();
 	TypedValue parse_factor();

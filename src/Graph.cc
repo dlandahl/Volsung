@@ -26,20 +26,19 @@ void TypedValue::operator+=(TypedValue other)
 	else *this = TypedValue(get_value<float>() + other.get_value<float>());
 }
 
-
 void TypedValue::operator-=(TypedValue other)
 {
-	*this = TypedValue(get_value<float>() + other.get_value<float>());
+	*this = TypedValue(get_value<float>() - other.get_value<float>());
 }
 
 void TypedValue::operator*=(TypedValue other)
 {
-	*this = TypedValue(get_value<float>() + other.get_value<float>());
+	*this = TypedValue(get_value<float>() * other.get_value<float>());
 }
 
 void TypedValue::operator/=(TypedValue other)
 {
-	*this = TypedValue(get_value<float>() + other.get_value<float>());
+	*this = TypedValue(get_value<float>() / other.get_value<float>());
 }
 
 

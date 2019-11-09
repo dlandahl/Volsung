@@ -32,12 +32,15 @@ Token Lexer::get_next_token()
 	if (current() == '}') return { close_brace, "" };
 	if (current() == '(') return { open_paren, "" };
 	if (current() == ')') return { close_paren, "" };
+	if (current() == '[') return { open_bracket, "" };
+	if (current() == ']') return { close_bracket, "" };
 	if (current() == ':') return { colon, "" };
 	if (current() == ',') return { comma, "" };
 	if (current() == '&') return { ampersand, "" };
 	if (current() == '*') return { asterisk, "" };
 	if (current() == '+') return { plus, "" };
 	if (current() == '/') return { slash, "" };
+	if (current() == '_') return { subscript, "" };
 
 	if (is_digit()) {
 		std::string value;
@@ -152,7 +155,11 @@ void Parser::parse_declaration(std::string name)
 	std::string object_name = name;
 
 	next_token();
-	if (current.type == numeric_literal || current.type == minus || current.type == string_literal) {
+	if (current.type == numeric_literal
+		|| current.type == minus
+		|| current.type == string_literal
+		|| current.type == open_bracket
+		|| current.type == open_paren) {
 		TypedValue value = parse_expression();
 		program->add_symbol(name, value);;
 		return;
@@ -248,7 +255,6 @@ TypedValue Parser::parse_expression()
 
 		if (subtract) value -= operand;
 		else value += operand;
-		log(value.get_value<std::string>());
 	}
 	return value;
 }
@@ -272,11 +278,7 @@ TypedValue Parser::parse_factor()
 {
 	TypedValue value = 0;
 	if (current.type == identifier) {
-		if (program->symbol_is_type<float>(current.value))
-			value = program->get_symbol_value<float>(current.value);
-		else if (program->symbol_is_type<std::string>(current.value))
-			value = program->get_symbol_value<std::string>(current.value);
-
+		if (program->symbol_exists(current.value)) value = program->get_symbol_value(current.value);
 		else error("Symbol not found: " + current.value);
 	}
 
@@ -288,13 +290,39 @@ TypedValue Parser::parse_factor()
 		value = parse_expression();
 		expect(close_paren);
 	}
+	else if (current.type == open_bracket) value = parse_sequence();
 	else if (current.type == minus) {
 		next_token();
 		value = -parse_product().get_value<float>();
 	}
 	else error("Couldn't get value of expression factor of type " + debug_names[current.type]);
 
+	if (peek(open_bracket)) {
+		expect(open_bracket);
+		if (!value.is_type<Sequence>()) error("Attempted to subscript non-sequence");
+		next_token();
+
+		float index = parse_expression().get_value<float>();
+		value = value.get_value<Sequence>().data[(int)index];
+		expect(close_bracket);
+	}
 	return value;
+}
+
+Sequence Parser::parse_sequence()
+{
+	Sequence s;
+	next_token();
+	s.data.push_back(parse_expression().get_value<float>());
+
+	while (peek(comma)) {
+		expect(comma);
+		next_token();
+		s.data.push_back(parse_expression().get_value<float>());
+	}
+	
+	expect(close_bracket);
+	return s;
 }
 
 bool Parser::line_end()
