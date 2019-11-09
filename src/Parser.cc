@@ -128,7 +128,7 @@ void Parser::parse_program(Graph& graph)
 
 			next_token();
 			if (current.type == colon) parse_declaration(id);
-			else if (current.type == open_brace) parse_connection(id);
+			else if (current.type == open_paren) parse_connection(id);
 			else error("Expected colon or open brace, got " + debug_names[current.type]);
 		}
 		else if (current.type == ampersand) {
@@ -147,6 +147,7 @@ void Parser::parse_program(Graph& graph)
 
 	} catch (const ParseException& exception) {
 		log(std::string(exception.what()));
+		program->reset();
 	}
 }
 
@@ -158,7 +159,7 @@ void Parser::parse_declaration(std::string name)
 	if (current.type == numeric_literal
 		|| current.type == minus
 		|| current.type == string_literal
-		|| current.type == open_bracket
+		|| current.type == open_brace
 		|| current.type == open_paren) {
 		TypedValue value = parse_expression();
 		program->add_symbol(name, value);;
@@ -208,7 +209,7 @@ void Parser::parse_connection(std::string name)
 
 	expect(numeric_literal);
 	int output_index = std::stoi(current.value);
-	expect(close_brace);
+	expect(close_paren);
 
 	expect(arrow);
 	next_token();
@@ -236,10 +237,10 @@ void Parser::parse_connection(std::string name)
 	}
 	std::string input_object = current.value;
 
-	expect(open_brace);
+	expect(open_paren);
 	expect(numeric_literal);
 	int input_index = std::stoi(current.value);
-	expect(close_brace);
+	expect(close_paren);
 	expect(newline);
 	Program::connect_objects(*program, output_object, output_index, input_object, input_index);
 }
@@ -290,10 +291,10 @@ TypedValue Parser::parse_factor()
 		value = parse_expression();
 		expect(close_paren);
 	}
-	else if (current.type == open_bracket) value = parse_sequence();
+	else if (current.type == open_brace) value = parse_sequence();
 	else if (current.type == minus) {
 		next_token();
-		value = -parse_product().get_value<float>();
+		value = -parse_product();
 	}
 	else error("Couldn't get value of expression factor of type " + debug_names[current.type]);
 
@@ -321,7 +322,7 @@ Sequence Parser::parse_sequence()
 		s.data.push_back(parse_expression().get_value<float>());
 	}
 	
-	expect(close_bracket);
+	expect(close_brace);
 	return s;
 }
 
@@ -333,7 +334,6 @@ bool Parser::line_end()
 void Parser::error(std::string error)
 {
 	log(std::to_string(line) + ": " + error);
-	program->reset();
 	throw ParseException();
 }
 

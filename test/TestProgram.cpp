@@ -23,10 +23,11 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-name: [10, 50]
+name: { 0, 50, 1 }
+n: 2
 other: 45
-source: add~ name[1]
-source{0} -> output{0}
+source: add~ { other, name[1] }[name[n]]
+source(0) -> output(0)
 
 )";
 	

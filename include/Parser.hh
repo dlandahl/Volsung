@@ -59,12 +59,6 @@ inline std::map<TokenType, std::string> debug_names = {
 { eof, "End of File" }
 };
 
-class ParseException : public std::exception
-{
-public:
-	virtual const char* what() const noexcept override;
-};
-
 struct Token
 {
     TokenType type;

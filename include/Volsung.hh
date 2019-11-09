@@ -37,6 +37,13 @@ inline void log(std::string message, int level=0)
 	if (debug_level >= level) debug_callback(message + '\n');
 }
 
+
+class ParseException : public std::exception
+{
+public:
+	virtual const char* what() const noexcept override;
+};
+
 }
 
 #include "Graph.hh"

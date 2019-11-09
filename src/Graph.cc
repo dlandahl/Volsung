@@ -41,8 +41,15 @@ void TypedValue::operator/=(TypedValue other)
 	*this = TypedValue(get_value<float>() / other.get_value<float>());
 }
 
-
-
+TypedValue TypedValue::operator-()
+{
+	switch(get_type()) {
+		case(Type::number): *this = -this->get_value<float>(); break;
+		case(Type::sequence): for (auto& value: this->get_value<Sequence>().data) value = -value; break;
+		case(Type::string): log("Attempted to negate expression of type string"); throw ParseException();
+	}
+	return *this;
+}
 
 void Program::create_user_object(std::string name, uint inputs, uint outputs, std::any user_data, callback_functor callback)
 {
@@ -70,7 +77,11 @@ void Program::connect_objects(Program &st,
 {
 	if (!st.table.count(a)) log("Object " + a + " has not been declared");
 	else if (!st.table.count(b)) log("Object " + b + " has not been declared");
-	else st.connect_objects(st.table[a], out, st.table[b], in);
+	else {
+		st.connect_objects(st.table[a], out, st.table[b], in);
+		return;
+	}
+	throw ParseException();
 }
 
 void Program::run()
@@ -122,6 +133,7 @@ void Program::invoke_directive(std::string name, std::vector<std::string> argume
 {
 	if (!custom_directives.count(name)) {
 		log("Unknown directive");
+		throw ParseException();
 		return;
 	}
 

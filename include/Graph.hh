@@ -48,6 +48,7 @@ public:
 	void operator-=(TypedValue);
 	void operator*=(TypedValue);
 	void operator/=(TypedValue);
+	TypedValue operator-();
 };
 
 class Program
@@ -119,7 +120,7 @@ bool Program::create_object(std::string name, std::vector<TypedValue> arguments)
 		return true;
 	}
 	log("Symbol '" + name + "' is already used");
-	return false;
+	throw ParseException();
 }
 
 template<class T>
@@ -127,7 +128,7 @@ bool Program::symbol_is_type(std::string identifier)
 {
 	if (!symbol_exists(identifier)) {
 		log("Symbol " + identifier + " does not exist, attempted to verify type");
-		return false;
+		throw ParseException();
 	}
 	return symbol_table[identifier].is_type<T>();
 }
@@ -137,9 +138,10 @@ T Program::get_symbol_value(std::string identifier)
 {
 	if (!symbol_exists(identifier))
 		log("Symbol " + identifier + " does not exist, attempted to read value");
-	if (!symbol_is_type<T>(identifier))
+	else if (!symbol_is_type<T>(identifier))
 		log("Symbol " + identifier + " is wrong type");
-	return symbol_table[identifier].get_value<T>();	
+	else return symbol_table[identifier].get_value<T>();
+	throw ParseException();
 }
 
 template<class T>
