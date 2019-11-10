@@ -23,10 +23,16 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-name: { 0, 50, 1 }
-n: 2
-other: 45
-source: add~ { other, name[1] }[name[n]]
+major: { 0, 2, 4, 5, 7, 9, 11 }
+degree: 3
+f: 440
+
+transposed: major + 1
+
+source: add~ transposed[1]
+
+
+; f * (2^(1/12))^major[degree - 1]
 source(0) -> output(0)
 
 )";

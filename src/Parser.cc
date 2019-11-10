@@ -27,20 +27,33 @@ Token Lexer::get_next_token()
 		position--;
 		return { minus, "" };
 	}
-
+	if (current() == '>') {
+		position++;
+		if (current() == '>') return { many_to_one, "" };
+		position--;
+		return { greater_than, "" };
+	}
+	if (current() == '<') {
+		position++;
+		if (current() == '>') return { one_to_many, "" };
+		position--;
+		return { less_than, "" };
+	}
+	
 	if (current() == '{') return { open_brace, "" };
 	if (current() == '}') return { close_brace, "" };
 	if (current() == '(') return { open_paren, "" };
 	if (current() == ')') return { close_paren, "" };
 	if (current() == '[') return { open_bracket, "" };
 	if (current() == ']') return { close_bracket, "" };
+	if (current() == '<') return { greater_than, "" };
 	if (current() == ':') return { colon, "" };
 	if (current() == ',') return { comma, "" };
 	if (current() == '&') return { ampersand, "" };
 	if (current() == '*') return { asterisk, "" };
 	if (current() == '+') return { plus, "" };
 	if (current() == '/') return { slash, "" };
-	if (current() == '_') return { subscript, "" };
+	if (current() == '^') return { caret, "" };
 
 	if (is_digit()) {
 		std::string value;
@@ -56,7 +69,7 @@ Token Lexer::get_next_token()
 
 	if (is_char()) {
 		std::string id;
-		while (is_char()) {
+		while (is_char() || is_digit()) {
 			id += current();
 			position++;
 		}
@@ -160,10 +173,29 @@ void Parser::parse_declaration(std::string name)
 		|| current.type == minus
 		|| current.type == string_literal
 		|| current.type == open_brace
-		|| current.type == open_paren) {
+		|| current.type == open_paren
+		|| current.type == identifier) {
 		TypedValue value = parse_expression();
-		program->add_symbol(name, value);;
+		program->add_symbol(name, value);
 		return;
+
+	} else if (current.type == open_bracket) {
+		next_token();
+		int count = (int) parse_expression().get_value<float>();
+		expect(close_bracket);
+
+		expect(object);
+		std::string object_type = current.value;
+		next_token();
+		Sequence parameters = parse_expression().get_value<Sequence>();
+		if (parameters.size() != count) error("Sequence initialising group is not the same size as the group");
+
+		for (uint n = 0; n < count; n++)
+			make_object(object_type, "__grp_" + object_name + std::to_string(n), { TypedValue(parameters.data[n]) });
+
+		program->group_sizes[object_name] = count;
+		return;
+		
 	} else if (current.type != object) {
 		error("RHS of declaration is " + debug_names[current.type] + ", should be string, object, or expression.");
 		return;
@@ -175,16 +207,13 @@ void Parser::parse_declaration(std::string name)
 	next_token();
 	if (!line_end()) {
 		arguments.push_back(parse_expression());
-		next_token();
-		
-		while (!line_end()) {
-			expect(comma);
-			next_token();
-			arguments.push_back(parse_expression());
-			next_token();
-		}
 	}
 
+	make_object(object_type, object_name, arguments);
+}
+
+void Parser::make_object(std::string object_type, std::string object_name, std::vector<TypedValue> arguments)
+{
 	if (object_type == "osc") program->create_object<OscillatorObject>(object_name, arguments);
 	else if (object_type == "add")   program->create_object<AddObject>(object_name, arguments);
 	else if (object_type == "square")program->create_object<SquareObject>(object_name, arguments);
@@ -211,14 +240,19 @@ void Parser::parse_connection(std::string name)
 	int output_index = std::stoi(current.value);
 	expect(close_paren);
 
-	expect(arrow);
+	next_token();
+	if (current.type != many_to_one &&
+		current.type != one_to_many &&
+		current.type != arrow) error("Expected connection operator");
+	TokenType connection_type = current.type;
+	
 	next_token();
 	while (current.type != identifier)
 	{
 		TokenType operation = current.type;
 		next_token();
 		TypedValue value = parse_expression();
-		std::string name = "inline_object" + std::to_string(inline_object_index++);
+		std::string name = "__inline_object" + std::to_string(inline_object_index++);
 		std::vector<TypedValue> argument = { value };
 
 		switch (operation) {
@@ -262,15 +296,28 @@ TypedValue Parser::parse_expression()
 
 TypedValue Parser::parse_product()
 {
-	TypedValue value = parse_factor();
+	TypedValue value = parse_power();
 	while (peek(asterisk) || peek(slash)) {
 		next_token();
 		bool divide = current.type == slash;
 		next_token();
-		TypedValue operand = parse_factor();
+		TypedValue operand = parse_power();
 
 		if (divide) value /= operand;
 		else value *= operand;
+	}
+	return value;
+}
+
+TypedValue Parser::parse_power()
+{
+	TypedValue value = parse_factor();
+	if (peek(caret)) {
+		expect(caret);
+		next_token();
+		TypedValue operand = parse_power();
+
+		value = std::pow(value.get_value<float>(), operand.get_value<float>());
 	}
 	return value;
 }

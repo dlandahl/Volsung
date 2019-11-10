@@ -20,25 +20,65 @@ Type TypedValue::get_type()
 
 void TypedValue::operator+=(TypedValue other)
 {
-	if (is_type<std::string>() && other.is_type<float>()) {
+	if (is_type<std::string>() && other.is_type<float>())
 		*this = get_value<std::string>() + std::to_string((int)other.get_value<float>());
+
+	else if (is_type<float>() && other.is_type<float>())
+		*this = TypedValue(get_value<float>() + other.get_value<float>());
+
+	else if (is_type<Sequence>() && other.is_type<float>()) {
+		for (uint n = 0; n < this->get_value<Sequence>().size(); n++)
+			this->get_value<Sequence>().data[n] += other.get_value<float>();
 	}
-	else *this = TypedValue(get_value<float>() + other.get_value<float>());
+	else {
+		log("Invalid arguments on + operator");
+		throw ParseException();
+	}
 }
 
 void TypedValue::operator-=(TypedValue other)
 {
-	*this = TypedValue(get_value<float>() - other.get_value<float>());
+	if (is_type<float>() && other.is_type<float>())
+		*this = TypedValue(get_value<float>() - other.get_value<float>());
+
+	else if (is_type<Sequence>() && other.is_type<float>()) {
+		for (uint n = 0; n < this->get_value<Sequence>().size(); n++)
+			this->get_value<Sequence>().data[n] -= other.get_value<float>();
+	}
+	else {
+		log("Invalid arguments on + operator");
+		throw ParseException();
+	}
 }
 
 void TypedValue::operator*=(TypedValue other)
 {
-	*this = TypedValue(get_value<float>() * other.get_value<float>());
+	if (is_type<float>() && other.is_type<float>())
+		*this = TypedValue(get_value<float>() * other.get_value<float>());
+
+	else if (is_type<Sequence>() && other.is_type<float>()) {
+		for (uint n = 0; n < this->get_value<Sequence>().size(); n++)
+			this->get_value<Sequence>().data[n] *= other.get_value<float>();
+	}
+	else {
+		log("Invalid arguments on * operator");
+		throw ParseException();
+	}
 }
 
 void TypedValue::operator/=(TypedValue other)
 {
-	*this = TypedValue(get_value<float>() / other.get_value<float>());
+	if (is_type<float>() && other.is_type<float>())
+		*this = TypedValue(get_value<float>() / other.get_value<float>());
+
+	else if (is_type<Sequence>() && other.is_type<float>()) {
+		for (uint n = 0; n < this->get_value<Sequence>().size(); n++)
+			this->get_value<Sequence>().data[n] /= other.get_value<float>();
+	}
+	else {
+		log("Invalid arguments on / operator");
+		throw ParseException();
+	}
 }
 
 TypedValue TypedValue::operator-()

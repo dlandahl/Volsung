@@ -12,8 +12,6 @@
 
 namespace Volsung {
 
-using st_type = std::unordered_map<std::string, std::unique_ptr<AudioObject>>;
-
 class Program;
 using directive_functor = std::function<void(std::vector<std::string>, Program*)>;
 using callback_functor = std::function<void(buf&, buf&, std::any)>;
@@ -37,7 +35,7 @@ class TypedValue : private TypedValueBase
 	using TypedValueBase::TypedValueBase;
 public:
 	template<class T>
-	T get_value();
+	T& get_value();
 
 	template<class>
 	bool is_type();
@@ -49,6 +47,7 @@ public:
 	void operator*=(TypedValue);
 	void operator/=(TypedValue);
 	TypedValue operator-();
+
 };
 
 class Program
@@ -59,10 +58,12 @@ class Program
 
 	uint inputs = 0;
 	uint outputs = 0;
-	st_type table;
-	std::map<std::string, TypedValue> symbol_table;
+	std::unordered_map<std::string, std::unique_ptr<AudioObject>> table;
+	std::unordered_map<std::string, TypedValue> symbol_table;
 
 public:
+	std::unordered_map<std::string, int> group_sizes;
+	
 	template<class>
 	bool create_object(std::string, std::vector<TypedValue>);
 
@@ -145,8 +146,12 @@ T Program::get_symbol_value(std::string identifier)
 }
 
 template<class T>
-T TypedValue::get_value()
+T& TypedValue::get_value()
 {
+	if (!is_type<T>()) {
+		log("Expected a different type");
+		throw ParseException();
+	}
 	return std::get<T>(*this);
 }
 

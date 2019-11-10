@@ -23,6 +23,8 @@ enum TokenType {
 	close_paren,
 	open_bracket,
 	close_bracket,
+	greater_than,
+	less_than,
   	newline,
 	comma,
 	ampersand,
@@ -30,7 +32,9 @@ enum TokenType {
 	minus,
 	slash,
 	asterisk,
-	subscript,
+	caret,
+	many_to_one,
+	one_to_many,
 	eof
 };
 
@@ -55,7 +59,9 @@ inline std::map<TokenType, std::string> debug_names = {
 { minus, "Minus" },
 { slash, "Slash" },
 { asterisk, "Asterisk" },
-{ subscript, "Subscript" },
+{ caret, "Caret" },
+{ many_to_one, "Many-to-One" },
+{ one_to_many, "One-to-Many" },
 { eof, "End of File" }
 };
 
@@ -92,12 +98,13 @@ class Parser : public Lexer
 	bool line_end();
 	void parse_declaration(std::string);
 	void parse_connection(std::string);
-
+	void make_object(std::string, std::string, std::vector<TypedValue>);
 	Sequence parse_sequence();
 
 	TypedValue parse_expression();
-	TypedValue parse_factor();
 	TypedValue parse_product();
+	TypedValue parse_power();
+	TypedValue parse_factor();
 
 	int inline_object_index = 0;
 	Graph* program;

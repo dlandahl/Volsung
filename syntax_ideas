@@ -65,9 +65,8 @@ transform: func~ g
 
 
 infrared_noise (0, 1): [
-	
 	osc: noise~
-	filters: [5] filter~
+	filters: [$1] filter~
 
 	osc{0} -> filters[0]{0}
 	filters{0} --> filters{0}
