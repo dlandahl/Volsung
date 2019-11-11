@@ -251,11 +251,13 @@ void Parser::parse_connection(std::string name)
 	next_token();
 	while (current.type != identifier)
 	{
+		std::vector<TypedValue> argument = {0};
 		Token operation = current;
-		next_token();
-		TypedValue value = parse_expression();
+		if (!(peek(arrow) || peek(newline))) {
+			next_token();
+			argument = { parse_expression() };
+		}
 		std::string name = "__inline_object" + std::to_string(inline_object_index++);
-		std::vector<TypedValue> argument = { value };
 
 		if (operation.type != object) {
 			switch (operation.type) {
@@ -357,9 +359,20 @@ TypedValue Parser::parse_factor()
 		if (!value.is_type<Sequence>()) error("Attempted to subscript non-sequence");
 		next_token();
 
-		float index = parse_expression().get_value<float>();
-		value = value.get_value<Sequence>().data[(int)index];
+		TypedValue index = parse_expression();
 		expect(close_bracket);
+
+		if (index.is_type<float>()) {
+			value = value.get_value<Sequence>().data[(int)index.get_value<float>()];
+		} else if (index.is_type<Sequence>()) {
+			Sequence s;
+			Sequence& index_sequence = index.get_value<Sequence>();
+			Sequence& value_sequence = value.get_value<Sequence>();
+			for (uint n = 0; n < index_sequence.size(); n++)
+				s.data.push_back(value_sequence.data[index_sequence.data[n]]);
+
+			value = s;
+		}
 	}
 	return value;
 }

@@ -50,6 +50,19 @@ public:
 
 };
 
+template<class>
+std::string type_debug_name() { return ""; };
+
+template<>
+inline std::string type_debug_name<float>() { return "Number"; }
+
+template<>
+inline std::string type_debug_name<Sequence>() { return "Sequence"; }
+
+template<>
+inline std::string type_debug_name<std::string>() { return "Text"; }
+
+
 class Program
 {
 	uint lines_parsed = 0;
@@ -149,7 +162,7 @@ template<class T>
 T& TypedValue::get_value()
 {
 	if (!is_type<T>()) {
-		log("Expected a different type");
+		log("Expected type " + type_debug_name<T>());
 		throw ParseException();
 	}
 	return std::get<T>(*this);

@@ -12,7 +12,7 @@ int main(int argc, char ** argv)
 	Program prog;
 
 	prog.configure_io(1, 1);
-	
+
 	debug_callback = [] (std::string message) { std::cout << message; };
 
 	uint time = 10;
@@ -23,27 +23,26 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-major: { 0, 2, 4, 5, 7, 9, 11 }
-f: 440
+value: { 100, 200, 300, 400, 500, 600, 700 }
+index: { 2, 3, 2, 2, 1, 5, 3, 4, 2, 2, 3 }
 
-pitches: { f * (2^(1/12))^major[1 - 1], f * (2^(1/12))^major[3 - 1], f * (2^(1/12))^major[5 - 1] }
-
-clock: clock~ sf / 6
-disk:  file~  "melody.raw"
+clock: clock~ sf / 5
+disk: file~ "melody.raw"
 
 clock(0)
-	-> step~   pitches / 3
-	-> filter~ 20
-	-> osc~    0 
-	-> disk(0)
+-> step~ value[index]
+-> filter~ 5
+-> osc~
+-> *0.2 -> disk(0)
 
 )";
 
 	Parser parser;
 	parser.source_code = code;
 	parser.parse_program(prog);
-
-	for (uint n = 0; n < SAMPLE_RATE * 15; n++) prog.run(0.f);
+	log("Finished parsing");
+	
+	for (uint n = 0; n < SAMPLE_RATE * 60; n++) prog.run(0.f);
 	prog.finish();
 }
 
