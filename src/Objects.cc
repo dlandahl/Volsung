@@ -288,6 +288,17 @@ AbsoluteValueObject::AbsoluteValueObject(std::vector<TypedValue>)
 }
 
 
+void StepSequence::run(buf& in, buf& out)
+{
+	if (gate_opened(0)) current = ++current % sequence.size();
+	out[0][0] = sequence.data[current];
+}
+
+StepSequence::StepSequence(std::vector<TypedValue> arguments)
+{
+	set_io(1, 1);
+	sequence = arguments[0].get_value<Sequence>();
+}
 
 }
 

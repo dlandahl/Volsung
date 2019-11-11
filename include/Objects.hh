@@ -247,4 +247,14 @@ protected:
 	float filter(float);
 };
 
+class StepSequence : public AudioObject
+{
+	Sequence sequence;
+	int current = 0;
+
+	void run(buf&, buf&) override;
+public:
+	StepSequence(std::vector<TypedValue>);
+};
+
 }

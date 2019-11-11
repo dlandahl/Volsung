@@ -14,7 +14,7 @@ Token Lexer::get_next_token()
 	if (position >= source_code.size() - 1) return { eof, "" };
 	position++;
 
-	while (current() == ' ') position++;
+	while (current() == ' ' || current() == '\t') position++;
 	if (current() == ';') while (current() != '\n') position++;
 	if (current() == '\n') {
 		line++;
@@ -229,6 +229,7 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	else if (object_type == "comp")  program->create_object<ComparatorObject>(object_name, arguments);
 	else if (object_type == "filter")program->create_object<FilterObject>(object_name, arguments);
 	else if (object_type == "file")  program->create_object<FileoutObject>(object_name, arguments);
+	else if (object_type == "step")  program->create_object<StepSequence>(object_name, arguments);
 	else error("No such object type: " + object_type);
 }
 
@@ -241,6 +242,7 @@ void Parser::parse_connection(std::string name)
 	expect(close_paren);
 
 	next_token();
+	while (current.type == newline) next_token();
 	if (current.type != many_to_one &&
 		current.type != one_to_many &&
 		current.type != arrow) error("Expected connection operator");
@@ -249,23 +251,28 @@ void Parser::parse_connection(std::string name)
 	next_token();
 	while (current.type != identifier)
 	{
-		TokenType operation = current.type;
+		Token operation = current;
 		next_token();
 		TypedValue value = parse_expression();
 		std::string name = "__inline_object" + std::to_string(inline_object_index++);
 		std::vector<TypedValue> argument = { value };
 
-		switch (operation) {
-			case (plus):     program->create_object<AddObject>(name, argument); break;
-			case (minus):    program->create_object<SubtractionObject>(name, argument); break;
-			case (asterisk): program->create_object<MultObject>(name, argument); break;
-			case (slash):    program->create_object<DivisionObject>(name, argument); break;
-			default: error("Invalid token for inline operation: " + debug_names[(TokenType) operation] + ". Expected arithmetic operator");
+		if (operation.type != object) {
+			switch (operation.type) {
+				case (plus):     program->create_object<AddObject>(name, argument); break;
+				case (minus):    program->create_object<SubtractionObject>(name, argument); break;
+				case (asterisk): program->create_object<MultObject>(name, argument); break;
+				case (slash):    program->create_object<DivisionObject>(name, argument); break;
+				default: error("Invalid token for inline operation: " + debug_names[operation.type] + ". Expected arithmetic operator");
+			}
+		} else {
+			make_object(operation.value, name, argument);
 		}
 
 		Program::connect_objects(*program, output_object, output_index, name, 0);
 		output_index = 0;
 		output_object = name;
+		while (peek(newline)) next_token();
 		expect(arrow);
 		next_token();
 	}

@@ -24,24 +24,26 @@ int main(int argc, char ** argv)
 R"(
 
 major: { 0, 2, 4, 5, 7, 9, 11 }
-degree: 3
 f: 440
 
-transposed: major + 1
+pitches: { f * (2^(1/12))^major[1 - 1], f * (2^(1/12))^major[3 - 1], f * (2^(1/12))^major[5 - 1] }
 
-source: add~ transposed[1]
+clock: clock~ sf / 6
+disk:  file~  "melody.raw"
 
-
-; f * (2^(1/12))^major[degree - 1]
-source(0) -> output(0)
+clock(0)
+	-> step~   pitches / 3
+	-> filter~ 20
+	-> osc~    0 
+	-> disk(0)
 
 )";
-	
+
 	Parser parser;
 	parser.source_code = code;
 	parser.parse_program(prog);
 
-	for (uint n = 0; n < 10; n++) log(std::to_string(prog.run(0.f)));
+	for (uint n = 0; n < SAMPLE_RATE * 15; n++) prog.run(0.f);
 	prog.finish();
 }
 
