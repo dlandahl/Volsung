@@ -36,14 +36,13 @@ DelayObject::DelayObject(std::vector<TypedValue> args)
 
 void DriveObject::run(buf& in, buf& out)
 {
-	out[0][0] = tanh(pregain * in[0][0]) * postgain;
+	out[0][0] = tanh(pregain * in[0][0]);
 }
 
 DriveObject::DriveObject(std::vector<TypedValue> args)
 {
-	init(3, 1, args, { &pregain, &postgain });
+	init(2, 1, args, { &pregain });
 	set_defval(&pregain, pregain, 1);
-	set_defval(&postgain, postgain, 2);
 }
 
 

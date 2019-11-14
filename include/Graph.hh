@@ -46,6 +46,7 @@ public:
 	void operator-=(TypedValue);
 	void operator*=(TypedValue);
 	void operator/=(TypedValue);
+	void operator^=(TypedValue);
 	TypedValue operator-();
 
 };

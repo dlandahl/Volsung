@@ -222,6 +222,7 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	else if (object_type == "sub")   program->create_object<SubtractionObject>(object_name, arguments);
 	else if (object_type == "div")   program->create_object<DivisionObject>(object_name, arguments);
 	else if (object_type == "noise") program->create_object<NoiseObject>(object_name, arguments);
+	else if (object_type == "sat")   program->create_object<DriveObject>(object_name, arguments);
 	else if (object_type == "clock") program->create_object<ClockObject>(object_name, arguments);
 	else if (object_type == "timer") program->create_object<TimerObject>(object_name, arguments);
 	else if (object_type == "mod")   program->create_object<ModuloObject>(object_name, arguments);
@@ -326,7 +327,7 @@ TypedValue Parser::parse_power()
 		next_token();
 		TypedValue operand = parse_power();
 
-		value = std::pow(value.get_value<float>(), operand.get_value<float>());
+		value ^= operand;
 	}
 	return value;
 }

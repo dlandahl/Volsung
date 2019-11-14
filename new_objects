@@ -35,3 +35,4 @@ mod~ ; Floating point modulo
 abs~ ; Absolute value of input
 div~ ; Divide
 sub~ ; Subtract
+step~ ; Step through a sequence

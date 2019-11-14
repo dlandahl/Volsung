@@ -23,17 +23,19 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-value: { 100, 200, 300, 400, 500, 600, 700 }
-index: { 2, 3, 2, 2, 1, 5, 3, 4, 2, 2, 3 }
+scale: { 0, 2, 3, 5, 7, 8, 10, 12 }
+root: 330
+
+freqs: (2^(1/12))^scale * root
 
 clock: clock~ sf / 5
 disk: file~ "melody.raw"
 
 clock(0)
--> step~ value[index]
--> filter~ 5
+-> step~ freqs[{ 1, 2, 3, 5, 7, 8, 7, 5, 3, 2 } - 1]
+-> filter~ 10
 -> osc~
--> *0.2 -> disk(0)
+-> *0.6 -> disk(0)
 
 )";
 
@@ -42,7 +44,7 @@ clock(0)
 	parser.parse_program(prog);
 	log("Finished parsing");
 	
-	for (uint n = 0; n < SAMPLE_RATE * 60; n++) prog.run(0.f);
+	for (uint n = 0; n < SAMPLE_RATE * 20; n++) prog.run(0.f);
 	prog.finish();
 }
 

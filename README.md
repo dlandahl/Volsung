@@ -3,52 +3,32 @@
 
 Syntax:
 ```
+; Generates a 400hz sine wave
 my_source: osc~ 400
 my_output: file~ "~/Documents/output.raw"
 my_source(0) -> my_output(0)
 ```
 
-Constants, expressions, and comments:
+Sequences, index sequences with sequences, step through sequences.
+Also an example for building abstractions for dealing with the western musical system.
+The language is useful for generative music / composition / DSP / audio effects / sound design / synthesis.
 ```
-f: 440
-source: osc~ f
-octave: osc~ f*2
+; Semitone offsets from the root note describe a scale
+scale: { 0, 2, 3, 5, 7, 8, 10, 12 }
+root: 330 ; Root frequency of the scale
 
-disk: file~ "~/Documents/output.raw"
-source(0) -> disk(0)
-octave(0) -> disk(0) ; This will cause clipping
-; Not a problem because we use 32bit PCM
-```
+; Use the formula for just intonation to generate frequency values
+freqs: (2^(1/12))^scale * root
 
-Inline arithmetic and string constants:
-```
-output_path: "~/Documents/output.raw"
-
-source: noise~
-mod: osc~ 0.5
-gain: mult~
-
-source(0) -> gain(0)
-mod(0)
-	-> *0.5
-	-> +0.5
-	-> gain(1)
-
-disk: file~ output_path
-gain(0) -> disk(0)
-```
-
-Sequences, index sequences with sequences, step through sequences:
-```
-value: { 100, 200, 300, 400, 500, 600, 700 }
-index: { 2, 3, 2, 2, 1, 5, 3, 4, 2, 2, 3 }
-
+; Output and a clock generator with 5 pulses per second
 clock: clock~ sf / 5
 disk: file~ "melody.raw"
 
+melody: { 1, 4, 3, 3, 7, 4, 2 } ; Melody from scale degrees
+
 clock(0)
--> step~ value[index]
--> filter~ 5
+-> step~ freqs[melody - 1]
+-> filter~ 10 ; Filter creates portamento
 -> osc~
--> *0.2 -> disk(0)
+-> *0.6 -> disk(0)
 ```
