@@ -15,7 +15,7 @@ The language is useful for generative music / composition / DSP / audio effects 
 ```
 ; Semitone offsets from the root note describe a scale
 scale: { 0, 2, 3, 5, 7, 8, 10, 12 }
-root: 330 ; Root frequency of the scale
+root: 440 ; Root frequency of the scale
 
 ; Use the formula for just intonation to generate frequency values
 freqs: (2^(1/12))^scale * root
