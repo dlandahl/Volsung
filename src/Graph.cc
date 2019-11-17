@@ -27,8 +27,8 @@ void TypedValue::operator+=(TypedValue other)
 		*this = TypedValue(get_value<float>() + other.get_value<float>());
 
 	else if (is_type<Sequence>() && other.is_type<float>()) {
-		for (uint n = 0; n < this->get_value<Sequence>().size(); n++)
-			this->get_value<Sequence>().data[n] += other.get_value<float>();
+		for (uint n = 0; n < get_value<Sequence>().size(); n++)
+			get_value<Sequence>().data[n] += other.get_value<float>();
 	}
 	else {
 		log("Invalid arguments on + operator");
@@ -42,11 +42,11 @@ void TypedValue::operator-=(TypedValue other)
 		*this = TypedValue(get_value<float>() - other.get_value<float>());
 
 	else if (is_type<Sequence>() && other.is_type<float>()) {
-		for (uint n = 0; n < this->get_value<Sequence>().size(); n++)
-			this->get_value<Sequence>().data[n] -= other.get_value<float>();
+		for (uint n = 0; n < get_value<Sequence>().size(); n++)
+			get_value<Sequence>().data[n] -= other.get_value<float>();
 	}
 	else {
-		log("Invalid arguments on + operator");
+		log("Invalid arguments on - operator");
 		throw ParseException();
 	}
 }

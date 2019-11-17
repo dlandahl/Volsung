@@ -120,11 +120,12 @@ void OscillatorObject::run(buf &, buf &out)
 	phase = phase + frequency / SAMPLE_RATE;
 
 	if (phase >= 1.0) { phase -= 1.0; }
+	if (gate_opened(1)) phase = 0;
 }
 
 OscillatorObject::OscillatorObject(std::vector<TypedValue> args) :  phase(0)
 {
-	init(1, 1, args, {&frequency} );
+	init(2, 1, args, {&frequency} );
 	set_defval(&frequency, frequency, 0);
 }
 

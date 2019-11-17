@@ -19,7 +19,6 @@ using callback_functor = std::function<void(buf&, buf&, std::any)>;
 enum class Type {
 	number,
 	sequence,
-	function,
 	string
 };
 
@@ -52,7 +51,7 @@ public:
 };
 
 template<class>
-std::string type_debug_name() { return ""; };
+std::string type_debug_name() { return ""; }
 
 template<>
 inline std::string type_debug_name<float>() { return "Number"; }
@@ -63,9 +62,16 @@ inline std::string type_debug_name<Sequence>() { return "Sequence"; }
 template<>
 inline std::string type_debug_name<std::string>() { return "Text"; }
 
+/*! \brief An instance of a Volsung program
+ *  
+ *  This class stores a representation of a parsed Volsung program.
+ *  It includes the symbol tables for constants and unit generators (audio~ objects).
+ *  Instantiate one of these for each program you want to interpret and run.
+ */
 
 class Program
 {
+
 	uint lines_parsed = 0;
 	static inline std::map<std::string, directive_functor> custom_directives;
     Program* parent = nullptr;
@@ -77,7 +83,13 @@ class Program
 
 public:
 	std::unordered_map<std::string, int> group_sizes;
-	
+
+	/*! \brief Used to create audio objects manually
+	 *  
+	 *  This template can be used to inject audio objects into the symbol table without
+	 *  through the interpreter.
+	 */
+
 	template<class>
 	bool create_object(std::string, std::vector<TypedValue>);
 
@@ -87,17 +99,52 @@ public:
 	void connect_objects(std::unique_ptr<AudioObject>&, uint,
 	                     std::unique_ptr<AudioObject>&, uint);
 
+	/*! \brief Used to connect audio objects manually
+	 *  
+	 *  This template can be used to connect two audio objects by name.
+	 */
+
 	static void connect_objects(Program&, std::string, uint, std::string, uint);
+
+	/*! \brief Create a custom user directive
+	 *
+	 *  Supply a functor to be invoked when parsing an ampersand followed by the name of this directive.
+	 */
 
 	static void add_directive(std::string, directive_functor);
 	void invoke_directive(std::string, std::vector<std::string>);
-	
+
+	/*! \brief Create an ambient user object
+	 *
+	 *  Create an ambient user object which will persist even when the program is reset and reinterpreted.
+	 *  Use this to create input / output objects specific to your frontend.
+	 *  User objects will be added to the symbol table upon reset of the program.
+	 */
+
 	void create_user_object(std::string, uint, uint, std::any, callback_functor);
 
-	void make_graph(std::istream&&);
+	/*! \brief Add inputs and outputs to a program 
+	 *
+	 *  This will inject "input" and "output" objects into the symbol table.
+	 *  The parameters control how many channels each of these will have.
+	 *  Read and write data from them through the "run" function.
+	 */
+
 	void configure_io(uint, uint);
-	
+
+	/*! \brief Run the program
+	 *
+	 *  Runs the program by running each audio object (unit generator) in the symbol table in turn.
+	 */
+
 	void run();
+
+	/*! \brief Run the program with one input and one output
+	 *
+	 *  Runs the program by running each audio object (unit generator) in the symbol table in turn.
+	 *  Expects a sample which will be written to the "input" object, and returns a float sample from the "output" object, created by configure_io.
+	 */
+
 	float run(float);
 	std::vector<float> run(std::vector<float>);
 	void finish();

@@ -1,5 +1,7 @@
 #pragma once
 
+/*! \file */ 
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -29,6 +31,11 @@ int sign(T val)
 }
 
 inline int debug_level = 0;
+
+/*! \brief Callback for logging and debug messages
+ *  
+ *  Specify a function to handle error messages during parsing and running of the program.
+ */
 
 inline std::function<void(std::string)> debug_callback = [] (std::string message) { std::cout << message; };
 

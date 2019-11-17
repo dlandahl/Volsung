@@ -104,7 +104,9 @@ bool Lexer::is_digit()
 
 bool Lexer::is_char()
 {
-	return current() >= 'a' && current() <= 'z' || current() == '_';
+	return current() >= 'a' && current() <= 'z'
+		|| current() == '_'
+		|| current() >= 'A' && current() <= 'Z';
 }
 
 bool Lexer::peek(TokenType expected)

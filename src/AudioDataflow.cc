@@ -8,7 +8,7 @@ float& CircularBuffer::operator[](int n)
 {
 	n += pointer;
 	while (n < 0) n += stream.size();
-	while (n >= stream.size()) n -= stream.size();
+	while ((long) n >= (long long int) stream.size()) n -= stream.size();
 	return stream[n];
 }
 

@@ -24,18 +24,23 @@ int main(int argc, char ** argv)
 R"(
 
 scale: { 0, 2, 3, 5, 7, 8, 10, 12 }
-root: 330
+root: 440
 
 freqs: (2^(1/12))^scale * root
 
 clock: clock~ sf / 5
 disk: file~ "melody.raw"
 
+tremolo: mult~
+mod: osc~ 8
+mod(0) -> *0.7 -> +0.3 -> tremolo(1)
+
 clock(0)
 -> step~ freqs[{ 1, 2, 3, 5, 7, 8, 7, 5, 3, 2 } - 1]
 -> filter~ 10
 -> osc~
--> *0.6 -> disk(0)
+-> tremolo(0)
+tremolo(0) -> disk(0)
 
 )";
 
