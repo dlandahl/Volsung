@@ -256,4 +256,15 @@ public:
 	StepSequence(std::vector<TypedValue>);
 };
 
+
+
+class PowerObject : public AudioObject
+{
+	float exponent = 2;
+
+	void run(buf&, buf&) override;
+public:
+	PowerObject(std::vector<TypedValue>);
+};
+
 }

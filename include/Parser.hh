@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <tuple>
 #include <variant>
 #include <exception>
 
@@ -35,6 +36,9 @@ enum TokenType {
 	caret,
 	many_to_one,
 	one_to_many,
+	vertical_bar,
+	elipsis,
+	dot,
 	eof
 };
 
@@ -62,6 +66,9 @@ inline std::map<TokenType, std::string> debug_names = {
 { caret, "Caret" },
 { many_to_one, "Many-to-One" },
 { one_to_many, "One-to-Many" },
+{ vertical_bar, "Vertical Bar" },
+{ elipsis, "Elipsis" },
+{ dot, "Dot" },
 { eof, "End of File" }
 };
 
@@ -111,10 +118,13 @@ class Parser : public Lexer
 	void expect(TokenType);
 	void verify(TokenType);
 	bool line_end();
-	void parse_declaration(std::string);
-	void parse_connection(std::string);
-	void make_object(std::string, std::string, std::vector<TypedValue>);
+	
+	void parse_declaration();
+	void parse_connection();
 	Sequence parse_sequence();
+	float parse_number();
+	std::string get_object_to_connect();
+	void make_object(std::string, std::string, std::vector<TypedValue>);
 
 	TypedValue parse_expression();
 	TypedValue parse_product();

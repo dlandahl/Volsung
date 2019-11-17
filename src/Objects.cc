@@ -300,5 +300,16 @@ StepSequence::StepSequence(std::vector<TypedValue> arguments)
 	sequence = arguments[0].get_value<Sequence>();
 }
 
+void PowerObject::run(buf& in, buf& out)
+{
+	out[0][0] = std::pow(in[0][0], exponent);
+}
+
+PowerObject::PowerObject(std::vector<TypedValue> arguments)
+{
+	init(2, 1, arguments, { &exponent });
+	set_defval(&exponent, exponent, 1);
+}
+
 }
 
