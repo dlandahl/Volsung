@@ -22,7 +22,7 @@ int main(int argc, char ** argv)
 
 	std::string code =
 R"(
-
+; Generate the frequencies of the pentatonic scale
 scale: { 0, 2, 4, 7, 9 }
 root: 440
 freqs: (2^(1/12))^scale * root
@@ -38,6 +38,12 @@ clock
 -> filter~ 40
 -> 1|vca
 
+; Randomise decay time
+snh: snh~
+clock -> 1|snh
+
+noise~ -> *0.5 -> +0.5
+-> * sf/2 + sf/10 -> snh -> 1|eg
 
 ; Generate sine signal and output
 index: snh~
@@ -52,12 +58,6 @@ noise~ -> index
 -> file~ "Random.raw"
 
 
-; Randomise decay time
-snh: snh~
-clock -> 1|snh
-
-noise~ -> *0.5 -> +0.5
--> * sf/2 + sf/10 -> snh -> 1|eg
 
 )";
 
