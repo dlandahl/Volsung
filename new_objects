@@ -1,11 +1,9 @@
 
 log~ ; Invokes the log function at rising edge
-eg~ ; Generates an envelope stage
 hpf~ ; Highpass filter
 bpf~ ; Bandpass filter
 notch~ ; Notch filter
 bell~ ; Bell filter
-snh~ ; Sample and hold
 edge~ ; Edge detector
 table~ ; Stores a table
 env~ ; Peak envelope follower
@@ -14,7 +12,6 @@ saw~ ; Saw oscillator
 tri~ ; Triangle oscillator
 floor~ ; Floor function
 ceil~ ; Ceiling function
-int~ ; Round to the nearest integer
 apf~ ; Allpass filter
 
 Completed:
@@ -36,3 +33,8 @@ abs~ ; Absolute value of input
 div~ ; Divide
 sub~ ; Subtract
 step~ ; Step through a sequence
+eg~ ; Generates an envelope stage
+int~ ; Round to the nearest integer
+seq~ ; Lets you read from a sequence
+snh~ ; Sample and hold
+const~ ; Holds and outputs a constant value

@@ -224,7 +224,7 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 {
 	if (object_type == "osc") program->create_object<OscillatorObject>(object_name, arguments);
 	else if (object_type == "add")   program->create_object<AddObject>(object_name, arguments);
-	else if (object_type == "square")program->create_object<SquareObject>(object_name, arguments);
+	else if (object_type == "sqr")program->create_object<SquareObject>(object_name, arguments);
 	else if (object_type == "delay") program->create_object<DelayObject>(object_name, arguments);
 	else if (object_type == "mult")  program->create_object<MultObject>(object_name, arguments);
 	else if (object_type == "sub")   program->create_object<SubtractionObject>(object_name, arguments);
@@ -240,6 +240,11 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	else if (object_type == "filter")program->create_object<FilterObject>(object_name, arguments);
 	else if (object_type == "file")  program->create_object<FileoutObject>(object_name, arguments);
 	else if (object_type == "step")  program->create_object<StepSequence>(object_name, arguments);
+	else if (object_type == "int")  program->create_object<RoundObject>(object_name, arguments);
+	else if (object_type == "seq")program->create_object<SequenceObject>(object_name, arguments);
+	else if (object_type == "snh")  program->create_object<SampleAndHoldObject>(object_name, arguments);
+	else if (object_type == "eg")  program->create_object<EnvelopeObject>(object_name, arguments);
+	else if (object_type == "const")  program->create_object<ConstObject>(object_name, arguments);
 	else error("No such object type: " + object_type);
 }
 

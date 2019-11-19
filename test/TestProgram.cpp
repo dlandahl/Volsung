@@ -23,9 +23,41 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-clock~ 2
--> step~ 1..10|3
--> output
+scale: { 0, 2, 4, 7, 9 }
+root: 440
+freqs: (2^(1/12))^scale * root
+
+
+; Trigger and smooth envelope
+eg: eg~
+vca: mult~
+clock: clock~ sf / 4
+
+clock
+-> 0|eg
+-> filter~ 40
+-> 1|vca
+
+
+; Generate sine signal and output
+index: snh~
+clock -> 1|index
+
+noise~ -> index
+-> *0.5 -> +0.5
+-> *4.9
+-> seq~ freqs
+-> osc~
+-> vca
+-> file~ "Random.raw"
+
+
+; Randomise decay time
+snh: snh~
+clock -> 1|snh
+
+noise~ -> *0.5 -> +0.5
+-> * sf/2 + sf/10 -> snh -> 1|eg
 
 )";
 
@@ -34,7 +66,7 @@ clock~ 2
 	parser.parse_program(prog);
 	log("Finished parsing");
 
-	for (uint n = 0; n < 30; n++) std::cout << prog.run(0.f) << '\n';
+	for (uint n = 0; n < SAMPLE_RATE * 10; n++) prog.run(0.f);
 	prog.finish();
 }
 

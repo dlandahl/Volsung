@@ -88,6 +88,7 @@ class NoiseObject : public AudioObject
 {
 	std::default_random_engine generator;
 	std::uniform_real_distribution<float> distribution;
+	std::random_device seed;
 	
 	void run(buf&, buf&) override;
 
@@ -265,6 +266,59 @@ class PowerObject : public AudioObject
 	void run(buf&, buf&) override;
 public:
 	PowerObject(std::vector<TypedValue>);
+};
+
+
+
+class EnvelopeObject : public AudioObject
+{
+	float length = 1000;
+	float start = 1.f;
+	float end = 0.f;
+	int time = 0;
+
+	void run(buf&, buf&) override;
+public:
+	EnvelopeObject(std::vector<TypedValue>);
+};
+
+
+class RoundObject : public AudioObject
+{
+	void run(buf&, buf&) override;
+public:
+	RoundObject(std::vector<TypedValue>);
+};
+
+
+class SequenceObject : public AudioObject
+{
+	Sequence sequence;
+
+	void run(buf&, buf&) override;
+public:
+	SequenceObject(std::vector<TypedValue>);
+};
+
+
+class SampleAndHoldObject : public AudioObject
+{
+	float value = 0;
+
+	void run(buf&, buf&) override;
+public:
+	SampleAndHoldObject(std::vector<TypedValue>);
+};
+
+
+
+class ConstObject : public AudioObject
+{
+	float value = 0;
+
+	void run(buf&, buf&) override;
+public:
+	ConstObject(std::vector<TypedValue>);
 };
 
 }

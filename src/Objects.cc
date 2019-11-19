@@ -108,7 +108,7 @@ void NoiseObject::run(buf &, buf &out)
 }
 
 NoiseObject::NoiseObject(std::vector<TypedValue>) :
-	distribution(-1.0f, 1.0f)
+	distribution(-1.0f, 1.0f), generator(seed())
 { set_io(0, 1); }
 
 
@@ -309,6 +309,70 @@ PowerObject::PowerObject(std::vector<TypedValue> arguments)
 {
 	init(2, 1, arguments, { &exponent });
 	set_defval(&exponent, exponent, 1);
+}
+
+
+
+
+void EnvelopeObject::run(buf&, buf& out)
+{
+	if (gate_opened(0)) time = 0;
+	if (time > length) time = length;
+	
+	float ratio = float(time) / (length+0.001);
+	out[0][0] = (1-ratio) * start + ratio * end;
+	time++;
+}
+
+EnvelopeObject::EnvelopeObject(std::vector<TypedValue> arguments)
+{
+	init(4, 1, arguments, { &length, &start, &end });
+	set_defval(&length, length, 1);
+	set_defval(&start, start, 2);
+	set_defval(&end, end, 3);
+}
+
+void RoundObject::run(buf& in, buf& out)
+{
+	out[0][0] = std::round(in[0][0]);
+}
+
+RoundObject::RoundObject(std::vector<TypedValue>)
+{
+	set_io(1, 1);
+}
+
+void SequenceObject::run(buf& in, buf& out)
+{
+	out[0][0] = sequence.data[(int) in[0][0]];
+}
+
+SequenceObject::SequenceObject(std::vector<TypedValue> arguments)
+{
+	set_io(1, 1);
+	sequence = arguments[0].get_value<Sequence>();
+}
+
+void SampleAndHoldObject::run(buf& in, buf& out)
+{
+	if (gate_opened(1)) value = in[0][0];
+	out[0][0] = value;
+}
+
+SampleAndHoldObject::SampleAndHoldObject(std::vector<TypedValue> arguments)
+{
+	set_io(2, 1);
+}
+
+void ConstObject::run(buf&, buf& out)
+{
+	out[0][0] = value;
+}
+
+ConstObject::ConstObject(std::vector<TypedValue> arguments)
+{
+	value = arguments[0].get_value<float>();
+	set_io(0, 1);
 }
 
 }
