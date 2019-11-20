@@ -22,6 +22,13 @@ enum class Type {
 	string
 };
 
+enum class ConnectionType {
+	one_to_one,
+	one_to_many,
+	many_to_one,
+	many_to_many
+};
+
 struct Sequence
 {
 	std::vector<float> data;
@@ -71,7 +78,6 @@ inline std::string type_debug_name<std::string>() { return "Text"; }
 
 class Program
 {
-
 	uint lines_parsed = 0;
 	static inline std::map<std::string, directive_functor> custom_directives;
     Program* parent = nullptr;
@@ -104,7 +110,7 @@ public:
 	 *  This template can be used to connect two audio objects by name.
 	 */
 
-	static void connect_objects(Program&, std::string, uint, std::string, uint);
+	void connect_objects(std::string, uint, std::string, uint, ConnectionType = ConnectionType::one_to_one);
 
 	/*! \brief Create a custom user directive
 	 *

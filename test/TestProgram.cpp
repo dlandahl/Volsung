@@ -22,42 +22,26 @@ int main(int argc, char ** argv)
 
 	std::string code =
 R"(
-; Generate the frequencies of the pentatonic scale
-scale: { 0, 2, 4, 7, 9 }
-root: 440
-freqs: (2^(1/12))^scale * root
+
+chord: [4] saw~ 100*n
+
+N: 5
+Q: 4
+
+carrier_bands: [N] bpf~ transform(n), Q
+amps: [N] mult~
+
+chord|0 x> 0|carrier_bands|0 => 0|amps
 
 
-; Trigger and smooth envelope
-eg: eg~
-vca: mult~
-clock: clock~ sf / 4
+mod_bands: [N] bpf~ transform(n), Q
+mod_followers: [N] env~ 20ms, 20ms
 
-clock
--> 0|eg
--> filter~ 40
--> 1|vca
+mod_bands{0}     => mod_followers{0}
+mod_followers{0} => amps{1}
 
-; Randomise decay time
-snh: snh~
-clock -> 1|snh
-
-noise~ -> *0.5 -> +0.5
--> * sf/2 + sf/10 -> snh -> 1|eg
-
-; Generate sine signal and output
-index: snh~
-clock -> 1|index
-
-noise~ -> index
--> *0.5 -> +0.5
--> *4.9
--> seq~ freqs
--> osc~
--> vca
--> file~ "Random.raw"
-
-
+input{0} <> mod_bands{0}
+amps{0}  >> output{0}
 
 )";
 

@@ -50,6 +50,6 @@ noise~ -> index
 -> osc~
 -> vca
 -> file~ "Random.raw"
-x
+
 
 ```

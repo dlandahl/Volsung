@@ -45,6 +45,11 @@ void TypedValue::operator-=(TypedValue other)
 		for (uint n = 0; n < get_value<Sequence>().size(); n++)
 			get_value<Sequence>().data[n] -= other.get_value<float>();
 	}
+	else if (is_type<float>() && other.is_type<Sequence>()) {
+		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
+			other.get_value<Sequence>().data[n] = get_value<float>() - other.get_value<Sequence>().data[n];
+		*this = other;
+	}
 	else {
 		log("Invalid arguments on - operator");
 		throw ParseException();
@@ -74,6 +79,11 @@ void TypedValue::operator/=(TypedValue other)
 	else if (is_type<Sequence>() && other.is_type<float>()) {
 		for (uint n = 0; n < get_value<Sequence>().size(); n++)
 			get_value<Sequence>().data[n] /= other.get_value<float>();
+	}
+	else if (is_type<float>() && other.is_type<Sequence>()) {
+		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
+			other.get_value<Sequence>().data[n] = get_value<float>() / other.get_value<Sequence>().data[n];
+		*this = other;
 	}
 	else {
 		log("Invalid arguments on / operator");
@@ -132,15 +142,48 @@ void Program::connect_objects(
 		log("Index out of range for connection");
 }
 
-void Program::connect_objects(Program &st,
-                              std::string a, uint out,
-	                          std::string b, uint in)
+void Program::connect_objects(std::string a, uint out,
+	                          std::string b, uint in, ConnectionType type)
 {
-	if (!st.table.count(a)) log("Object " + a + " has not been declared");
-	else if (!st.table.count(b)) log("Object " + b + " has not been declared");
-	else {
-		st.connect_objects(st.table[a], out, st.table[b], in);
-		return;
+	if (type == ConnectionType::one_to_one) {
+		if (!table.count(a)) log("Object " + a + " has not been declared");
+		else if (!table.count(b)) log("Object " + b + " has not been declared");
+		else {
+			connect_objects(table[a], out, table[b], in);
+			return;
+		}
+	}
+	else if (type == ConnectionType::many_to_one){
+		if (!group_sizes.count(a)) log("Group " + a + " has not been declared");
+		else if (!table.count(b)) log("Object " + b + " has not been declared");
+		else {
+			for (uint n = 0; n < group_sizes[a]; n++) {
+				connect_objects(table["__grp_" + a + std::to_string(n)], out, table[b], in);
+			}
+			return;
+		}
+	}
+	else if (type == ConnectionType::one_to_many){
+		if (!table.count(a)) log("Object " + a + " has not been declared");
+		else if (!group_sizes.count(b)) log("Group " + b + " has not been declared");
+		else {
+			for (uint n = 0; n < group_sizes[b]; n++) {
+				connect_objects(table[a], out, table["__grp_" + b + std::to_string(n)], in);
+			}
+			return;
+		}
+	}
+	else if (type == ConnectionType::many_to_many){
+		if (!group_sizes.count(a)) log("Group " + a + " has not been declared");
+		else if (!group_sizes.count(b)) log("Group " + b + " has not been declared");
+		else if (group_sizes[a] != group_sizes[b]) log("Group sizes to be connected in parallel are not identical");
+		else {
+			for (uint n = 0; n < group_sizes[a]; n++) {
+				connect_objects(table["__grp_" + a + std::to_string(n)], out,
+				                table["__grp_" + b + std::to_string(n)], in);
+			}
+			return;
+		}
 	}
 	throw ParseException();
 }

@@ -35,8 +35,6 @@ public:
 
 class DriveObject : public AudioObject
 {
-	float pregain = 2;
-	
 	void run(buf&, buf&) override;
 
 public:

@@ -13,8 +13,7 @@ void AudioObject::implement()
 {
 	for (uint n = 0; n < inputs.size(); n++)
 	{
-		float value = inputs[n].read_value();
-		in[n][0] = value;
+		in[n][0] = inputs[n].read_value();
 		in[n].increment_pointer();
 	}
 
@@ -25,8 +24,7 @@ void AudioObject::implement()
 
 	for (uint n = 0; n < outputs.size(); n++)
 	{
-		float value = out[n][0];
-		outputs[n].write_value(value);
+		outputs[n].write_value(out[n][0]);
 		out[n].increment_pointer();
 	}
 }

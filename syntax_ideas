@@ -21,10 +21,6 @@ osc_bank_b: #5 ~osc my_function(2*n)
 modulator{0} <> osc_bank{'frequency'}
 modulator{0} -> *0.5 -> +0.5 -> osc_bank[0]{'phase'}
 
-custom_object: {1, 2} [
-	link frequency: _0 in{0} 100
-	ct frequency -> out{0}
-]
 
 thing: custom_object 200
 x -> thing{0}
@@ -183,3 +179,14 @@ clock(0)
 
 
 
+
+
+delay: (2, 1) {
+	delay: ddl~ _1
+
+	in|0
+	-> delay
+	-> mult~ 0.5
+	-> delay
+	-> 0|out
+}

@@ -39,6 +39,12 @@ Token Lexer::get_next_token()
 		position--;
 		return { less_than, "" };
 	}
+	if (current() == '=') {
+		position++;
+		if (current() == '>') return { parallel, "" };
+		position--;
+		return { error, "" };
+	}
 	if (current() == '.') {
 		position++;
 		if (current() == '.') return { elipsis, "" };
@@ -147,7 +153,7 @@ void Parser::parse_program(Graph& graph)
 		if (peek(identifier)) {
 			next_token();
 			if (peek(colon)) parse_declaration();
-			else if (peek(vertical_bar) || peek(arrow) || peek(newline)) parse_connection();
+			else if (peek(vertical_bar) || peek(arrow) || peek(newline) || peek(many_to_one) || peek(one_to_many) || peek(parallel)) parse_connection();
 			else {
 				next_token();
 				error("Expected colon or open brace, got " + debug_names[current.type]);
@@ -184,7 +190,8 @@ void Parser::parse_declaration()
 		program->add_symbol(name, value);
 		return;
 
-	} else if (peek(open_bracket)) {
+	}
+	else if (peek(open_bracket)) {
 		expect(open_bracket);
 		next_token();
 		int count = (int) parse_expression().get_value<float>();
@@ -202,7 +209,8 @@ void Parser::parse_declaration()
 		program->group_sizes[name] = count;
 		return;
 		
-	} else if (!peek(object)) {
+	}
+	else if (!peek(object)) {
 		next_token();
 		error("RHS of declaration is " + debug_names[current.type] + ", should be string, object, or expression.");
 		return;
@@ -225,7 +233,7 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	if (object_type == "osc") program->create_object<OscillatorObject>(object_name, arguments);
 	else if (object_type == "add")   program->create_object<AddObject>(object_name, arguments);
 	else if (object_type == "sqr")program->create_object<SquareObject>(object_name, arguments);
-	else if (object_type == "delay") program->create_object<DelayObject>(object_name, arguments);
+	else if (object_type == "ddl") program->create_object<DelayObject>(object_name, arguments);
 	else if (object_type == "mult")  program->create_object<MultObject>(object_name, arguments);
 	else if (object_type == "sub")   program->create_object<SubtractionObject>(object_name, arguments);
 	else if (object_type == "div")   program->create_object<DivisionObject>(object_name, arguments);
@@ -252,16 +260,22 @@ void Parser::parse_connection()
 {
 	std::string output_object = get_object_to_connect(), input_object;;
 	int output_index = 0, input_index = 0;
-
+	ConnectionType connection_type;
 	if (peek(vertical_bar)) {
 		expect(vertical_bar);
 		expect(numeric_literal);
 		output_index = std::stoi(current.value);
 	} else (output_index = 0);
+	
 	while (peek(newline)) next_token();
-	while (peek(arrow)) {
-		expect(arrow);
-
+	do {
+		next_token();
+		if (current.type == arrow) connection_type = ConnectionType::one_to_one;
+		else if (current.type == many_to_one) connection_type = ConnectionType::many_to_one;
+		else if (current.type == one_to_many) connection_type = ConnectionType::one_to_many;
+		else if (current.type == parallel) connection_type = ConnectionType::many_to_many;
+		else error("Expected connection operator");
+		
 		if (peek(numeric_literal)) {
 			expect(numeric_literal);
 			input_index = std::stoi(current.value);
@@ -270,7 +284,7 @@ void Parser::parse_connection()
 
 		next_token();
 		input_object = get_object_to_connect();
-		Program::connect_objects(*program, output_object, output_index, input_object, input_index);
+		program->connect_objects(output_object, output_index, input_object, input_index, connection_type);
 		output_object = input_object;
 
 		if (peek(vertical_bar)) {
@@ -278,9 +292,9 @@ void Parser::parse_connection()
 			expect(numeric_literal);
 			output_index = std::stoi(current.value);
 		} else (input_index = 0);
-
 		while (peek(newline)) next_token();
-	}
+
+	} while (peek(arrow) || peek(many_to_one) || peek(one_to_many) || peek(parallel));
 }
 
 std::string Parser::get_object_to_connect()

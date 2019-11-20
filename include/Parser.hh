@@ -36,6 +36,7 @@ enum TokenType {
 	caret,
 	many_to_one,
 	one_to_many,
+	parallel,
 	vertical_bar,
 	elipsis,
 	dot,
@@ -67,6 +68,7 @@ inline std::map<TokenType, std::string> debug_names = {
 { many_to_one, "Many-to-One" },
 { one_to_many, "One-to-Many" },
 { vertical_bar, "Vertical Bar" },
+{ parallel, "Parallel Connection Operator" },
 { elipsis, "Elipsis" },
 { dot, "Dot" },
 { eof, "End of File" }

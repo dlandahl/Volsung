@@ -5,9 +5,7 @@ bpf~ ; Bandpass filter
 notch~ ; Notch filter
 bell~ ; Bell filter
 edge~ ; Edge detector
-table~ ; Stores a table
 env~ ; Peak envelope follower
-rms~ ; Get the RMS of the signal
 saw~ ; Saw oscillator
 tri~ ; Triangle oscillator
 floor~ ; Floor function
@@ -20,7 +18,7 @@ osc~ ; Generates a sine signal
 sat~ ; Saturates the signal
 add~ ; Adds two signals
 mult~ ; Multiplies two signals
-delay~ ; Delays a signal
+ddl~ ; Delays a signal
 file~ ; Writes a signal to a file
 noise~ ; Generates white noise
 square~ ; Generates a pulse wave with variable duty cycle
