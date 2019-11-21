@@ -153,7 +153,8 @@ void Parser::parse_program(Graph& graph)
 		if (peek(identifier)) {
 			next_token();
 			if (peek(colon)) parse_declaration();
-			else if (peek(vertical_bar) || peek(arrow) || peek(newline) || peek(many_to_one) || peek(one_to_many) || peek(parallel)) parse_connection();
+			else if (peek(vertical_bar) || peek(arrow) || peek(newline) ||
+			         peek(many_to_one) || peek(one_to_many) || peek(parallel)) parse_connection();
 			else {
 				next_token();
 				error("Expected colon or open brace, got " + debug_names[current.type]);
@@ -162,6 +163,9 @@ void Parser::parse_program(Graph& graph)
 		else if (peek(object)) {
 			next_token();
 			parse_connection();
+		}
+		else if (peek(ampersand)) {
+			parse_directive();
 		}
 		else {
 			next_token();
@@ -200,7 +204,10 @@ void Parser::parse_declaration()
 		expect(object);
 		std::string object_type = current.value;
 		next_token();
-		Sequence parameters = parse_expression().get_value<Sequence>();
+		TypedValue param = parse_expression();
+		Sequence parameters;
+		if (param.is_type<Sequence>()) parmeters = param.get_value<Sequence>();
+		else for (uint n = 0; n < count; n++) parameters.data.push_back(param.get_value<float>());
 		if (parameters.size() != count) error("Sequence initialising group is not the same size as the group");
 
 		for (uint n = 0; n < count; n++)
@@ -291,7 +298,7 @@ void Parser::parse_connection()
 			expect(vertical_bar);
 			expect(numeric_literal);
 			output_index = std::stoi(current.value);
-		} else (input_index = 0);
+		} else (output_index = 0);
 		while (peek(newline)) next_token();
 
 	} while (peek(arrow) || peek(many_to_one) || peek(one_to_many) || peek(parallel));
@@ -310,7 +317,7 @@ std::string Parser::get_object_to_connect()
 
 		Token operation = current;
 		std::vector<TypedValue> argument = {0};
-		if (!(peek(arrow) || peek(newline))) {
+		if (!(peek(arrow) || peek(newline) || peek(one_to_many) || peek(many_to_one) || peek(parallel))) {
 			next_token();
 			argument = { parse_expression() };
 		}
@@ -338,6 +345,22 @@ std::string Parser::get_object_to_connect()
 	}
 
 	return output;
+}
+
+void Parser::parse_directive()
+{
+	expect(ampersand);
+	expect(identifier);
+	std::string directive = current.value;
+	std::vector<TypedValue> arguments;
+	next_token();
+	arguments.push_back(parse_expression());
+	while (peek(comma)) {
+		expect(comma);
+		next_token();
+		arguments.push_back(parse_expression());
+	}
+	program->invoke_directive(directive, arguments);
 }
 
 TypedValue Parser::parse_expression()
@@ -428,18 +451,18 @@ TypedValue Parser::parse_factor()
 	}
 
 	if (peek(elipsis)) {
-		int const lower = (int) value.get_value<float>();
+		float const lower = value.get_value<float>();
 		expect(elipsis);
 		next_token();
-		int const upper = (int) parse_expression().get_value<float>();
-		int step = 1;
+		float const upper =parse_expression().get_value<float>();
+		float step = 1;
 		if (peek(vertical_bar)) {
 			next_token();
 			next_token();
-			step = (int) parse_expression().get_value<float>();
+			step = parse_expression().get_value<float>();
 		}
 		Sequence s;
-		for (int n = lower; n <= upper; n += step) s.data.push_back(n);
+		for (float n = lower; n <= upper; n += step) s.data.push_back(n);
 		value = s;
 	}
 	return value;

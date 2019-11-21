@@ -109,7 +109,7 @@ public:
 
 /*! \brief A parser for a Volsung program
  *  
- *  Use this to parse a Volsung program, and populate the symbol tables of a Program class.
+ *  Use this to parse a Volsung program, and populate the symbol tables of a Program class instance.
  */
 
 class Parser : public Lexer
@@ -125,6 +125,7 @@ class Parser : public Lexer
 	void parse_connection();
 	Sequence parse_sequence();
 	float parse_number();
+	void parse_directive();
 	std::string get_object_to_connect();
 	void make_object(std::string, std::string, std::vector<TypedValue>);
 

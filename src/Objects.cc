@@ -183,7 +183,7 @@ AudioInputObject::AudioInputObject(std::vector<TypedValue> args)
 
 void AudioOutputObject::run(buf& in, buf& out)
 {
-	for (auto& input : in) data[0] = input[0];
+	for (int n = 0; n < in.size(); n++) data[n] = in[n][0];
 }
 
 AudioOutputObject::AudioOutputObject(std::vector<TypedValue> args)

@@ -138,8 +138,10 @@ void Program::connect_objects(
 {
 	if (a->outputs.size() > out && b->inputs.size() > in)
 		a->outputs[out].connect(b->inputs[in]);
-	else
+	else {
 		log("Index out of range for connection");
+		throw ParseException();
+	}
 }
 
 void Program::connect_objects(std::string a, uint out,
@@ -213,6 +215,27 @@ float Program::run(float sample)
 	return out;
 }
 
+std::vector<float> Program::run(std::vector<float> sample)
+{
+	if (inputs) {
+		AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
+		object->data = { 0 };
+		for (int n = 0; n < inputs; n++) object->data[n] = sample[n];
+	}
+	
+	run();
+	std::vector<float> out;
+
+	
+	if (outputs) {
+		AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
+		for (int n = 0; n < outputs; n++) out.push_back(object->data[n]);
+		object->data = { 0 };
+	}
+	return out;
+}
+
+
 void Program::finish()
 {
 	for (auto const& entry : table)
@@ -233,7 +256,7 @@ void Program::add_directive(std::string name, directive_functor function)
 		custom_directives[name] = function;
 }
 
-void Program::invoke_directive(std::string name, std::vector<std::string> arguments)
+void Program::invoke_directive(std::string name, std::vector<TypedValue> arguments)
 {
 	if (!custom_directives.count(name)) {
 		log("Unknown directive");

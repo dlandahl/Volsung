@@ -1,0 +1,7 @@
+
+Generalise object declaration parsing (allow inline groups)
+
+Fix multiple parameter parsing
+
+Allow for larger blocksize to improve performance
+

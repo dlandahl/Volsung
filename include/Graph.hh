@@ -13,7 +13,6 @@
 namespace Volsung {
 
 class Program;
-using directive_functor = std::function<void(std::vector<std::string>, Program*)>;
 using callback_functor = std::function<void(buf&, buf&, std::any)>;
 
 enum class Type {
@@ -69,6 +68,8 @@ inline std::string type_debug_name<Sequence>() { return "Sequence"; }
 template<>
 inline std::string type_debug_name<std::string>() { return "Text"; }
 
+using directive_functor = std::function<void(std::vector<TypedValue>, Program*)>;
+
 /*! \brief An instance of a Volsung program
  *  
  *  This class stores a representation of a parsed Volsung program.
@@ -118,7 +119,7 @@ public:
 	 */
 
 	static void add_directive(std::string, directive_functor);
-	void invoke_directive(std::string, std::vector<std::string>);
+	void invoke_directive(std::string, std::vector<TypedValue>);
 
 	/*! \brief Create an ambient user object
 	 *
