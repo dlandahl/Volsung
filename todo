@@ -5,3 +5,11 @@ Fix multiple parameter parsing
 
 Allow for larger blocksize to improve performance
 
+Fractional delay time
+
+Automatically fall back to asm.js
+
+Cross connection
+
+Random value for expressions
+
