@@ -14,3 +14,5 @@ Cross connection
 Random value for expressions
 
 Allow WASM to allocate more memory
+
+Allow sequence summation and multiplication
