@@ -11,7 +11,7 @@ int main(int argc, char ** argv)
 {
 	Program prog;
 
-	prog.configure_io(1, 1);
+	prog.configure_io(1, 2);
 
 	debug_callback = [] (std::string message) { std::cout << message; };
 
@@ -25,10 +25,8 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-&config sf
 
-tri~ 300
--> file~ "triangle.raw"
+seq: (1..4) * { 1, 2, 3, 4}
 
 )";
 

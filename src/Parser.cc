@@ -154,7 +154,8 @@ bool Parser::parse_program(Graph& graph)
 			next_token();
 			if (peek(colon)) parse_declaration();
 			else if (peek(vertical_bar) || peek(arrow) || peek(newline) ||
-			         peek(many_to_one) || peek(one_to_many) || peek(parallel)) parse_connection();
+			         peek(many_to_one) || peek(one_to_many) || peek(parallel)
+					 || peek(open_bracket)) parse_connection();
 			else {
 				next_token();
 				error("Expected colon or connection operator, got " + debug_names[current.type]);
@@ -352,6 +353,13 @@ std::string Parser::get_object_to_connect()
 	}
 	else if (current.type == identifier) {
 		output = current.value;
+		if (peek(open_bracket)) {
+			expect(open_bracket);
+			next_token();
+			int index = parse_number();
+			expect(close_bracket);
+			output = "__grp_" + output + std::to_string(index);
+		}
 	}
 	else {
 		error("Expected inline object declaration or identifier, got " + debug_names[current.type]);

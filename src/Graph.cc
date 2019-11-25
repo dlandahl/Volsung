@@ -63,6 +63,16 @@ void TypedValue::operator*=(TypedValue other)
 		for (uint n = 0; n < get_value<Sequence>().size(); n++)
 			get_value<Sequence>().data[n] *= other.get_value<float>();
 	}
+	else if (is_type<float>() && other.is_type<Sequence>()) {
+		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
+			other.get_value<Sequence>().data[n] = get_value<float>() * other.get_value<Sequence>().data[n];
+		*this = other;
+	}
+	else if (is_type<Sequence>() && other.is_type<Sequence>()) {
+		assert(this->get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to multiply sequences of inequal size");
+		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
+			this->get_value<Sequence>().data[n] *= other.get_value<Sequence>().data[n];
+	}
 	else error("Invalid arguments on * operator");
 }
 
@@ -79,6 +89,11 @@ void TypedValue::operator/=(TypedValue other)
 		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
 			other.get_value<Sequence>().data[n] = get_value<float>() / other.get_value<Sequence>().data[n];
 		*this = other;
+	}
+	else if (is_type<Sequence>() && other.is_type<Sequence>()) {
+		assert(this->get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to divide sequences of inequal size");
+		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
+			this->get_value<Sequence>().data[n] /= other.get_value<Sequence>().data[n];
 	}
 	else error("Invalid argument on / operator");
 }
