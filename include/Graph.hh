@@ -4,9 +4,8 @@
 #include <variant>
 #include <memory>
 #include <istream>
-#include <type_traits>
-#include <sstream>
 #include <any>
+#include <random>
 
 #include "Volsung.hh"
 
@@ -88,6 +87,10 @@ class Program
 	std::unordered_map<std::string, std::unique_ptr<AudioObject>> table;
 	std::unordered_map<std::string, TypedValue> symbol_table;
 
+	std::uniform_real_distribution<float> distribution;
+	std::random_device seed;
+	std::default_random_engine generator;
+
 public:
 	std::unordered_map<std::string, int> group_sizes;
 
@@ -98,7 +101,7 @@ public:
 	 */
 
 	template<class>
-	bool create_object(std::string, std::vector<TypedValue>);
+	void create_object(std::string, std::vector<TypedValue>);
 
 	template<class T>
 	T* get_audio_object_raw_pointer(std::string);
@@ -169,6 +172,10 @@ public:
 	TypedValue get_symbol_value(std::string);
 	void add_symbol(std::string, TypedValue);
 	bool symbol_exists(std::string);
+
+	Program() :
+		distribution(-1.0f, 1.0f), generator(seed())
+	{ }
 };
 
 using Graph = Program;
@@ -182,23 +189,17 @@ T* Program::get_audio_object_raw_pointer(std::string name)
 }
 
 template<class Object>
-bool Program::create_object(std::string name, std::vector<TypedValue> arguments)
+void Program::create_object(std::string name, std::vector<TypedValue> arguments)
 {
-	if (table.count(name) == 0) {
-		table[name] = std::make_unique<Object>(arguments);
-		return true;
-	}
-	log("Symbol '" + name + "' is already used");
-	throw ParseException();
+	if (table.count(name) != 0)	error("Symbol '" + name + "' is already used");
+	table[name] = std::make_unique<Object>(arguments);
 }
 
 template<class T>
 bool Program::symbol_is_type(std::string identifier)
 {
-	if (!symbol_exists(identifier)) {
-		log("Symbol " + identifier + " does not exist, attempted to verify type");
-		throw ParseException();
-	}
+	if (!symbol_exists(identifier))
+		error("Symbol " + identifier + " does not exist, attempted to verify type");
 	return symbol_table[identifier].is_type<T>();
 }
 
@@ -206,20 +207,18 @@ template<class T>
 T Program::get_symbol_value(std::string identifier)
 {
 	if (!symbol_exists(identifier))
-		log("Symbol " + identifier + " does not exist, attempted to read value");
+		error("Symbol " + identifier + " does not exist, attempted to read value");
 	else if (!symbol_is_type<T>(identifier))
-		log("Symbol " + identifier + " is wrong type");
-	else return symbol_table[identifier].get_value<T>();
-	throw ParseException();
+		error("Symbol " + identifier + " is wrong type");
+	return symbol_table[identifier].get_value<T>();
 }
 
 template<class T>
 T& TypedValue::get_value()
 {
-	if (!is_type<T>()) {
-		log("Expected type " + type_debug_name<T>());
-		throw ParseException();
-	}
+	if (!is_type<T>())
+		error("Expected type " + type_debug_name<T>());
+
 	return std::get<T>(*this);
 }
 

@@ -30,10 +30,11 @@ void TypedValue::operator+=(TypedValue other)
 		for (uint n = 0; n < get_value<Sequence>().size(); n++)
 			get_value<Sequence>().data[n] += other.get_value<float>();
 	}
-	else {
-		log("Invalid arguments on + operator");
-		throw ParseException();
+	else if (is_type<Sequence>() && other.is_type<Sequence>()) {
+		for (uint n = 0; n < get_value<Sequence>().size(); n++)
+			get_value<Sequence>().data[n] += other.get_value<Sequence>().data[n];
 	}
+	else error("Invalid arguments on + operator");
 }
 
 void TypedValue::operator-=(TypedValue other)
@@ -50,10 +51,7 @@ void TypedValue::operator-=(TypedValue other)
 			other.get_value<Sequence>().data[n] = get_value<float>() - other.get_value<Sequence>().data[n];
 		*this = other;
 	}
-	else {
-		log("Invalid arguments on - operator");
-		throw ParseException();
-	}
+	else error("Invalid argument on - operator");
 }
 
 void TypedValue::operator*=(TypedValue other)
@@ -65,10 +63,7 @@ void TypedValue::operator*=(TypedValue other)
 		for (uint n = 0; n < get_value<Sequence>().size(); n++)
 			get_value<Sequence>().data[n] *= other.get_value<float>();
 	}
-	else {
-		log("Invalid arguments on * operator");
-		throw ParseException();
-	}
+	else error("Invalid arguments on * operator");
 }
 
 void TypedValue::operator/=(TypedValue other)
@@ -85,10 +80,7 @@ void TypedValue::operator/=(TypedValue other)
 			other.get_value<Sequence>().data[n] = get_value<float>() / other.get_value<Sequence>().data[n];
 		*this = other;
 	}
-	else {
-		log("Invalid arguments on / operator");
-		throw ParseException();
-	}
+	else error("Invalid argument on / operator");
 }
 
 void TypedValue::operator^=(TypedValue other)
@@ -106,10 +98,7 @@ void TypedValue::operator^=(TypedValue other)
 			other.get_value<Sequence>().data[n] = std::pow(get_value<float>(), other.get_value<Sequence>().data[n]);
 		*this = other;
 	}
-	else {
-		log("Invalid arguments on * operator");
-		throw ParseException();
-	}
+	else error("Invalid argument on ^ operator");
 }
 
 TypedValue TypedValue::operator-()
@@ -117,15 +106,14 @@ TypedValue TypedValue::operator-()
 	switch(get_type()) {
 		case(Type::number): *this = -this->get_value<float>(); break;
 		case(Type::sequence): for (auto& value: this->get_value<Sequence>().data) value = -value; break;
-		case(Type::string): log("Attempted to negate expression of type string"); throw ParseException();
+		case(Type::string): error("Attempted to negate expression of type string");
 	}
 	return *this;
 }
 
 void Program::create_user_object(std::string name, uint inputs, uint outputs, std::any user_data, callback_functor callback)
 {
-	bool success = create_object<UserObject>(name, { TypedValue(inputs), TypedValue(outputs) });
-	if (!success) return;
+	create_object<UserObject>(name, { TypedValue(inputs), TypedValue(outputs) });
 
 	UserObject* object = get_audio_object_raw_pointer<UserObject>(name);
 	object->callback = callback;
@@ -138,56 +126,37 @@ void Program::connect_objects(
 {
 	if (a->outputs.size() > out && b->inputs.size() > in)
 		a->outputs[out].connect(b->inputs[in]);
-	else {
-		log("Index out of range for connection");
-		throw ParseException();
-	}
+	else error("Index out of range for connection");
 }
 
 void Program::connect_objects(std::string a, uint out,
 	                          std::string b, uint in, ConnectionType type)
 {
 	if (type == ConnectionType::one_to_one) {
-		if (!table.count(a)) log("Object " + a + " has not been declared");
-		else if (!table.count(b)) log("Object " + b + " has not been declared");
-		else {
-			connect_objects(table[a], out, table[b], in);
-			return;
-		}
+		if (!table.count(a)) error("Object " + a + " has not been declared");
+		else if (!table.count(b)) error("Object " + b + " has not been declared");
+		else connect_objects(table[a], out, table[b], in);
 	}
-	else if (type == ConnectionType::many_to_one){
-		if (!group_sizes.count(a)) log("Group " + a + " has not been declared");
-		else if (!table.count(b)) log("Object " + b + " has not been declared");
-		else {
-			for (uint n = 0; n < group_sizes[a]; n++) {
+	else if (type == ConnectionType::many_to_one) {
+		if (!group_sizes.count(a)) error("Group " + a + " has not been declared");
+		else if (!table.count(b)) error("Object " + b + " has not been declared");
+		else for (uint n = 0; n < group_sizes[a]; n++)
 				connect_objects(table["__grp_" + a + std::to_string(n)], out, table[b], in);
-			}
-			return;
-		}
 	}
 	else if (type == ConnectionType::one_to_many){
-		if (!table.count(a)) log("Object " + a + " has not been declared");
-		else if (!group_sizes.count(b)) log("Group " + b + " has not been declared");
-		else {
-			for (uint n = 0; n < group_sizes[b]; n++) {
+		if (!table.count(a)) error("Object " + a + " has not been declared");
+		else if (!group_sizes.count(b)) error("Group " + b + " has not been declared");
+		else for (uint n = 0; n < group_sizes[b]; n++)
 				connect_objects(table[a], out, table["__grp_" + b + std::to_string(n)], in);
-			}
-			return;
-		}
 	}
 	else if (type == ConnectionType::many_to_many){
-		if (!group_sizes.count(a)) log("Group " + a + " has not been declared");
-		else if (!group_sizes.count(b)) log("Group " + b + " has not been declared");
-		else if (group_sizes[a] != group_sizes[b]) log("Group sizes to be connected in parallel are not identical");
-		else {
-			for (uint n = 0; n < group_sizes[a]; n++) {
+		if (!group_sizes.count(a)) error("Group " + a + " has not been declared");
+		else if (!group_sizes.count(b)) error("Group " + b + " has not been declared");
+		else if (group_sizes[a] != group_sizes[b]) error("Group sizes to be connected in parallel are not identical");
+		else for (uint n = 0; n < group_sizes[a]; n++)
 				connect_objects(table["__grp_" + a + std::to_string(n)], out,
 				                table["__grp_" + b + std::to_string(n)], in);
-			}
-			return;
-		}
 	}
-	throw ParseException();
 }
 
 void Program::run()
@@ -245,6 +214,7 @@ void Program::finish()
 void Program::reset()
 {
 	table.clear();
+	symbol_table.clear();
 	
 	if (inputs) create_object<AudioInputObject>("input", { inputs });
 	if (outputs) create_object<AudioOutputObject>("output", { outputs });
@@ -258,11 +228,7 @@ void Program::add_directive(std::string name, directive_functor function)
 
 void Program::invoke_directive(std::string name, std::vector<TypedValue> arguments)
 {
-	if (!custom_directives.count(name)) {
-		log("Unknown directive");
-		throw ParseException();
-		return;
-	}
+	if (!custom_directives.count(name)) error("Unknown directive");
 
 	custom_directives[name](arguments, this);
 }
@@ -275,16 +241,21 @@ void Program::configure_io(uint i, uint o)
 
 void Program::add_symbol(std::string identifier, TypedValue value)
 {
+	if (identifier == "r") error("Name 'r' is reserved");
 	symbol_table[identifier] = value;
 }
 
 bool Program::symbol_exists(std::string identifier)
 {
+	if (identifier == "r") return true;
 	return symbol_table.count(identifier) == 1;
 }
 
 TypedValue Program::get_symbol_value(std::string identifier)
 {
+	float r = distribution(generator);
+	if (identifier == "r") return r;
+
 	return symbol_table[identifier];
 }
 

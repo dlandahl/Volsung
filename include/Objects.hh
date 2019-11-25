@@ -25,7 +25,7 @@ public:
 class DelayObject : public AudioObject
 {
 	void run(buf&, buf&) override;
-	float sample_delay = SAMPLE_RATE/5;
+	float sample_delay = sample_rate/5;
 
 public:
 	DelayObject(std::vector<TypedValue>);
@@ -48,9 +48,10 @@ class FileoutObject : public AudioObject
 	void run(buf&, buf&) override;
 	void finish() override;
 
-	std::vector<float> data;
+	std::vector<float> in_data;
+	std::vector<float> out_data;
 	std::string filename;
-	
+	int pos = 0;
 public:
 	FileoutObject(std::vector<TypedValue>);
 };
@@ -317,6 +318,26 @@ class ConstObject : public AudioObject
 	void run(buf&, buf&) override;
 public:
 	ConstObject(std::vector<TypedValue>);
+};
+
+class SawObject : public AudioObject
+{
+	float phase = -1;
+	float frequency;
+
+	void run(buf&, buf&) override;
+public:
+	SawObject(std::vector<TypedValue>);
+};
+
+class TriangleObject : public AudioObject
+{
+	float phase = 0;
+	float frequency;
+
+	void run(buf&, buf&) override;
+public:
+	TriangleObject(std::vector<TypedValue>);
 };
 
 }

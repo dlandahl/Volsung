@@ -12,7 +12,7 @@
 
 namespace Volsung {
 
-inline float          SAMPLE_RATE = 44100.0f;
+inline float sample_rate = 44100.0f;
 #define PI          3.14159265f
 #define TAU         6.28318530f
 
@@ -45,11 +45,24 @@ inline void log(std::string message, int level=0)
 }
 
 
-class ParseException : public std::exception
+class VolsungException : public std::exception
 {
 public:
 	virtual const char* what() const noexcept override;
 };
+
+inline void assert(bool condition, std::string message)
+{
+	if (!condition) {
+		log(message);
+		throw VolsungException();
+	}
+}
+
+inline void error(std::string message)
+{
+	assert(0, message);
+}
 
 }
 

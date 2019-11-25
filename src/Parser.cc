@@ -4,7 +4,7 @@
 
 namespace Volsung {
 
-const char* ParseException::what() const noexcept
+const char* VolsungException::what() const noexcept
 {
 	return "Volsung has encountered an error during parsing of the provided program and will exit the parsing stage.";
 }
@@ -43,7 +43,7 @@ Token Lexer::get_next_token()
 		position++;
 		if (current() == '>') return { parallel, "" };
 		position--;
-		return { error, "" };
+		return { invalid, "" };
 	}
 	if (current() == '.') {
 		position++;
@@ -101,8 +101,8 @@ Token Lexer::get_next_token()
 		return { string_literal, string };
 	}
 
-	log("Unrecognised Token: " + current());
-	throw ParseException();
+	error("Unrecognised Token: " + current());
+	return { invalid, "" };
 }
 
 char Lexer::current()
@@ -139,11 +139,11 @@ Lexer::~Lexer() {};
 
 
 
-void Parser::parse_program(Graph& graph)
+bool Parser::parse_program(Graph& graph)
 {
 	program = &graph;
 	program->reset();
-	program->add_symbol("sf", SAMPLE_RATE);
+	program->add_symbol("sf", sample_rate);
 	program->add_symbol("tau", TAU);
 	try {
 
@@ -173,10 +173,12 @@ void Parser::parse_program(Graph& graph)
 		}
 	}
 
-	} catch (const ParseException& exception) {
+	} catch (const VolsungException& exception) {
 		log(std::string(exception.what()));
 		program->reset();
+		return false;
 	}
+	return true;
 }
 
 void Parser::parse_declaration()
@@ -203,15 +205,24 @@ void Parser::parse_declaration()
 
 		expect(object);
 		std::string object_type = current.value;
-		next_token();
-		TypedValue param = parse_expression();
-		Sequence parameters;
-		if (param.is_type<Sequence>()) parameters = param.get_value<Sequence>();
-		else for (uint n = 0; n < count; n++) parameters.data.push_back(param.get_value<float>());
-		if (parameters.size() != count) error("Sequence initialising group is not the same size as the group");
 
-		for (uint n = 0; n < count; n++)
-			make_object(object_type, "__grp_" + name + std::to_string(n), { TypedValue(parameters.data[n]) });
+		if (!peek(newline)) {
+			next_token();
+			Sequence parameters;
+			TypedValue param = parse_expression();
+			if (param.is_type<Sequence>()) parameters = param.get_value<Sequence>();
+			else for (uint n = 0; n < count; n++) {
+				parameters.data.push_back(param.get_value<float>());
+			}
+			if (parameters.size() != count) error("Sequence initialising group is not the same size as the group");
+
+			for (uint n = 0; n < count; n++)
+				make_object(object_type, "__grp_" + name + std::to_string(n), { TypedValue(parameters.data[n]) });
+		}
+		else {
+			for (uint n = 0; n < count; n++)
+				make_object(object_type, "__grp_" + name + std::to_string(n), { });
+		}
 
 		program->group_sizes[name] = count;
 		return;
@@ -260,6 +271,8 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	else if (object_type == "snh")  program->create_object<SampleAndHoldObject>(object_name, arguments);
 	else if (object_type == "eg")  program->create_object<EnvelopeObject>(object_name, arguments);
 	else if (object_type == "const")  program->create_object<ConstObject>(object_name, arguments);
+	else if (object_type == "saw")  program->create_object<SawObject>(object_name, arguments);
+	else if (object_type == "tri")  program->create_object<TriangleObject>(object_name, arguments);
 	else error("No such object type: " + object_type);
 }
 
@@ -505,8 +518,7 @@ bool Parser::line_end()
 
 void Parser::error(std::string error)
 {
-	log(std::to_string(line) + ": " + error);
-	throw ParseException();
+	Volsung::error(std::to_string(line) + ": " + error);
 }
 
 Token Parser::next_token()

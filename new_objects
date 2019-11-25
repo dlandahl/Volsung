@@ -6,8 +6,6 @@ notch~ ; Notch filter
 bell~ ; Bell filter
 edge~ ; Edge detector
 env~ ; Peak envelope follower
-saw~ ; Saw oscillator
-tri~ ; Triangle oscillator
 floor~ ; Floor function
 ceil~ ; Ceiling function
 apf~ ; Allpass filter
@@ -36,3 +34,5 @@ int~ ; Round to the nearest integer
 seq~ ; Lets you read from a sequence
 snh~ ; Sample and hold
 const~ ; Holds and outputs a constant value
+saw~ ; Saw oscillator
+tri~ ; Triangle oscillator

@@ -22,7 +22,11 @@ AddObject::AddObject(std::vector<TypedValue> args)
 
 void DelayObject::run(buf &in, buf &out)
 {
-	out[0][0] = in[0][-sample_delay];
+	float lower = in[0][-sample_delay];
+	float upper = in[0][-(sample_delay+0.5)];
+	float ratio = sample_delay - (int) sample_delay;
+	
+	out[0][0] = (1-ratio) * lower + ratio * upper;
 }
 
 DelayObject::DelayObject(std::vector<TypedValue> args)
@@ -46,19 +50,21 @@ DriveObject::DriveObject(std::vector<TypedValue> args)
 
 
 
-void FileoutObject::run(buf &in, buf &)
+void FileoutObject::run(buf &in, buf &out)
 {
-	data.push_back(in[0][0]);
+	if (is_connected(0)) in_data.push_back(in[0][0]);
+	if (out_data.size()) {
+		out[0][0] = out_data[pos++];
+		if (pos >= out_data.size()) pos = out_data.size()-1;
+	}
 }
 
 void FileoutObject::finish()
 {
-	std::fstream file(filename, std::fstream::out | std::fstream::binary);
-
-	for (uint n = 0; n < data.size(); n++)
-	{
-		file.write((const char*)& data[n], sizeof(float));
-	}
+	std::ofstream file(filename, std::fstream::out | std::fstream::binary);
+	
+	for (uint n = 0; n < in_data.size(); n++)
+		file.write((const char*)& in_data[n], sizeof(float));
 
 	file.close();
 }
@@ -66,14 +72,21 @@ void FileoutObject::finish()
 FileoutObject::FileoutObject(std::vector<TypedValue> args)
 {
 	filename = args[0].get_value<std::string>();
-	set_io(1, 0);
+	std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
+	
+	if (file.good()) {
+		out_data.resize(file.tellg() / sizeof(float));
+		file.seekg(0);
+		file.read(reinterpret_cast<char*>(out_data.data()), out_data.size() * sizeof(float));
+	}
+	set_io(1, 1);
 }
 
 
 
 void FilterObject::run(buf& x, buf& y)
 {
-	b = 2 - cos(TAU * frequency / SAMPLE_RATE);
+	b = 2 - cos(TAU * frequency / sample_rate);
 	b = sqrt(b*b - 1) - b;
 	a = 1 + b;
 
@@ -116,7 +129,7 @@ void OscillatorObject::run(buf &, buf &out)
 {
 	out[0][0] = sinf(TAU * phase);
 
-	phase = phase + frequency / SAMPLE_RATE;
+	phase = phase + frequency / sample_rate;
 
 	if (phase >= 1.0) { phase -= 1.0; }
 	if (gate_opened(1)) phase = 0;
@@ -134,7 +147,7 @@ void SquareObject::run(buf &, buf &out)
 {	
 	out[0][0] = (float)sign<float>(sinf(TAU * phase) + pw);
 
-	phase = phase + frequency / SAMPLE_RATE;
+	phase = phase + frequency / sample_rate;
 
 	if (phase >= 1.0) { phase -= 1.0; }
 }
@@ -212,7 +225,7 @@ ComparatorObject::ComparatorObject(std::vector<TypedValue> args)
 void TimerObject::run(buf&, buf &out)
 {
 	out[0][0] = value;
-	value += 1.f / SAMPLE_RATE;
+	value += 1.f / sample_rate;
 	if (gate_opened(0)) value = 0.f;
 }
 
@@ -374,5 +387,34 @@ ConstObject::ConstObject(std::vector<TypedValue> arguments)
 	set_io(0, 1);
 }
 
+void SawObject::run(buf&, buf& out)
+{
+	if (gate_opened(1)) phase = -1;
+	
+	phase += 2.f * frequency / sample_rate;
+	if (phase > 1.f) phase = -1.f;
+	out[0][0] = phase;
 }
 
+SawObject::SawObject(std::vector<TypedValue> arguments)
+{
+	init(2, 1, arguments, { &frequency });
+	set_defval(&frequency, frequency, 0);
+}
+
+void TriangleObject::run(buf&, buf& out)
+{
+	if (gate_opened(1)) phase = 0;
+	
+	phase += frequency / sample_rate;
+	if (phase >= 1.f) phase -= 1.f;
+	out[0][0] = 2.f * fabs(2.f * phase - 1.f) - 1.f;
+}
+
+TriangleObject::TriangleObject(std::vector<TypedValue> arguments)
+{
+	init(2, 1, arguments, { &frequency });
+	set_defval(&frequency, frequency, 0);
+}
+
+}

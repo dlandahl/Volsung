@@ -11,7 +11,7 @@
 namespace Volsung {
 
 enum TokenType {
-	error,
+	invalid,
     identifier,
     object,
     numeric_literal,
@@ -44,7 +44,7 @@ enum TokenType {
 };
 
 inline std::map<TokenType, std::string> debug_names = {
-{ error, "Unrecognised Token" },
+{ invalid, "Unrecognised Token" },
 { identifier, "Identifier" },
 { object, "Object Type" },
 { numeric_literal, "Number" },
@@ -114,7 +114,7 @@ public:
 
 class Parser : public Lexer
 {
-	Token current = { TokenType::error, "" };
+	Token current = { TokenType::invalid, "" };
 	Token next_token();
 	void error(std::string);
 	void expect(TokenType);
@@ -143,7 +143,7 @@ public:
 	 *  Parse the source code and supply the instance of Program to write the audio processing graph into.
 	 */
 
-	void parse_program(Graph&);
+	bool parse_program(Graph&);
 };
 
 }
