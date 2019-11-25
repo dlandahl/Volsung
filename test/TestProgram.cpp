@@ -25,9 +25,18 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-osc~ 440 -> output
+&config 10, 1
 
-&config 4, 1
+N: 10
+n: 1..N
+
+
+partials: [N] osc~ n*225
+shift: [N] mult~ n*10
+gain: [N] div~ n
+
+timer~ <> shift => partials => gain >> *0.5 -> output
+
 
 )";
 

@@ -5,3 +5,6 @@ Fix multiple parameter parsing
 
 Allow for larger blocksize to improve performance
 
+Recreate ambient objects on parsing the program
+
+

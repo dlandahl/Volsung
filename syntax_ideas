@@ -182,11 +182,5 @@ clock(0)
 
 
 delay: (2, 1) {
-	delay: ddl~ _1
-
-	in|0
-	-> delay
-	-> mult~ 0.5
-	-> delay
-	-> 0|out
+	   
 }

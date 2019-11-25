@@ -101,8 +101,8 @@ Token Lexer::get_next_token()
 		return { string_literal, string };
 	}
 
-	log("Lexical Error");
-	return Token { error, "" };
+	log("Unrecognised Token: " + current());
+	throw ParseException();
 }
 
 char Lexer::current()
@@ -157,7 +157,7 @@ void Parser::parse_program(Graph& graph)
 			         peek(many_to_one) || peek(one_to_many) || peek(parallel)) parse_connection();
 			else {
 				next_token();
-				error("Expected colon or open brace, got " + debug_names[current.type]);
+				error("Expected colon or connection operator, got " + debug_names[current.type]);
 			}
 		}
 		else if (peek(object)) {
@@ -206,7 +206,7 @@ void Parser::parse_declaration()
 		next_token();
 		TypedValue param = parse_expression();
 		Sequence parameters;
-		if (param.is_type<Sequence>()) parmeters = param.get_value<Sequence>();
+		if (param.is_type<Sequence>()) parameters = param.get_value<Sequence>();
 		else for (uint n = 0; n < count; n++) parameters.data.push_back(param.get_value<float>());
 		if (parameters.size() != count) error("Sequence initialising group is not the same size as the group");
 
