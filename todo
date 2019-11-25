@@ -7,4 +7,14 @@ Allow for larger blocksize to improve performance
 
 Recreate ambient objects on parsing the program
 
+Fractional delay time
 
+Automatically fall back to asm.js
+
+Cross connection
+
+Random value for expressions
+
+Allow WASM to allocate more memory
+
+Allow sequence summation and multiplication
