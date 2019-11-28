@@ -51,6 +51,7 @@ public:
 	virtual const char* what() const noexcept override;
 };
 
+#undef assert
 inline void assert(bool condition, std::string message)
 {
 	if (!condition) {

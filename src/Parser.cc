@@ -101,7 +101,7 @@ Token Lexer::get_next_token()
 		return { string_literal, string };
 	}
 
-	error("Unrecognised Token: " + current());
+    error("Unrecognised Token: " + std::to_string(current()));
 	return { invalid, "" };
 }
 
@@ -117,9 +117,9 @@ bool Lexer::is_digit()
 
 bool Lexer::is_char()
 {
-	return current() >= 'a' && current() <= 'z'
+	return (current() >= 'a' && current() <= 'z')
 		|| current() == '_'
-		|| current() >= 'A' && current() <= 'Z';
+		|| (current() >= 'A' && current() <= 'Z');
 }
 
 bool Lexer::peek(TokenType expected)

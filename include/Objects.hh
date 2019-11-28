@@ -85,10 +85,10 @@ public:
 
 class NoiseObject : public AudioObject
 {
+    std::random_device seed;
+    std::uniform_real_distribution<float> distribution;
 	std::default_random_engine generator;
-	std::uniform_real_distribution<float> distribution;
-	std::random_device seed;
-	
+		
 	void run(buf&, buf&) override;
 
 public:

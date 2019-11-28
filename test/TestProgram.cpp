@@ -25,8 +25,10 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
+osc: [100] osc~ 440
+osc >> output
 
-seq: (1..4) * { 1, 2, 3, 4}
+&config sf
 
 )";
 

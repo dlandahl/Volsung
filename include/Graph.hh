@@ -78,9 +78,7 @@ using directive_functor = std::function<void(std::vector<TypedValue>, Program*)>
 
 class Program
 {
-	uint lines_parsed = 0;
 	static inline std::map<std::string, directive_functor> custom_directives;
-    Program* parent = nullptr;
 
 	uint inputs = 0;
 	uint outputs = 0;
