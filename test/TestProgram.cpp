@@ -25,10 +25,21 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-osc: [100] osc~ 440
-osc >> output
+carrier_f: 220
+ratio: 0.21
 
-&config sf
+modulator_f: carrier_f * ratio
+index: mult~
+timer: timer~
+
+osc~ modulator_f
+-> index
+-> add~ carrier_f -> osc~
+-> output
+timer -> ^2 -> *100 -> 1|index
+
+
+&config 10, 1
 
 )";
 

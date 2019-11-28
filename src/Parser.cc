@@ -316,6 +316,7 @@ void Parser::parse_connection()
 		while (peek(newline)) next_token();
 
 	} while (peek(arrow) || peek(many_to_one) || peek(one_to_many) || peek(parallel));
+	verify(newline);
 }
 
 std::string Parser::get_object_to_connect()

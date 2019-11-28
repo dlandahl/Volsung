@@ -391,9 +391,11 @@ void SawObject::run(buf&, buf& out)
 {
 	if (gate_opened(1)) phase = -1;
 	
-	phase += 2.f * frequency / sample_rate;
+	phase += std::abs(2.f * frequency / sample_rate);
 	if (phase > 1.f) phase = -1.f;
-	out[0][0] = phase;
+	
+	if (frequency < 0) out[0][0] = -phase;
+	else out[0][0] = phase;
 }
 
 SawObject::SawObject(std::vector<TypedValue> arguments)
