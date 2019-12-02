@@ -30,6 +30,7 @@ int sign(T val)
 	return (T(0) < val) - (val < T(0));
 }
 
+
 inline int debug_level = 0;
 
 /*! \brief Callback for logging and debug messages

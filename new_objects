@@ -1,7 +1,5 @@
 
 log~ ; Invokes the log function at rising edge
-hpf~ ; Highpass filter
-bpf~ ; Bandpass filter
 notch~ ; Notch filter
 bell~ ; Bell filter
 edge~ ; Edge detector
@@ -19,8 +17,8 @@ mult~ ; Multiplies two signals
 ddl~ ; Delays a signal
 file~ ; Writes a signal to a file
 noise~ ; Generates white noise
-square~ ; Generates a pulse wave with variable duty cycle
-filter~ ; First order lowpass filter
+sqr~ ; Generates a pulse wave with variable duty cycle
+pole~ ; First order lowpass filter
 comp~ ; Outputs 1s if a is greater than b
 timer~ ; Outputs the time in seconds since it received a high gate
 clock~ ; Outputs a gate at specified regular intervals
@@ -36,3 +34,6 @@ snh~ ; Sample and hold
 const~ ; Holds and outputs a constant value
 saw~ ; Saw oscillator
 tri~ ; Triangle oscillator
+hpf~ ; Highpass filter
+bpf~ ; Bandpass filter
+lpf~ ; Lowpass filter

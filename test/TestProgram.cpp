@@ -11,7 +11,7 @@ int main(int argc, char ** argv)
 {
 	Program prog;
 
-	prog.configure_io(1, 2);
+	prog.configure_io(0, 1);
 
 	debug_callback = [] (std::string message) { std::cout << message; };
 
@@ -25,21 +25,17 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-carrier_f: 220
-ratio: 0.21
+filter: bpf~
 
-modulator_f: carrier_f * ratio
-index: mult~
-timer: timer~
+osc~ 1 -> abs~ -> *5000 -> +50 -> 1|filter
+const~ 50 -> 2|filter
 
-osc~ modulator_f
--> index
--> add~ carrier_f -> osc~
--> output
-timer -> ^2 -> *100 -> 1|index
+saw~ 110
+-> filter
+-> *0.5
+-> file~ "filtered.raw"
 
-
-&config 10, 1
+&config 5s
 
 )";
 
@@ -48,8 +44,7 @@ timer -> ^2 -> *100 -> 1|index
 	parser.parse_program(prog);
 	log("Finished parsing");
 
-	if (print) for (uint n = 0; n < time; n++) std::cout << prog.run(0.f) << '\n';
+	if (print) for (uint n = 0; n < time; n++) std::cout << prog.run(0.f) << '\n' << std::flush;
 	else for (uint n = 0; n < time; n++) prog.run(0.f);
 	prog.finish();
 }
-

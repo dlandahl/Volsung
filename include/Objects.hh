@@ -236,16 +236,6 @@ public:
 };
 
 
-class BiquadObject : public AudioObject
-{
-protected:
-	float alpha;
-	float cos_omega;
-
-	virtual void calculate_coeffs() = 0;
-	float filter(float);
-};
-
 class StepSequence : public AudioObject
 {
 	Sequence sequence;
@@ -336,8 +326,53 @@ class TriangleObject : public AudioObject
 	float frequency;
 
 	void run(buf&, buf&) override;
+
 public:
 	TriangleObject(std::vector<TypedValue>);
+};
+
+class BiquadObject : public AudioObject
+{
+	void run(buf&, buf&) override;
+protected:
+	float a0, a1, a2, b0, b1, b2;
+
+	float frequency;
+	float resonance = 1.f;
+
+	double omega;
+	double alpha;
+	double cos_omega;
+	double A;
+
+	virtual void calculate_coefficients() = 0;
+
+public:
+	BiquadObject(std::vector<TypedValue>);
+};
+
+class LowpassObject : public BiquadObject
+{
+	void calculate_coefficients() override;
+public:
+	LowpassObject(std::vector<TypedValue> arguments) :
+		BiquadObject(arguments) { }
+};
+
+class HighpassObject : public BiquadObject
+{
+	void calculate_coefficients() override;
+public:
+	HighpassObject(std::vector<TypedValue> arguments) :
+		BiquadObject(arguments) { }
+};
+
+class BandpassObject : public BiquadObject
+{
+	void calculate_coefficients() override;
+public:
+	BandpassObject(std::vector<TypedValue> arguments) :
+		BiquadObject(arguments) { }
 };
 
 }

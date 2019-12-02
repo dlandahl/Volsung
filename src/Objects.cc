@@ -61,12 +61,14 @@ void FileoutObject::run(buf &in, buf &out)
 
 void FileoutObject::finish()
 {
-	std::ofstream file(filename, std::fstream::out | std::fstream::binary);
-	
-	for (uint n = 0; n < in_data.size(); n++)
-		file.write((const char*)& in_data[n], sizeof(float));
+	if (is_connected(0)) {
+		log("writing file");
+		std::ofstream file(filename, std::fstream::out | std::fstream::binary);
+		for (uint n = 0; n < in_data.size(); n++)
+			file.write((const char*)& in_data[n], sizeof(float));
 
-	file.close();
+		file.close();
+	}
 }
 
 FileoutObject::FileoutObject(std::vector<TypedValue> args)
@@ -75,6 +77,8 @@ FileoutObject::FileoutObject(std::vector<TypedValue> args)
 	std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
 	
 	if (file.good()) {
+		log("reading file");
+		log("size: " + std::to_string(file.tellg()));
 		out_data.resize(file.tellg() / sizeof(float));
 		file.seekg(0);
 		file.read(reinterpret_cast<char*>(out_data.data()), out_data.size() * sizeof(float));
@@ -417,6 +421,61 @@ TriangleObject::TriangleObject(std::vector<TypedValue> arguments)
 {
 	init(2, 1, arguments, { &frequency });
 	set_defval(&frequency, frequency, 0);
+}
+
+
+void BiquadObject::run(buf& in, buf& out)
+{
+	if (!resonance) resonance = 0.0001;
+	omega = TAU * frequency / sample_rate;
+	alpha = std::sin(omega) / (2.f * resonance);
+	cos_omega = std::cos(omega);
+
+	calculate_coefficients();
+
+	auto& x = in[0];
+	auto& y = out[0];
+
+	y[0] = (b0*x[0] + b1*x[-1] + b2*x[-2] \
+	      - a1*y[-1] - a2*y[-2]) / a0;
+}
+
+BiquadObject::BiquadObject(std::vector<TypedValue> arguments)
+{
+	init(3, 1, arguments, { &frequency, &resonance });
+	set_defval(&frequency, frequency, 1);
+	set_defval(&resonance, resonance, 2);
+	request_buffer_size(3);
+}
+
+void LowpassObject::calculate_coefficients()
+{
+	a0 = 1 + alpha;
+	a1 = -2 * cos_omega;
+	a2 = 1 - alpha;
+	b0 = (1 - cos_omega) / 2;
+	b1 = 1 - cos_omega;
+	b2 = b0;
+}
+
+void HighpassObject::calculate_coefficients()
+{
+	a0 = 1 + alpha;
+	a1 = -2 * cos_omega;
+	a2 = 1 - alpha;
+	b0 = (1 + cos_omega) / 2;
+	b1 = -(1 + cos_omega);
+	b2 = b0;
+}
+
+void BandpassObject::calculate_coefficients()
+{
+	a0 = 1 + alpha;
+	a1 = -2 * cos_omega;
+	a2 = 1 - alpha;
+	b0 = resonance * alpha;
+	b1 = 0;
+	b2 = -resonance * alpha;
 }
 
 }

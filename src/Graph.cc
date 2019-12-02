@@ -51,6 +51,11 @@ void TypedValue::operator-=(TypedValue other)
 			other.get_value<Sequence>().data[n] = get_value<float>() - other.get_value<Sequence>().data[n];
 		*this = other;
 	}
+	else if (is_type<Sequence>() && other.is_type<Sequence>()) {
+		assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to subtract sequences of inequal size");
+		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
+			get_value<Sequence>().data[n] s= other.get_value<Sequence>().data[n];
+	}
 	else error("Invalid argument on - operator");
 }
 
@@ -69,9 +74,9 @@ void TypedValue::operator*=(TypedValue other)
 		*this = other;
 	}
 	else if (is_type<Sequence>() && other.is_type<Sequence>()) {
-		assert(this->get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to multiply sequences of inequal size");
+		assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to multiply sequences of inequal size");
 		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
-			this->get_value<Sequence>().data[n] *= other.get_value<Sequence>().data[n];
+			get_value<Sequence>().data[n] *= other.get_value<Sequence>().data[n];
 	}
 	else error("Invalid arguments on * operator");
 }
@@ -91,9 +96,9 @@ void TypedValue::operator/=(TypedValue other)
 		*this = other;
 	}
 	else if (is_type<Sequence>() && other.is_type<Sequence>()) {
-		assert(this->get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to divide sequences of inequal size");
+		assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to divide sequences of inequal size");
 		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
-			this->get_value<Sequence>().data[n] /= other.get_value<Sequence>().data[n];
+			get_value<Sequence>().data[n] /= other.get_value<Sequence>().data[n];
 	}
 	else error("Invalid argument on / operator");
 }
@@ -112,6 +117,11 @@ void TypedValue::operator^=(TypedValue other)
 		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
 			other.get_value<Sequence>().data[n] = std::pow(get_value<float>(), other.get_value<Sequence>().data[n]);
 		*this = other;
+	}
+	else if (is_type<Sequence>() && other.is_type<Sequence>()) {
+		assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to exponentiate sequences of inequal size");
+		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
+			get_value<Sequence>().data[n] ^= other.get_value<Sequence>().data[n];
 	}
 	else error("Invalid argument on ^ operator");
 }
@@ -150,27 +160,41 @@ void Program::connect_objects(std::string a, uint out,
 	if (type == ConnectionType::one_to_one) {
 		if (!table.count(a)) error("Object " + a + " has not been declared");
 		else if (!table.count(b)) error("Object " + b + " has not been declared");
-		else connect_objects(table[a], out, table[b], in);
+		connect_objects(table[a], out, table[b], in);
 	}
+	
 	else if (type == ConnectionType::many_to_one) {
 		if (!group_sizes.count(a)) error("Group " + a + " has not been declared");
 		else if (!table.count(b)) error("Object " + b + " has not been declared");
-		else for (uint n = 0; n < group_sizes[a]; n++)
-				connect_objects(table["__grp_" + a + std::to_string(n)], out, table[b], in);
+		for (uint n = 0; n < group_sizes[a]; n++)
+			connect_objects(table["__grp_" + a + std::to_string(n)], out, table[b], in);
 	}
-	else if (type == ConnectionType::one_to_many){
+	
+	else if (type == ConnectionType::one_to_many) {
 		if (!table.count(a)) error("Object " + a + " has not been declared");
 		else if (!group_sizes.count(b)) error("Group " + b + " has not been declared");
-		else for (uint n = 0; n < group_sizes[b]; n++)
-				connect_objects(table[a], out, table["__grp_" + b + std::to_string(n)], in);
+		for (uint n = 0; n < group_sizes[b]; n++)
+			connect_objects(table[a], out, table["__grp_" + b + std::to_string(n)], in);
 	}
-	else if (type == ConnectionType::many_to_many){
+
+	else if (type == ConnectionType::cross) {
+		if (!group_sizes.count(a)) error("Group " + a + " has not been declared");
+		else if (!group_sizes.count(b)) error("Group " + b + " has not been declared");
+		for (uint na = 0; na < group_sizes[a]; na++) {
+			for (uint nb = 0; nb < group_sizes[b]; nb++) {
+				connect_objects(table["__grp_" + a + std::to_string(na)], out,
+								table["__grp_" + b + std::to_string(nb)], in);
+			}
+		}
+	}
+	
+	else if (type == ConnectionType::many_to_many) {
 		if (!group_sizes.count(a)) error("Group " + a + " has not been declared");
 		else if (!group_sizes.count(b)) error("Group " + b + " has not been declared");
 		else if (group_sizes[a] != group_sizes[b]) error("Group sizes to be connected in parallel are not identical");
-		else for (uint n = 0; n < group_sizes[a]; n++)
-				connect_objects(table["__grp_" + a + std::to_string(n)], out,
-				                table["__grp_" + b + std::to_string(n)], in);
+		for (uint n = 0; n < group_sizes[a]; n++)
+			connect_objects(table["__grp_" + a + std::to_string(n)], out,
+			                table["__grp_" + b + std::to_string(n)], in);
 	}
 }
 

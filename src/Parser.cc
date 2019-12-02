@@ -45,6 +45,11 @@ Token Lexer::get_next_token()
 		position--;
 		return { invalid, "" };
 	}
+	if (current() == 'x') {
+		position++;
+		if (current() == '>') return { cross_connection, "" };
+		position--;
+	}
 	if (current() == '.') {
 		position++;
 		if (current() == '.') return { elipsis, "" };
@@ -155,7 +160,7 @@ bool Parser::parse_program(Graph& graph)
 			if (peek(colon)) parse_declaration();
 			else if (peek(vertical_bar) || peek(arrow) || peek(newline) ||
 			         peek(many_to_one) || peek(one_to_many) || peek(parallel)
-					 || peek(open_bracket)) parse_connection();
+					 || peek(open_bracket) || peek(cross_connection)) parse_connection();
 			else {
 				next_token();
 				error("Expected colon or connection operator, got " + debug_names[current.type]);
@@ -264,7 +269,7 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	else if (object_type == "mod")   program->create_object<ModuloObject>(object_name, arguments);
 	else if (object_type == "abs")   program->create_object<AbsoluteValueObject>(object_name, arguments);
 	else if (object_type == "comp")  program->create_object<ComparatorObject>(object_name, arguments);
-	else if (object_type == "filter")program->create_object<FilterObject>(object_name, arguments);
+	else if (object_type == "pole")program->create_object<FilterObject>(object_name, arguments);
 	else if (object_type == "file")  program->create_object<FileoutObject>(object_name, arguments);
 	else if (object_type == "step")  program->create_object<StepSequence>(object_name, arguments);
 	else if (object_type == "int")  program->create_object<RoundObject>(object_name, arguments);
@@ -274,11 +279,15 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	else if (object_type == "const")  program->create_object<ConstObject>(object_name, arguments);
 	else if (object_type == "saw")  program->create_object<SawObject>(object_name, arguments);
 	else if (object_type == "tri")  program->create_object<TriangleObject>(object_name, arguments);
+	else if (object_type == "lpf")  program->create_object<LowpassObject>(object_name, arguments);
+	else if (object_type == "hpf")  program->create_object<HighpassObject>(object_name, arguments);
+	else if (object_type == "bpf")  program->create_object<BandpassObject>(object_name, arguments);
 	else error("No such object type: " + object_type);
 }
 
 void Parser::parse_connection()
 {
+	bool got_newline = false;
 	std::string output_object = get_object_to_connect(), input_object;;
 	int output_index = 0, input_index = 0;
 	ConnectionType connection_type;
@@ -295,6 +304,7 @@ void Parser::parse_connection()
 		else if (current.type == many_to_one) connection_type = ConnectionType::many_to_one;
 		else if (current.type == one_to_many) connection_type = ConnectionType::one_to_many;
 		else if (current.type == parallel) connection_type = ConnectionType::many_to_many;
+		else if (current.type == cross_connection) connection_type = ConnectionType::cross;
 		else error("Expected connection operator");
 		
 		if (peek(numeric_literal)) {
@@ -313,10 +323,14 @@ void Parser::parse_connection()
 			expect(numeric_literal);
 			output_index = std::stoi(current.value);
 		} else (output_index = 0);
-		while (peek(newline)) next_token();
+		got_newline = false;
+		while (peek(newline)) { next_token(); got_newline = true; }
 
 	} while (peek(arrow) || peek(many_to_one) || peek(one_to_many) || peek(parallel));
-	verify(newline);
+	if (!got_newline) {
+		next_token();
+		Volsung::assert(line_end(), "Expected newline or connection operator, got " + debug_names[current.type]);
+	}
 }
 
 std::string Parser::get_object_to_connect()
@@ -476,7 +490,7 @@ TypedValue Parser::parse_factor()
 		float const lower = value.get_value<float>();
 		expect(elipsis);
 		next_token();
-		float const upper =parse_expression().get_value<float>();
+		float const upper = parse_expression().get_value<float>();
 		float step = 1;
 		if (peek(vertical_bar)) {
 			next_token();
@@ -493,6 +507,7 @@ TypedValue Parser::parse_factor()
 float Parser::parse_number()
 {
 	std::string number;
+	float multiplier = 1;
 	verify(numeric_literal);
 	number += current.value;
 	if (peek(dot)) {
@@ -501,7 +516,14 @@ float Parser::parse_number()
 		expect(numeric_literal);
 		number += current.value;
 	}
-	return std::stof(number);
+	
+	if (peek(identifier)) {
+		next_token();
+		if (current.value == "s") multiplier = sample_rate;
+		if (current.value == "ms") multiplier = sample_rate / 1000;
+	}
+
+	return std::stof(number) * multiplier;
 }
 
 Sequence Parser::parse_sequence()
@@ -544,7 +566,10 @@ void Parser::expect(TokenType expected)
 
 void Parser::verify(TokenType expected)
 {
-	if (current.type != expected) error("Got " + debug_names[current.type] + ", expected " + debug_names[expected]);
+	if (current.type != expected) {
+		std::cout << current.value << std::endl;
+		error("Got " + debug_names[current.type] + ", expected " + debug_names[expected]);
+	}
 }
 
 }
