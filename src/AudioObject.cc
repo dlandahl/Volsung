@@ -17,9 +17,12 @@ void AudioObject::implement()
 		in[n].increment_pointer();
 	}
 
-	for (auto const& value : linked_values)
+	for (auto const& value : linked_values) {
 		if (inputs[value.input].is_connected())
 			*value.parameter = in[value.input][0];
+		else *value.parameter = value.default_value;
+	}
+
 	run(in, out);
 
 	for (uint n = 0; n < outputs.size(); n++)

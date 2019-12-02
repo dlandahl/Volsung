@@ -54,7 +54,7 @@ void TypedValue::operator-=(TypedValue other)
 	else if (is_type<Sequence>() && other.is_type<Sequence>()) {
 		assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to subtract sequences of inequal size");
 		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
-			get_value<Sequence>().data[n] s= other.get_value<Sequence>().data[n];
+			get_value<Sequence>().data[n] = other.get_value<Sequence>().data[n];
 	}
 	else error("Invalid argument on - operator");
 }
@@ -121,7 +121,8 @@ void TypedValue::operator^=(TypedValue other)
 	else if (is_type<Sequence>() && other.is_type<Sequence>()) {
 		assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to exponentiate sequences of inequal size");
 		for (uint n = 0; n < other.get_value<Sequence>().size(); n++)
-			get_value<Sequence>().data[n] ^= other.get_value<Sequence>().data[n];
+			get_value<Sequence>().data[n] = std::pow(other.get_value<Sequence>().data[n],
+			                                         get_value<Sequence>().data[n]);
 	}
 	else error("Invalid argument on ^ operator");
 }

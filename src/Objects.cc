@@ -478,4 +478,36 @@ void BandpassObject::calculate_coefficients()
 	b2 = -resonance * alpha;
 }
 
+
+
+
+void EnvelopeFollowerObject::run(buf& in, buf& out)
+{
+	float sample = std::fabs(in[0][0]);
+	if (attack == 0 || release == 0) {
+		attack = 441; release = 441;
+	}
+	
+	float const internal_attack = std::exp(time_constant / attack);
+	float const internal_release = std::exp(time_constant / release);
+	
+	float detector_value = 0.f;
+	if (sample > last_value)
+		detector_value = internal_attack * (last_value - sample) + sample;
+	else
+		detector_value = internal_release * (last_value - sample) + sample;
+
+	if (detector_value < 0.f) detector_value = 0.f;
+
+	last_value = detector_value;
+	out[0][0] = detector_value;
+}
+
+EnvelopeFollowerObject::EnvelopeFollowerObject(std::vector<TypedValue> arguments)
+{
+	set_io(3, 1);//, arguments, { &attack, &release });
+	set_defval(&attack, 441, 1);
+	set_defval(&release, 441, 2);
+}
+
 }

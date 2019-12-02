@@ -282,6 +282,7 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	else if (object_type == "lpf")  program->create_object<LowpassObject>(object_name, arguments);
 	else if (object_type == "hpf")  program->create_object<HighpassObject>(object_name, arguments);
 	else if (object_type == "bpf")  program->create_object<BandpassObject>(object_name, arguments);
+	else if (object_type == "env")  program->create_object<EnvelopeFollowerObject>(object_name, arguments);
 	else error("No such object type: " + object_type);
 }
 

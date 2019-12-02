@@ -375,4 +375,17 @@ public:
 		BiquadObject(arguments) { }
 };
 
-}
+
+class EnvelopeFollowerObject : public AudioObject
+{
+	static float constexpr time_constant = -0.99967234f;
+
+	float attack = 441;
+	float release = 441;
+	float last_value = 0.f;
+
+	void run(buf&, buf&) override;
+
+public:
+	EnvelopeFollowerObject(std::vector<TypedValue>);
+};}

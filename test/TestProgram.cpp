@@ -25,15 +25,16 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-filter: bpf~
+vca: mult~
 
-osc~ 1 -> abs~ -> *5000 -> +50 -> 1|filter
-const~ 50 -> 2|filter
+clock~ 500ms
+-> eg~ 150ms
+-> ^2
+-> 1|vca
 
-saw~ 110
--> filter
--> *0.5
--> file~ "filtered.raw"
+osc~ 440 -> vca
+-> env~
+-> file~ "envelope.raw"
 
 &config 5s
 
