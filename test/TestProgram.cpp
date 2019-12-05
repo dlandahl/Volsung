@@ -33,7 +33,7 @@ clock~ 500ms
 -> 1|vca
 
 osc~ 440 -> vca
--> env~
+-> env~ 10ms
 -> file~ "envelope.raw"
 
 &config 5s

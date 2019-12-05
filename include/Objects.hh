@@ -388,4 +388,6 @@ class EnvelopeFollowerObject : public AudioObject
 
 public:
 	EnvelopeFollowerObject(std::vector<TypedValue>);
-};}
+};
+
+}

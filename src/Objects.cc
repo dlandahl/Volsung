@@ -436,8 +436,7 @@ void BiquadObject::run(buf& in, buf& out)
 	auto& x = in[0];
 	auto& y = out[0];
 
-	y[0] = (b0*x[0] + b1*x[-1] + b2*x[-2] \
-	      - a1*y[-1] - a2*y[-2]) / a0;
+	y[0] = (b0*x[0] + b1*x[-1] + b2*x[-2] - a1*y[-1] - a2*y[-2]) / a0;
 }
 
 BiquadObject::BiquadObject(std::vector<TypedValue> arguments)
@@ -445,7 +444,7 @@ BiquadObject::BiquadObject(std::vector<TypedValue> arguments)
 	init(3, 1, arguments, { &frequency, &resonance });
 	set_defval(&frequency, frequency, 1);
 	set_defval(&resonance, resonance, 2);
-	request_buffer_size(3);
+	request_buffer_size(4);
 }
 
 void LowpassObject::calculate_coefficients()
@@ -484,9 +483,6 @@ void BandpassObject::calculate_coefficients()
 void EnvelopeFollowerObject::run(buf& in, buf& out)
 {
 	float sample = std::fabs(in[0][0]);
-	if (attack == 0 || release == 0) {
-		attack = 441; release = 441;
-	}
 	
 	float const internal_attack = std::exp(time_constant / attack);
 	float const internal_release = std::exp(time_constant / release);
@@ -505,9 +501,9 @@ void EnvelopeFollowerObject::run(buf& in, buf& out)
 
 EnvelopeFollowerObject::EnvelopeFollowerObject(std::vector<TypedValue> arguments)
 {
-	set_io(3, 1);//, arguments, { &attack, &release });
-	set_defval(&attack, 441, 1);
-	set_defval(&release, 441, 2);
+	init(3, 1, arguments, { &attack, &release });
+	set_defval(&attack, attack, 1);
+	set_defval(&release, attack, 2);
 }
 
 }

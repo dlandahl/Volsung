@@ -184,3 +184,43 @@ clock(0)
 delay: (2, 1) {
 	   
 }
+
+
+
+
+
+
+; Define the vocoder object type
+vocoder(2, 1): {
+
+	; Read parameter to determine number of bands
+    ; else use 8
+	N: _0
+	n: 0..N
+
+	; Bandpass filters for carrier and modulator signals
+	carrier_bands: [N] bpf~ n*1000/N
+    mod_bands: [N] bpf~     n*1000/N
+    
+    ; Envelope followers on the modulator determine the
+    ; gain on the carrier
+	amps: [N] mult~
+    followers: [N] env~ 20ms
+
+	; Carrier input gets filtered, attenuated and output
+	input|0 x> carrier_bands => amp
+    >> output
+
+	; Modulator input gets filtered and envelope followed
+	input|1 <> mod_bands => followers => 1|amps
+}
+
+; Create an instance of it
+voc: vocoder~
+
+; Supply a carrier signal for the vocoder
+[4] saw~ (1..4)*110 -> voc
+
+; Supply a modulator signal for the vocoder and output
+file~ "drumloop"
+-> 1|voc -> output

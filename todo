@@ -3,16 +3,14 @@ Generalise object declaration parsing (allow inline groups)
 
 Fix multiple parameter parsing
 
-Allow for larger blocksize to improve performance
-
 Recreate ambient objects on parsing the program
 
 Automatically fall back to asm.js
 
-Cross connection
-
-Allow WASM to allocate more memory
-
 Allow request buffer size per input channel
 
 eg~ should output gate
+
+Allow directives with no arguments
+
+Don't allow meaningless identifiers after numeric literals
