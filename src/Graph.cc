@@ -153,34 +153,47 @@ void Program::connect_objects(
 	if (a->outputs.size() > out && b->inputs.size() > in)
 		a->outputs[out].connect(b->inputs[in]);
 	else error("Index out of range for connection");
+
+}
+
+void Program::expect_to_be_group(std::string name)
+{
+	if (table.count(name)) error(name + " is an object, not a group");
+	else if (!group_sizes.count(name)) error("Group " + name + " has not been declared");
+}
+
+void Program::expect_to_be_object(std::string name)
+{
+	if (group_sizes.count(name)) error(name + " is name group, not an object");
+	else if (!table.count(name)) error("Object " + name + " has not been declared");
 }
 
 void Program::connect_objects(std::string a, uint out,
 	                          std::string b, uint in, ConnectionType type)
 {
 	if (type == ConnectionType::one_to_one) {
-		if (!table.count(a)) error("Object " + a + " has not been declared");
-		else if (!table.count(b)) error("Object " + b + " has not been declared");
+		expect_to_be_object(a);
+		expect_to_be_object(b);
 		connect_objects(table[a], out, table[b], in);
 	}
 	
 	else if (type == ConnectionType::many_to_one) {
-		if (!group_sizes.count(a)) error("Group " + a + " has not been declared");
-		else if (!table.count(b)) error("Object " + b + " has not been declared");
+		expect_to_be_group(a);
+		expect_to_be_object(b);
 		for (uint n = 0; n < group_sizes[a]; n++)
 			connect_objects(table["__grp_" + a + std::to_string(n)], out, table[b], in);
 	}
 	
 	else if (type == ConnectionType::one_to_many) {
-		if (!table.count(a)) error("Object " + a + " has not been declared");
-		else if (!group_sizes.count(b)) error("Group " + b + " has not been declared");
+		expect_to_be_object(a);
+		expect_to_be_group(b);
 		for (uint n = 0; n < group_sizes[b]; n++)
 			connect_objects(table[a], out, table["__grp_" + b + std::to_string(n)], in);
 	}
 
 	else if (type == ConnectionType::cross) {
-		if (!group_sizes.count(a)) error("Group " + a + " has not been declared");
-		else if (!group_sizes.count(b)) error("Group " + b + " has not been declared");
+		expect_to_be_group(a);
+		expect_to_be_group(b);
 		for (uint na = 0; na < group_sizes[a]; na++) {
 			for (uint nb = 0; nb < group_sizes[b]; nb++) {
 				connect_objects(table["__grp_" + a + std::to_string(na)], out,
@@ -190,13 +203,19 @@ void Program::connect_objects(std::string a, uint out,
 	}
 	
 	else if (type == ConnectionType::many_to_many) {
-		if (!group_sizes.count(a)) error("Group " + a + " has not been declared");
-		else if (!group_sizes.count(b)) error("Group " + b + " has not been declared");
-		else if (group_sizes[a] != group_sizes[b]) error("Group sizes to be connected in parallel are not identical");
+		expect_to_be_group(a);
+		expect_to_be_group(b);
+		if (group_sizes[a] != group_sizes[b]) error("Group sizes to be connected in parallel are not identical");
 		for (uint n = 0; n < group_sizes[a]; n++)
 			connect_objects(table["__grp_" + a + std::to_string(n)], out,
 			                table["__grp_" + b + std::to_string(n)], in);
 	}
+}
+
+bool Program::object_exists(std::string name)
+{
+	if (table.count(name) || group_sizes.count(name)) return true;
+	return false;
 }
 
 void Program::run()
@@ -283,6 +302,11 @@ void Program::add_symbol(std::string identifier, TypedValue value)
 {
 	if (identifier == "r") error("Name 'r' is reserved");
 	symbol_table[identifier] = value;
+}
+
+void Program::remove_symbol(std::string identifier)
+{
+	if (symbol_exists(identifier)) symbol_table.erase(identifier);
 }
 
 bool Program::symbol_exists(std::string identifier)

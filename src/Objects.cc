@@ -124,7 +124,7 @@ void NoiseObject::run(buf &, buf &out)
 }
 
 NoiseObject::NoiseObject(std::vector<TypedValue>) :
-	distribution(-1.0f, 1.0f), generator(seed())
+	distribution(-1.0f, 1.0f), generator(std::chrono::system_clock::now().time_since_epoch().count())
 { set_io(0, 1); }
 
 

@@ -25,18 +25,8 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-vca: mult~
+&config 2s, 0
 
-clock~ 500ms
--> eg~ 150ms
--> ^2
--> 1|vca
-
-osc~ 440 -> vca
--> env~ 10ms
--> file~ "envelope.raw"
-
-&config 5s
 
 )";
 

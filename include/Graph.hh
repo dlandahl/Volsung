@@ -6,6 +6,7 @@
 #include <istream>
 #include <any>
 #include <random>
+#include <chrono>
 
 #include "Volsung.hh"
 
@@ -87,7 +88,6 @@ class Program
 	std::unordered_map<std::string, TypedValue> symbol_table;
 
 	std::uniform_real_distribution<float> distribution;
-	std::random_device seed;
 	std::default_random_engine generator;
 
 public:
@@ -153,7 +153,10 @@ public:
 	 *  Runs the program by running each audio object (unit generator) in the symbol table in turn.
 	 *  Expects a sample which will be written to the "input" object, and returns a float sample from the "output" object, created by configure_io.
 	 */
-
+	bool object_exists(std::string);
+	void expect_to_be_object(std::string);
+	void expect_to_be_group(std::string);
+	
 	float run(float);
 	std::vector<float> run(std::vector<float>);
 	void finish();
@@ -170,10 +173,11 @@ public:
 	
 	TypedValue get_symbol_value(std::string);
 	void add_symbol(std::string, TypedValue);
+	void remove_symbol(std::string);
 	bool symbol_exists(std::string);
 
 	Program() :
-		distribution(-1.0f, 1.0f), generator(seed())
+		distribution(-1.0f, 1.0f), generator(std::chrono::system_clock::now().time_since_epoch().count())
 	{ }
 };
 

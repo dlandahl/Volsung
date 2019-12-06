@@ -89,7 +89,6 @@ struct Token
  
 class Lexer
 {
-    int position = 0;
 	char current();
 	bool is_digit();
 	bool is_char();
@@ -99,6 +98,7 @@ protected:
 	bool peek(TokenType);
 	virtual ~Lexer() = 0;
 	uint line = 1;
+	int position = 0;
 
 public:	
 	/*! \brief The source code to be lexed and parsed
@@ -130,6 +130,7 @@ class Parser : public Lexer
 	void parse_directive();
 	std::string get_object_to_connect();
 	void make_object(std::string, std::string, std::vector<TypedValue>);
+	std::string parse_object_declaration(std::string = "");
 
 	TypedValue parse_expression();
 	TypedValue parse_product();

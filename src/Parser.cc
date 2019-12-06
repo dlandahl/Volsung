@@ -166,13 +166,11 @@ bool Parser::parse_program(Graph& graph)
 				error("Expected colon or connection operator, got " + debug_names[current.type]);
 			}
 		}
-		else if (peek(object)) {
+		else if (peek(object) || peek(open_bracket)) {
 			next_token();
 			parse_connection();
 		}
-		else if (peek(ampersand)) {
-			parse_directive();
-		}
+		else if (peek(ampersand)) parse_directive();
 		else {
 			next_token();
 			error("Expected declaration or connection, got " + debug_names[current.type]);
@@ -200,56 +198,76 @@ void Parser::parse_declaration()
 		next_token();
 		TypedValue value = parse_expression();
 		program->add_symbol(name, value);
-		return;
-
 	}
-	else if (peek(open_bracket)) {
-		expect(open_bracket);
+	else {
 		next_token();
-		int count = (int) parse_expression().get_value<float>();
+		parse_object_declaration(name);
+	}
+}
+
+std::string Parser::parse_object_declaration(std::string name)
+{
+	if (name == "") name = "__inline_object" + std::to_string(inline_object_index++);
+	bool is_group = false;
+	int count = 1;
+	if (current.type == open_bracket) {
+		is_group = true;
+		next_token();
+		count = (int) parse_expression().get_value<float>();
 		expect(close_bracket);
-
-		expect(object);
-		std::string object_type = current.value;
-
-		if (!peek(newline)) {
-			next_token();
-			Sequence parameters;
-			TypedValue param = parse_expression();
-			if (param.is_type<Sequence>()) parameters = param.get_value<Sequence>();
-			else for (uint n = 0; n < count; n++) {
-				parameters.data.push_back(param.get_value<float>());
-			}
-			if (parameters.size() != count) error("Sequence initialising group is not the same size as the group");
-
-			for (uint n = 0; n < count; n++)
-				make_object(object_type, "__grp_" + name + std::to_string(n), { TypedValue(parameters.data[n]) });
-		}
-		else {
-			for (uint n = 0; n < count; n++)
-				make_object(object_type, "__grp_" + name + std::to_string(n), { });
-		}
-
-		program->group_sizes[name] = count;
-		return;
-		
-	}
-	else if (!peek(object)) {
 		next_token();
-		error("RHS of declaration is " + debug_names[current.type] + ", should be string, object, or expression.");
-		return;
 	}
-	
-	expect(object);
+
+	verify(object);
 	std::string object_type = current.value;
 
-	std::vector<TypedValue> arguments;
-	next_token();
-	if (!line_end()) {
-		arguments.push_back(parse_expression());
-	}
+	if (is_group) {
+		int old_position = position;
 
-	make_object(object_type, name, arguments);
+		for (int n = 0; n < count; n++) {
+			position = old_position;
+
+			program->remove_symbol("n");
+			program->add_symbol("n", n+1);
+
+			std::vector<TypedValue> arguments = { };
+			if (!peek(newline)) {
+				next_token();
+				arguments.push_back(parse_expression());
+			}
+
+			while (peek(comma)) {
+				expect(comma);
+				next_token();
+				arguments.push_back(parse_expression());
+			}
+
+			make_object(object_type, "__grp_" + name + std::to_string(n), arguments);
+		}
+		program->group_sizes[name] = count;
+	}
+	else {
+		if (program->group_sizes.count(name)) error("Object " + name + " already exists as group");
+		std::vector<TypedValue> arguments = { };
+		if (peek(numeric_literal)
+		|| peek(minus)
+		|| peek(string_literal)
+		|| peek(open_brace)
+		|| peek(open_paren)
+		|| peek(identifier)) {
+			next_token();
+			arguments.push_back(parse_expression());
+		}
+
+		while (peek(comma)) {
+			expect(comma);
+			next_token();
+			arguments.push_back(parse_expression());
+		}
+
+		make_object(object_type, name, arguments);
+	}
+	return name;
 }
 
 void Parser::make_object(std::string object_type, std::string object_name, std::vector<TypedValue> arguments)
@@ -338,19 +356,15 @@ std::string Parser::get_object_to_connect()
 {
 	std::string output;
 
-	if (current.type == object ||
-	    current.type == plus ||
+	if (current.type == plus ||
 		current.type == minus ||
 		current.type == asterisk ||
 		current.type == slash ||
 		current.type == caret) {
 
 		Token operation = current;
-		std::vector<TypedValue> argument = {0};
-		if (!(peek(arrow) || peek(newline) || peek(one_to_many) || peek(many_to_one) || peek(parallel))) {
-			next_token();
-			argument = { parse_expression() };
-		}
+		next_token();
+		std::vector<TypedValue> argument = { parse_expression() };
 
 		output = "__inline_object" + std::to_string(inline_object_index++);
 
@@ -376,6 +390,9 @@ std::string Parser::get_object_to_connect()
 			expect(close_bracket);
 			output = "__grp_" + output + std::to_string(index);
 		}
+	}
+	else if (current.type == object || current.type == open_bracket) {
+			output = parse_object_declaration();
 	}
 	else {
 		error("Expected inline object declaration or identifier, got " + debug_names[current.type]);
@@ -480,6 +497,7 @@ TypedValue Parser::parse_factor()
 			Sequence s;
 			Sequence& index_sequence = index.get_value<Sequence>();
 			Sequence& value_sequence = value.get_value<Sequence>();
+
 			for (uint n = 0; n < index_sequence.size(); n++)
 				s.data.push_back(value_sequence.data[index_sequence.data[n]]);
 
@@ -499,7 +517,8 @@ TypedValue Parser::parse_factor()
 			step = parse_expression().get_value<float>();
 		}
 		Sequence s;
-		for (float n = lower; n <= upper; n += step) s.data.push_back(n);
+		if (lower > upper) for (float n = lower; n >= upper; n -= step) s.data.push_back(n);
+		else for (float n = lower; n <= upper; n += step) s.data.push_back(n);
 		value = s;
 	}
 	return value;
@@ -521,7 +540,8 @@ float Parser::parse_number()
 	if (peek(identifier)) {
 		next_token();
 		if (current.value == "s") multiplier = sample_rate;
-		if (current.value == "ms") multiplier = sample_rate / 1000;
+		else if (current.value == "ms") multiplier = sample_rate / 1000;
+		else error("Invalid literal operator or stray identifier");
 	}
 
 	return std::stof(number) * multiplier;
