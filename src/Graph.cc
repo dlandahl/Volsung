@@ -164,7 +164,7 @@ void Program::expect_to_be_group(std::string name)
 
 void Program::expect_to_be_object(std::string name)
 {
-	if (group_sizes.count(name)) error(name + " is name group, not an object");
+	if (group_sizes.count(name)) error(name + " is a group, not an object");
 	else if (!table.count(name)) error("Object " + name + " has not been declared");
 }
 
@@ -274,6 +274,7 @@ void Program::reset()
 {
 	table.clear();
 	symbol_table.clear();
+	group_sizes.clear();
 	
 	if (inputs) create_object<AudioInputObject>("input", { inputs });
 	if (outputs) create_object<AudioOutputObject>("output", { outputs });

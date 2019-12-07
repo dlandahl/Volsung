@@ -96,6 +96,7 @@ class Lexer
 protected:
 	Token get_next_token();
 	bool peek(TokenType);
+	bool peek_expression();
 	virtual ~Lexer() = 0;
 	uint line = 1;
 	int position = 0;

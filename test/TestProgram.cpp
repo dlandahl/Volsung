@@ -25,8 +25,11 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-&config 2s, 0
+clock~ 6s
+-> lpf~ 500, 2^(1/2)/2
+-> [2] file~ "output.raw"
 
+&config 10s
 
 )";
 

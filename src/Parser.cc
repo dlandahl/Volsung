@@ -56,7 +56,7 @@ Token Lexer::get_next_token()
 		position--;
 		return { dot, "" };
 	}
-	
+
 	if (current() == '{') return { open_brace, "" };
 	if (current() == '}') return { close_brace, "" };
 	if (current() == '(') return { open_paren, "" };
@@ -139,6 +139,13 @@ bool Lexer::peek(TokenType expected)
 	return ret;
 }
 
+bool Lexer::peek_expression()
+{
+return peek(numeric_literal) || peek(minus)
+    || peek(string_literal) || peek(open_brace)
+    || peek(open_paren) || peek(identifier);
+}
+
 Lexer::~Lexer() {};
 
 
@@ -189,12 +196,7 @@ void Parser::parse_declaration()
 {
 	std::string name = current.value;
 	expect(colon);
-	if (peek(numeric_literal)
-		|| peek(minus)
-		|| peek(string_literal)
-		|| peek(open_brace)
-		|| peek(open_paren)
-		|| peek(identifier)) {
+	if (peek_expression()) {
 		next_token();
 		TypedValue value = parse_expression();
 		program->add_symbol(name, value);
@@ -207,7 +209,7 @@ void Parser::parse_declaration()
 
 std::string Parser::parse_object_declaration(std::string name)
 {
-	if (name == "") name = "__inline_object" + std::to_string(inline_object_index++);
+	if (name == "") name = "Unnamed Object " + std::to_string(inline_object_index++);
 	bool is_group = false;
 	int count = 1;
 	if (current.type == open_bracket) {
@@ -224,6 +226,13 @@ std::string Parser::parse_object_declaration(std::string name)
 	if (is_group) {
 		int old_position = position;
 
+		bool n_existed = false;
+		TypedValue old_n;
+		if (program->symbol_exists("n")) {
+			old_n = program->get_symbol_value("n");
+			n_existed = true;
+		}
+
 		for (int n = 0; n < count; n++) {
 			position = old_position;
 
@@ -231,7 +240,7 @@ std::string Parser::parse_object_declaration(std::string name)
 			program->add_symbol("n", n+1);
 
 			std::vector<TypedValue> arguments = { };
-			if (!peek(newline)) {
+			if (peek_expression()) {
 				next_token();
 				arguments.push_back(parse_expression());
 			}
@@ -243,18 +252,15 @@ std::string Parser::parse_object_declaration(std::string name)
 			}
 
 			make_object(object_type, "__grp_" + name + std::to_string(n), arguments);
+			program->remove_symbol("n");
 		}
 		program->group_sizes[name] = count;
+		if (n_existed) program->add_symbol("n", old_n);
 	}
 	else {
 		if (program->group_sizes.count(name)) error("Object " + name + " already exists as group");
 		std::vector<TypedValue> arguments = { };
-		if (peek(numeric_literal)
-		|| peek(minus)
-		|| peek(string_literal)
-		|| peek(open_brace)
-		|| peek(open_paren)
-		|| peek(identifier)) {
+		if (peek_expression()) {
 			next_token();
 			arguments.push_back(parse_expression());
 		}
@@ -315,7 +321,7 @@ void Parser::parse_connection()
 		expect(numeric_literal);
 		output_index = std::stoi(current.value);
 	} else (output_index = 0);
-	
+
 	while (peek(newline)) next_token();
 	do {
 		next_token();
@@ -325,7 +331,7 @@ void Parser::parse_connection()
 		else if (current.type == parallel) connection_type = ConnectionType::many_to_many;
 		else if (current.type == cross_connection) connection_type = ConnectionType::cross;
 		else error("Expected connection operator");
-		
+
 		if (peek(numeric_literal)) {
 			expect(numeric_literal);
 			input_index = std::stoi(current.value);
@@ -366,7 +372,7 @@ std::string Parser::get_object_to_connect()
 		next_token();
 		std::vector<TypedValue> argument = { parse_expression() };
 
-		output = "__inline_object" + std::to_string(inline_object_index++);
+		output = "Unnamed Object " + std::to_string(inline_object_index++);
 
 		if (operation.type != object) {
 			switch (operation.type) {
@@ -407,12 +413,16 @@ void Parser::parse_directive()
 	expect(identifier);
 	std::string directive = current.value;
 	std::vector<TypedValue> arguments;
-	next_token();
-	arguments.push_back(parse_expression());
-	while (peek(comma)) {
-		expect(comma);
+
+	if (!peek(newline)) {
 		next_token();
 		arguments.push_back(parse_expression());
+		
+		while (peek(comma)) {
+			expect(comma);
+			next_token();
+			arguments.push_back(parse_expression());
+		}
 	}
 	program->invoke_directive(directive, arguments);
 }
