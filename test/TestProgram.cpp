@@ -25,9 +25,13 @@ int main(int argc, char ** argv)
 	std::string code =
 R"(
 
-clock~ 6s
--> lpf~ 500, 2^(1/2)/2
--> [2] file~ "output.raw"
+subgraph(0, 1): {
+	seq: { 10, 20, _1, 40 }
+	osc~ _1*seq[3] -> output
+}
+
+graphs: [5] subgraph~ n
+graphs[2] -> file~ "subgraph.raw"
 
 &config 10s
 
@@ -35,6 +39,7 @@ clock~ 6s
 
 	Parser parser;
 	parser.source_code = code;
+	prog.reset();
 	parser.parse_program(prog);
 	log("Finished parsing");
 

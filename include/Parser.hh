@@ -125,6 +125,7 @@ class Parser : public Lexer
 	bool line_end();
 	
 	void parse_declaration();
+	void parse_subgraph_declaration();
 	void parse_connection();
 	Sequence parse_sequence();
 	float parse_number();

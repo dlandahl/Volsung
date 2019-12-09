@@ -247,8 +247,8 @@ std::vector<float> Program::run(std::vector<float> sample)
 {
 	if (inputs) {
 		AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
-		object->data = { 0 };
-		for (int n = 0; n < inputs; n++) object->data[n] = sample[n];
+		object->data = { };
+		for (int n = 0; n < inputs; n++) object->data.push_back(sample[n]);
 	}
 	
 	run();
@@ -258,7 +258,7 @@ std::vector<float> Program::run(std::vector<float> sample)
 	if (outputs) {
 		AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
 		for (int n = 0; n < outputs; n++) out.push_back(object->data[n]);
-		object->data = { 0 };
+		object->data = { };
 	}
 	return out;
 }

@@ -185,7 +185,8 @@ void AudioInputObject::run(buf& in, buf& out)
 {
 	for (auto& output : out) {
 		output[0] = data[0];
-	}
+	}	
+	for (int n = 0; n < out.size(); n++) out[n][0] = data[n];
 }
 
 AudioInputObject::AudioInputObject(std::vector<TypedValue> args)
@@ -504,6 +505,26 @@ EnvelopeFollowerObject::EnvelopeFollowerObject(std::vector<TypedValue> arguments
 	init(3, 1, arguments, { &attack, &release });
 	set_defval(&attack, attack, 1);
 	set_defval(&release, attack, 2);
+}
+
+void SubgraphObject::run(buf& in, buf& out)
+{
+	if (!graph) error("Null pointer for subpatch");
+
+	std::vector<float> input_frame;
+	for (int n = 0; n < inputs.size(); n++) input_frame.push_back(in[n][0]);
+
+	auto output_frame = graph->run(input_frame);
+
+	for (int n = 0; n < outputs.size(); n++) out[n][0] = output_frame[n];
+}
+
+SubgraphObject::SubgraphObject(std::vector<TypedValue> arguments)
+{
+	float inputs = 0, outputs = 0;
+	inputs  = arguments[0].get_value<float>();
+	outputs = arguments[1].get_value<float>();
+	set_io(inputs, outputs);
 }
 
 }

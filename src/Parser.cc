@@ -154,20 +154,22 @@ Lexer::~Lexer() {};
 bool Parser::parse_program(Graph& graph)
 {
 	program = &graph;
-	program->reset();
 	program->add_symbol("sf", sample_rate);
 	program->add_symbol("tau", TAU);
 	try {
 
 	while (true) {
 		while (peek(newline)) next_token();
-		if (peek(eof)) break;
+		if (peek(eof) || (program->parent && peek(close_brace))) break;
 		if (peek(identifier)) {
 			next_token();
 			if (peek(colon)) parse_declaration();
 			else if (peek(vertical_bar) || peek(arrow) || peek(newline) ||
 			         peek(many_to_one) || peek(one_to_many) || peek(parallel)
 					 || peek(open_bracket) || peek(cross_connection)) parse_connection();
+			else if (peek(open_paren)) {
+				parse_subgraph_declaration();
+			}
 			else {
 				next_token();
 				error("Expected colon or connection operator, got " + debug_names[current.type]);
@@ -280,8 +282,8 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 {
 	if (object_type == "osc") program->create_object<OscillatorObject>(object_name, arguments);
 	else if (object_type == "add")   program->create_object<AddObject>(object_name, arguments);
-	else if (object_type == "sqr")program->create_object<SquareObject>(object_name, arguments);
-	else if (object_type == "ddl") program->create_object<DelayObject>(object_name, arguments);
+	else if (object_type == "sqr")   program->create_object<SquareObject>(object_name, arguments);
+	else if (object_type == "ddl")   program->create_object<DelayObject>(object_name, arguments);
 	else if (object_type == "mult")  program->create_object<MultObject>(object_name, arguments);
 	else if (object_type == "sub")   program->create_object<SubtractionObject>(object_name, arguments);
 	else if (object_type == "div")   program->create_object<DivisionObject>(object_name, arguments);
@@ -293,20 +295,41 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	else if (object_type == "mod")   program->create_object<ModuloObject>(object_name, arguments);
 	else if (object_type == "abs")   program->create_object<AbsoluteValueObject>(object_name, arguments);
 	else if (object_type == "comp")  program->create_object<ComparatorObject>(object_name, arguments);
-	else if (object_type == "pole")program->create_object<FilterObject>(object_name, arguments);
+	else if (object_type == "pole")  program->create_object<FilterObject>(object_name, arguments);
 	else if (object_type == "file")  program->create_object<FileoutObject>(object_name, arguments);
 	else if (object_type == "step")  program->create_object<StepSequence>(object_name, arguments);
-	else if (object_type == "int")  program->create_object<RoundObject>(object_name, arguments);
-	else if (object_type == "seq")program->create_object<SequenceObject>(object_name, arguments);
-	else if (object_type == "snh")  program->create_object<SampleAndHoldObject>(object_name, arguments);
-	else if (object_type == "eg")  program->create_object<EnvelopeObject>(object_name, arguments);
-	else if (object_type == "const")  program->create_object<ConstObject>(object_name, arguments);
-	else if (object_type == "saw")  program->create_object<SawObject>(object_name, arguments);
-	else if (object_type == "tri")  program->create_object<TriangleObject>(object_name, arguments);
-	else if (object_type == "lpf")  program->create_object<LowpassObject>(object_name, arguments);
-	else if (object_type == "hpf")  program->create_object<HighpassObject>(object_name, arguments);
-	else if (object_type == "bpf")  program->create_object<BandpassObject>(object_name, arguments);
-	else if (object_type == "env")  program->create_object<EnvelopeFollowerObject>(object_name, arguments);
+	else if (object_type == "int")   program->create_object<RoundObject>(object_name, arguments);
+	else if (object_type == "seq")   program->create_object<SequenceObject>(object_name, arguments);
+	else if (object_type == "snh")   program->create_object<SampleAndHoldObject>(object_name, arguments);
+	else if (object_type == "eg")    program->create_object<EnvelopeObject>(object_name, arguments);
+	else if (object_type == "const") program->create_object<ConstObject>(object_name, arguments);
+	else if (object_type == "saw")   program->create_object<SawObject>(object_name, arguments);
+	else if (object_type == "tri")   program->create_object<TriangleObject>(object_name, arguments);
+	else if (object_type == "lpf")   program->create_object<LowpassObject>(object_name, arguments);
+	else if (object_type == "hpf")   program->create_object<HighpassObject>(object_name, arguments);
+	else if (object_type == "bpf")   program->create_object<BandpassObject>(object_name, arguments);
+	else if (object_type == "env")   program->create_object<EnvelopeFollowerObject>(object_name, arguments);
+	else if (program->subgraphs.count(object_type)) {
+		auto io = program->subgraphs[object_type].second;
+		arguments.insert(arguments.begin(), TypedValue { (float) io[0] });
+		arguments.insert(arguments.begin() + 1, TypedValue { (float) io[1] });
+
+		program->create_object<SubgraphObject>(object_name, arguments);
+		Program* other_program = new Program;
+
+		program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph = other_program;
+
+		Parser subgraph_parser;
+		subgraph_parser.source_code = program->subgraphs[object_type].first;
+		other_program->parent = program;
+		other_program->configure_io(io[0], io[1]);
+		other_program->reset();
+
+		for (uint n = 2; n < arguments.size(); n++)
+			other_program->add_symbol("_" + std::to_string(n-1), arguments[n]);
+
+		if (!subgraph_parser.parse_program(*other_program)) error("Subgraph failed to parse");
+	}
 	else error("No such object type: " + object_type);
 }
 
@@ -316,6 +339,7 @@ void Parser::parse_connection()
 	std::string output_object = get_object_to_connect(), input_object;;
 	int output_index = 0, input_index = 0;
 	ConnectionType connection_type;
+	
 	if (peek(vertical_bar)) {
 		expect(vertical_bar);
 		expect(numeric_literal);
@@ -425,6 +449,39 @@ void Parser::parse_directive()
 		}
 	}
 	program->invoke_directive(directive, arguments);
+}
+
+void Parser::parse_subgraph_declaration()
+{
+	std::string name = current.value;
+
+	expect(open_paren);
+	next_token();
+	float inputs = parse_expression().get_value<float>();
+	expect(comma);
+	next_token();
+	float outputs = parse_expression().get_value<float>();
+	expect(close_paren);
+	expect(colon);
+	expect(open_brace);
+
+	Program* old_program = program;
+	int start_position = position;
+	int num_braces_encountered = 0;
+
+	while (true) {
+		position++;
+		if (source_code[position] == '}') {
+			if (!num_braces_encountered) break;
+			num_braces_encountered--;
+		}
+		if (source_code[position] == '\n') line++;
+		if (source_code[position] == '{') num_braces_encountered++;
+	}
+	
+	position--;
+	program->subgraphs[name] = { source_code.substr(start_position, position - start_position), { inputs, outputs } };
+	expect(close_brace);
 }
 
 TypedValue Parser::parse_expression()
@@ -598,7 +655,6 @@ void Parser::expect(TokenType expected)
 void Parser::verify(TokenType expected)
 {
 	if (current.type != expected) {
-		std::cout << current.value << std::endl;
 		error("Got " + debug_names[current.type] + ", expected " + debug_names[expected]);
 	}
 }

@@ -389,4 +389,13 @@ public:
 	EnvelopeFollowerObject(std::vector<TypedValue>);
 };
 
+class SubgraphObject : public AudioObject
+{
+	void run(buf&, buf&) override;
+
+public:
+	Program* graph;
+	SubgraphObject(std::vector<TypedValue>);
+};
+
 }

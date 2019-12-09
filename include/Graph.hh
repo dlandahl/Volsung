@@ -70,6 +70,10 @@ template<>
 inline std::string type_debug_name<std::string>() { return "Text"; }
 
 using directive_functor = std::function<void(std::vector<TypedValue>, Program*)>;
+using SubgraphRepresentation = std::pair<std::string, std::array<float, 2>>;
+
+template <class T>
+using SymbolTable = std::unordered_map<std::string, T>;
 
 /*! \brief An instance of a Volsung program
  *  
@@ -92,7 +96,9 @@ class Program
 
 public:
 	std::unordered_map<std::string, int> group_sizes;
-
+	std::unordered_map<std::string, SubgraphRepresentation> subgraphs;
+	Program* parent = nullptr;
+	
 	/*! \brief Used to create audio objects manually
 	 *  
 	 *  This template can be used to inject audio objects into the symbol table without
