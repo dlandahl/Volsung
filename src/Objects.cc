@@ -43,7 +43,7 @@ void DriveObject::run(buf& in, buf& out)
 	out[0][0] = tanh(in[0][0]);
 }
 
-DriveObject::DriveObject(std::vector<TypedValue> args)
+DriveObject::DriveObject(std::vector<TypedValue>)
 {
 	set_io(2, 1);
 }
@@ -181,12 +181,12 @@ UserObject::UserObject(std::vector<TypedValue> args)
 
 
 
-void AudioInputObject::run(buf& in, buf& out)
+void AudioInputObject::run(buf&, buf& out)
 {
 	for (auto& output : out) {
 		output[0] = data[0];
 	}	
-	for (int n = 0; n < out.size(); n++) out[n][0] = data[n];
+	for (std::size_t n = 0; n < out.size(); n++) out[n][0] = data[n];
 }
 
 AudioInputObject::AudioInputObject(std::vector<TypedValue> args)
@@ -199,15 +199,15 @@ AudioInputObject::AudioInputObject(std::vector<TypedValue> args)
 
 
 
-void AudioOutputObject::run(buf& in, buf& out)
+void AudioOutputObject::run(buf& in, buf&)
 {
-	for (int n = 0; n < in.size(); n++) data[n] = in[n][0];
+	for (std::size_t n = 0; n < in.size(); n++) data[n] = in[n][0];
 }
 
 AudioOutputObject::AudioOutputObject(std::vector<TypedValue> args)
 {
 	float inputs = 0;
-	inputs = args[0].get_value<float>();
+	inputs = args[0].get_value<Number>();
 	set_io(inputs, 0);
 	data.resize(inputs);
 }
@@ -305,7 +305,7 @@ AbsoluteValueObject::AbsoluteValueObject(std::vector<TypedValue>)
 }
 
 
-void StepSequence::run(buf& in, buf& out)
+void StepSequence::run(buf&, buf& out)
 {
 	if (gate_opened(0)) current = ++current % sequence.size();
 	out[0][0] = sequence.data[current];
@@ -388,7 +388,7 @@ void ConstObject::run(buf&, buf& out)
 
 ConstObject::ConstObject(std::vector<TypedValue> arguments)
 {
-	value = arguments[0].get_value<float>();
+	value = arguments[0].get_value<Number>();
 	set_io(0, 1);
 }
 
@@ -478,6 +478,16 @@ void BandpassObject::calculate_coefficients()
 	b2 = -resonance * alpha;
 }
 
+void AllpassObject::calculate_coefficients()
+{
+	a0 = 1 + alpha;
+	a1 = -2 * cos_omega;
+	a2 = 1 - alpha;
+	b0 = 1 - alpha;
+	b1 = -2 * cos_omega;
+	b2 = 1 + alpha;
+}
+
 
 
 
@@ -504,7 +514,7 @@ EnvelopeFollowerObject::EnvelopeFollowerObject(std::vector<TypedValue> arguments
 {
 	init(3, 1, arguments, { &attack, &release });
 	set_defval(&attack, attack, 1);
-	set_defval(&release, attack, 2);
+	set_defval(&release, release, 2);
 }
 
 void SubgraphObject::run(buf& in, buf& out)
@@ -512,18 +522,18 @@ void SubgraphObject::run(buf& in, buf& out)
 	if (!graph) error("Null pointer for subpatch");
 
 	std::vector<float> input_frame;
-	for (int n = 0; n < inputs.size(); n++) input_frame.push_back(in[n][0]);
+	for (std::size_t n = 0; n < inputs.size(); n++) input_frame.push_back(in[n][0]);
 
 	auto output_frame = graph->run(input_frame);
 
-	for (int n = 0; n < outputs.size(); n++) out[n][0] = output_frame[n];
+	for (std::size_t n = 0; n < outputs.size(); n++) out[n][0] = output_frame[n];
 }
 
 SubgraphObject::SubgraphObject(std::vector<TypedValue> arguments)
 {
 	float inputs = 0, outputs = 0;
-	inputs  = arguments[0].get_value<float>();
-	outputs = arguments[1].get_value<float>();
+	inputs  = arguments[0].get_value<Number>();
+	outputs = arguments[1].get_value<Number>();
 	set_io(inputs, outputs);
 }
 

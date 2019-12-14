@@ -25,7 +25,7 @@ public:
 class DelayObject : public AudioObject
 {
 	void run(buf&, buf&) override;
-	float sample_delay = sample_rate/5;
+	float sample_delay = sample_rate;
 
 public:
 	DelayObject(std::vector<TypedValue>);
@@ -51,7 +51,7 @@ class FileoutObject : public AudioObject
 	std::vector<float> in_data;
 	std::vector<float> out_data;
 	std::string filename;
-	int pos = 0;
+	std::size_t pos = 0;
 public:
 	FileoutObject(std::vector<TypedValue>);
 };
@@ -374,6 +374,14 @@ public:
 		BiquadObject(arguments) { }
 };
 
+class AllpassObject : public BiquadObject
+{
+	void calculate_coefficients() override;
+public:
+	AllpassObject(std::vector<TypedValue> arguments) :
+		BiquadObject(arguments) { }
+};
+
 
 class EnvelopeFollowerObject : public AudioObject
 {
@@ -394,7 +402,7 @@ class SubgraphObject : public AudioObject
 	void run(buf&, buf&) override;
 
 public:
-	Program* graph;
+	std::unique_ptr<Program> graph;
 	SubgraphObject(std::vector<TypedValue>);
 };
 

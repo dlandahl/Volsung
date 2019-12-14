@@ -44,7 +44,7 @@ enum TokenType {
 	eof
 };
 
-inline std::map<TokenType, std::string> debug_names = {
+inline const std::map<TokenType, std::string> debug_names = {
 { invalid, "Unrecognised Token" },
 { identifier, "Identifier" },
 { object, "Object Type" },
@@ -99,7 +99,7 @@ protected:
 	bool peek_expression();
 	virtual ~Lexer() = 0;
 	uint line = 1;
-	int position = 0;
+	std::size_t position = 0;
 
 public:	
 	/*! \brief The source code to be lexed and parsed
@@ -128,7 +128,7 @@ class Parser : public Lexer
 	void parse_subgraph_declaration();
 	void parse_connection();
 	Sequence parse_sequence();
-	float parse_number();
+	Number parse_number();
 	void parse_directive();
 	std::string get_object_to_connect();
 	void make_object(std::string, std::string, std::vector<TypedValue>);

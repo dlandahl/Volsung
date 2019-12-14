@@ -54,7 +54,7 @@ bool AudioObject::verify_argument_types(std::vector<Type> recieved, std::vector<
 		switch (value) {
 			case(Type::number): success &= expected[n].is_type<float>(); break;
 			case(Type::sequence): success &= expected[n].is_type<Sequence>(); break;
-			case(Type::string): success &= expected[n].is_type<std::string>(); break;
+			case(Type::text): success &= expected[n].is_type<std::string>(); break;
 		}
 	}
 	if (!success) log("Invalid argument type on object");

@@ -7,7 +7,7 @@
 
 using namespace Volsung;
 
-int main(int argc, char ** argv)
+int main()
 {
 	Program prog;
 
@@ -18,22 +18,16 @@ int main(int argc, char ** argv)
 	uint time = 10;
 	bool print = false;
 	Program::add_directive("config", [&time, &print] (std::vector<TypedValue> arguments, Program*) {
-		time = arguments[0].get_value<float>();
-		if (arguments.size() > 1) print = (bool) arguments[1].get_value<float>();
+		time = arguments[0].get_value<Number>();
+		if (arguments.size() > 1) print = (bool) arguments[1].get_value<Number>();
 	});
 
 	std::string code =
 R"(
 
-subgraph(0, 1): {
-	seq: { 10, 20, _1, 40 }
-	osc~ _1*seq[3] -> output
-}
 
-graphs: [5] subgraph~ n
-graphs[2] -> file~ "subgraph.raw"
-
-&config 10s
+disk: file~ (1..5) + ""
+osc~ -> disk
 
 )";
 

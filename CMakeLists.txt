@@ -10,7 +10,7 @@ file(GLOB code
     "src/*.hh"
     "src/*.cc"
 )
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -g")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -g -Wall -Wextra -Wpedantic")
 add_library( Volsung STATIC
              ${code} )
 

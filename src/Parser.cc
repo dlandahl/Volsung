@@ -146,7 +146,7 @@ return peek(numeric_literal) || peek(minus)
     || peek(open_paren) || peek(identifier);
 }
 
-Lexer::~Lexer() {};
+Lexer::~Lexer() {}
 
 
 
@@ -172,7 +172,7 @@ bool Parser::parse_program(Graph& graph)
 			}
 			else {
 				next_token();
-				error("Expected colon or connection operator, got " + debug_names[current.type]);
+				error("Expected colon or connection operator, got " + debug_names.at(current.type));
 			}
 		}
 		else if (peek(object) || peek(open_bracket)) {
@@ -182,7 +182,7 @@ bool Parser::parse_program(Graph& graph)
 		else if (peek(ampersand)) parse_directive();
 		else {
 			next_token();
-			error("Expected declaration or connection, got " + debug_names[current.type]);
+			error("Expected declaration or connection, got " + debug_names.at(current.type));
 		}
 	}
 
@@ -217,7 +217,7 @@ std::string Parser::parse_object_declaration(std::string name)
 	if (current.type == open_bracket) {
 		is_group = true;
 		next_token();
-		count = (int) parse_expression().get_value<float>();
+		count = (int) parse_expression().get_value<Number>();
 		expect(close_bracket);
 		next_token();
 	}
@@ -308,16 +308,17 @@ void Parser::make_object(std::string object_type, std::string object_name, std::
 	else if (object_type == "lpf")   program->create_object<LowpassObject>(object_name, arguments);
 	else if (object_type == "hpf")   program->create_object<HighpassObject>(object_name, arguments);
 	else if (object_type == "bpf")   program->create_object<BandpassObject>(object_name, arguments);
+	else if (object_type == "apf")   program->create_object<BandpassObject>(object_name, arguments);
 	else if (object_type == "env")   program->create_object<EnvelopeFollowerObject>(object_name, arguments);
 	else if (program->subgraphs.count(object_type)) {
 		auto io = program->subgraphs[object_type].second;
-		arguments.insert(arguments.begin(), TypedValue { (float) io[0] });
-		arguments.insert(arguments.begin() + 1, TypedValue { (float) io[1] });
+		arguments.insert(arguments.begin(), TypedValue { (Number) io[0] });
+		arguments.insert(arguments.begin() + 1, TypedValue { (Number) io[1] });
 
 		program->create_object<SubgraphObject>(object_name, arguments);
-		Program* other_program = new Program;
 
-		program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph = other_program;
+		program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph = std::make_unique<Program>();
+		Program* other_program = program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph.get();
 
 		Parser subgraph_parser;
 		subgraph_parser.source_code = program->subgraphs[object_type].first;
@@ -378,7 +379,7 @@ void Parser::parse_connection()
 	} while (peek(arrow) || peek(many_to_one) || peek(one_to_many) || peek(parallel));
 	if (!got_newline) {
 		next_token();
-		Volsung::assert(line_end(), "Expected newline or connection operator, got " + debug_names[current.type]);
+		Volsung::assert(line_end(), "Expected newline or connection operator, got " + debug_names.at(current.type));
 	}
 }
 
@@ -405,7 +406,7 @@ std::string Parser::get_object_to_connect()
 				case (asterisk): program->create_object<MultObject>(output, argument); break;
 				case (slash):    program->create_object<DivisionObject>(output, argument); break;
 				case (caret):    program->create_object<PowerObject>(output, argument); break;
-				default: error("Invalid token for inline operation: " + debug_names[operation.type] + ". Expected arithmetic operator");
+				default: error("Invalid token for inline operation: " + debug_names.at(operation.type) + ". Expected arithmetic operator");
 			}
 		} else {
 			make_object(operation.value, output, argument);
@@ -425,7 +426,7 @@ std::string Parser::get_object_to_connect()
 			output = parse_object_declaration();
 	}
 	else {
-		error("Expected inline object declaration or identifier, got " + debug_names[current.type]);
+		error("Expected inline object declaration or identifier, got " + debug_names.at(current.type));
 	}
 
 	return output;
@@ -457,15 +458,14 @@ void Parser::parse_subgraph_declaration()
 
 	expect(open_paren);
 	next_token();
-	float inputs = parse_expression().get_value<float>();
+	float inputs = parse_expression().get_value<Number>();
 	expect(comma);
 	next_token();
-	float outputs = parse_expression().get_value<float>();
+	float outputs = parse_expression().get_value<Number>();
 	expect(close_paren);
 	expect(colon);
 	expect(open_brace);
 
-	Program* old_program = program;
 	int start_position = position;
 	int num_braces_encountered = 0;
 
@@ -548,7 +548,7 @@ TypedValue Parser::parse_factor()
 		next_token();
 		value = -parse_product();
 	}
-	else error("Couldn't get value of expression factor of type " + debug_names[current.type]);
+	else error("Couldn't get value of expression factor of type " + debug_names.at(current.type));
 
 	if (peek(open_bracket)) {
 		expect(open_bracket);
@@ -558,8 +558,8 @@ TypedValue Parser::parse_factor()
 		TypedValue index = parse_expression();
 		expect(close_bracket);
 
-		if (index.is_type<float>()) {
-			value = value.get_value<Sequence>().data[(int)index.get_value<float>()];
+		if (index.is_type<Number>()) {
+			value = value.get_value<Sequence>().data[(int) index.get_value<Number>()];
 		} else if (index.is_type<Sequence>()) {
 			Sequence s;
 			Sequence& index_sequence = index.get_value<Sequence>();
@@ -573,15 +573,15 @@ TypedValue Parser::parse_factor()
 	}
 
 	if (peek(elipsis)) {
-		float const lower = value.get_value<float>();
+		float const lower = value.get_value<Number>();
 		expect(elipsis);
 		next_token();
-		float const upper = parse_expression().get_value<float>();
+		float const upper = parse_expression().get_value<Number>();
 		float step = 1;
 		if (peek(vertical_bar)) {
 			next_token();
 			next_token();
-			step = parse_expression().get_value<float>();
+			step = parse_expression().get_value<Number>();
 		}
 		Sequence s;
 		if (lower > upper) for (float n = lower; n >= upper; n -= step) s.data.push_back(n);
@@ -618,12 +618,12 @@ Sequence Parser::parse_sequence()
 {
 	Sequence s;
 	next_token();
-	s.data.push_back(parse_expression().get_value<float>());
+	s.data.push_back(parse_expression().get_value<Number>());
 
 	while (peek(comma)) {
 		expect(comma);
 		next_token();
-		s.data.push_back(parse_expression().get_value<float>());
+		s.data.push_back(parse_expression().get_value<Number>());
 	}
 	
 	expect(close_brace);
@@ -655,9 +655,8 @@ void Parser::expect(TokenType expected)
 void Parser::verify(TokenType expected)
 {
 	if (current.type != expected) {
-		error("Got " + debug_names[current.type] + ", expected " + debug_names[expected]);
+		error("Got " + debug_names.at(current.type) + ", expected " + debug_names.at(expected));
 	}
 }
 
 }
-
