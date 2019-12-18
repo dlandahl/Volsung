@@ -26,7 +26,7 @@ using MultichannelBuffer  = std::vector<CircularBuffer>;
 template <typename T>
 int sign(const T val)
 {
-	return (T(0) < val) - (val < T(0));
+    return (T(0) < val) - (val < T(0));
 }
 
 
@@ -39,28 +39,28 @@ inline std::function<void(std::string)> debug_callback = [] (std::string message
 
 inline void log(const std::string& message)
 {
-	debug_callback(message + '\n');
+    debug_callback(message + '\n');
 }
 
 
 class VolsungException : public std::exception
 {
 public:
-	virtual const char* what() const noexcept override;
+    virtual const char* what() const noexcept override;
 };
 
 #undef assert
 inline void assert(const bool condition, const std::string& message)
 {
-	if (!condition) {
-		log(message);
-		throw VolsungException();
-	}
+    if (!condition) {
+        log(message);
+        throw VolsungException();
+    }
 }
 
 inline void error(const std::string& message)
 {
-	assert(0, message);
+    assert(0, message);
 }
 
 }
