@@ -25,9 +25,8 @@ int main()
 	std::string code =
 R"(
 
-
-disk: file~ (1..5) + ""
-osc~ -> disk
+[3] osc~ 100*n => [3] file~ (1..3)[n-1] + ""
+&config 3s
 
 )";
 

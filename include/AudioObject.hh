@@ -14,9 +14,9 @@ struct linked_value
 {
 	float* parameter;
 	float  default_value;
-	int input;
+	uint input;
 
-	linked_value(float* p, float dv, int in):
+	linked_value(float* const p, const float dv, const uint in):
 		parameter(p), default_value(dv), input(in)
 	{ }
 };
@@ -24,22 +24,21 @@ struct linked_value
 class AudioObject
 {
 private:
-	std::vector<CircularBuffer> in, out;
+	MultichannelBuffer in, out;
 	std::vector<linked_value> linked_values;
-	int buffer_size = 1;
-	
-protected:
-	virtual void run(buf&, buf&) = 0;
-	void request_buffer_size(int);
-	bool verify_argument_types(std::vector<Type>, std::vector<TypedValue>);
-	void set_io(int, int);
-	void init(int, int, std::vector<TypedValue>, std::vector<float*>);
-	void set_defval(float*, float, int);
+//	std::size_t buffer_size = 1;
 
-	bool is_gate_high(uint);
-	bool gate_opened(uint);
-	bool gate_closed(uint);
-	bool is_connected(uint);
+protected:
+	virtual void process(const MultichannelBuffer&, MultichannelBuffer&) = 0;
+	void request_buffer_size(const std::size_t);
+	void set_io(const uint, const uint);
+	void init(const uint, const uint, std::vector<TypedValue>, std::vector<float*>);
+	void set_defval(float* const, const float, const int);
+
+	bool is_gate_high(const uint) const;
+	bool gate_opened(const uint) const;
+	bool gate_closed(const uint) const;
+	bool is_connected(const uint) const;
 
 public:
 	void implement();

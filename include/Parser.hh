@@ -86,16 +86,16 @@ struct Token
  *  
  *  Instantiate instead a Parser, and use only the source_code field from this class.
  */
- 
+
 class Lexer
 {
-	char current();
-	bool is_digit();
-	bool is_char();
+	char current() const;
+	bool is_digit() const;
+	bool is_char() const;
 
 protected:
 	Token get_next_token();
-	bool peek(TokenType);
+	bool peek(const TokenType);
 	bool peek_expression();
 	virtual ~Lexer() = 0;
 	uint line = 1;
@@ -119,11 +119,12 @@ class Parser : public Lexer
 {
 	Token current = { TokenType::invalid, "" };
 	Token next_token();
-	void error(std::string);
-	void expect(TokenType);
-	void verify(TokenType);
-	bool line_end();
-	
+	void error(const std::string&) const;
+	void expect(const TokenType);
+	void verify(const TokenType) const;
+	bool line_end() const;
+	bool current_token_is(const TokenType) const;
+
 	void parse_declaration();
 	void parse_subgraph_declaration();
 	void parse_connection();
@@ -131,7 +132,7 @@ class Parser : public Lexer
 	Number parse_number();
 	void parse_directive();
 	std::string get_object_to_connect();
-	void make_object(std::string, std::string, std::vector<TypedValue>);
+	void make_object(const std::string&, const std::string&, const std::vector<TypedValue>&);
 	std::string parse_object_declaration(std::string = "");
 
 	TypedValue parse_expression();
@@ -152,4 +153,3 @@ public:
 };
 
 }
-

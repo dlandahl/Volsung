@@ -13,7 +13,6 @@
 namespace Volsung {
 
 class Program;
-using callback_functor = std::function<void(buf&, buf&, std::any)>;
 
 enum class Type {
 	number,
@@ -26,25 +25,30 @@ enum class ConnectionType {
 	one_to_many,
 	many_to_one,
 	many_to_many,
-	cross
-};
-
-struct Sequence
-{
-	std::vector<float> data;
-	std::size_t size() { return data.size(); }
-	
-	operator std::string() {
-		std::string string = "{ ";
-		string += std::to_string(data[0]);
-		for (std::size_t n = 1; n < size(); n++) string += ", " + std::to_string(data[n]);
-		string += " }\n";
-		return string;
-	}
+	biclique
 };
 
 using Number = float;
 using Text = std::string;
+
+class Sequence
+{
+	std::vector<float> data;
+
+public:
+	std::size_t size() const;
+	
+	operator std::string() const;
+
+	void add_element(const Number);
+
+	float& operator[](const std::size_t);
+	const float& operator[](const std::size_t) const;
+
+	auto begin() { return std::begin(data); }
+	auto end() { return std::end(data); }
+
+};
 
 using TypedValueBase = std::variant<Number, Text, Sequence>;
 class TypedValue : private TypedValueBase
@@ -54,17 +58,20 @@ public:
 	template<class T>
 	T& get_value();
 
+	template<class T>
+	const T& get_value() const;
+
 	template<class>
-	bool is_type();
+	bool is_type() const;
 
-	Type get_type();
+	Type get_type() const;
 
-	void operator+=(TypedValue);
-	void operator-=(TypedValue);
-	void operator*=(TypedValue);
-	void operator/=(TypedValue);
-	void operator^=(TypedValue);
-	TypedValue operator-();
+	void operator+=(const TypedValue&);
+	void operator-=(const TypedValue&);
+	void operator*=(const TypedValue&);
+	void operator/=(const TypedValue&);
+	void operator^=(const TypedValue&);
+	TypedValue& operator-();
 
 };
 
@@ -72,16 +79,17 @@ template<class>
 std::string type_debug_name() { return ""; }
 
 template<>
-inline std::string type_debug_name<float>() { return "Number"; }
+inline std::string type_debug_name<Number>() { return "Number"; }
 
 template<>
 inline std::string type_debug_name<Sequence>() { return "Sequence"; }
 
 template<>
-inline std::string type_debug_name<std::string>() { return "Text"; }
+inline std::string type_debug_name<Text>() { return "Text"; }
 
-using directive_functor = std::function<void(std::vector<TypedValue>, Program*)>;
-using SubgraphRepresentation = std::pair<std::string, std::array<float, 2>>;
+using DirectiveFunctor = std::function<void(const std::vector<TypedValue>&, Program* const)>;
+using CallbackFunctor = std::function<void(const MultichannelBuffer&, MultichannelBuffer&, std::any)>;
+using SubgraphRepresentation = std::pair<const std::string, const std::array<float, 2>>;
 
 template <class T>
 using SymbolTable = std::unordered_map<std::string, T>;
@@ -96,19 +104,19 @@ using Frame = std::vector<float>;
 
 class Program
 {
-	static inline SymbolTable<directive_functor> custom_directives;
+	static inline SymbolTable<DirectiveFunctor> custom_directives;
 
 	uint inputs = 0;
 	uint outputs = 0;
 	SymbolTable<std::unique_ptr<AudioObject>> table;
 	SymbolTable<TypedValue> symbol_table;
 
-	std::uniform_real_distribution<float> distribution;
-	std::default_random_engine generator;
+	mutable std::uniform_real_distribution<float> distribution;
+	mutable std::default_random_engine generator;
 
 public:
-	SymbolTable<std::size_t> group_sizes;
-	SymbolTable<SubgraphRepresentation> subgraphs;
+	SymbolTable<const std::size_t> group_sizes;
+	SymbolTable<const SubgraphRepresentation> subgraphs;
 	Program* parent = nullptr;
 	
 	/*! \brief Used to create audio objects manually
@@ -117,29 +125,29 @@ public:
 	 *  through the interpreter.
 	 */
 
-	template<class>
-	void create_object(std::string, std::vector<TypedValue>);
+	template<typename>
+	void create_object(const std::string&, const std::vector<TypedValue>&);
 
-	template<class T>
-	T* get_audio_object_raw_pointer(std::string);
+	template<typename T>
+	T* get_audio_object_raw_pointer(const std::string&) const;
 
-	void connect_objects(std::unique_ptr<AudioObject>&, uint,
-	                     std::unique_ptr<AudioObject>&, uint);
+	void connect_objects(std::unique_ptr<AudioObject>&, const uint,
+	                     std::unique_ptr<AudioObject>&, const uint);
 
 	/*! \brief Used to connect audio objects manually
 	 *  
 	 *  This template can be used to connect two audio objects by name.
 	 */
 
-	void connect_objects(std::string, uint, std::string, uint, ConnectionType = ConnectionType::one_to_one);
+	void connect_objects(const std::string&, const uint, const std::string&, const uint, const ConnectionType = ConnectionType::one_to_one);
 
 	/*! \brief Create a custom user directive
 	 *
 	 *  Supply a functor to be invoked when parsing an ampersand followed by the name of this directive.
 	 */
 
-	static void add_directive(std::string, directive_functor);
-	void invoke_directive(std::string, std::vector<TypedValue>);
+	static void add_directive(const std::string&, const DirectiveFunctor);
+	void invoke_directive(const std::string&, const std::vector<TypedValue>&);
 
 	/*! \brief Create an ambient user object
 	 *
@@ -148,7 +156,7 @@ public:
 	 *  User objects will be added to the symbol table upon reset of the program.
 	 */
 
-	void create_user_object(std::string, uint, uint, std::any, callback_functor);
+	void create_user_object(const std::string&, const uint, const uint, std::any, CallbackFunctor);
 
 	/*! \brief Add inputs and outputs to a program 
 	 *
@@ -157,7 +165,7 @@ public:
 	 *  Read and write data from them through the "run" function.
 	 */
 
-	void configure_io(uint, uint);
+	void configure_io(const uint, const uint);
 
 	/*! \brief Run the program
 	 *
@@ -171,28 +179,29 @@ public:
 	 *  Runs the program by running each audio object (unit generator) in the symbol table in turn.
 	 *  Expects a sample which will be written to the "input" object, and returns a float sample from the "output" object, created by configure_io.
 	 */
-	bool object_exists(std::string);
-	void expect_to_be_object(std::string);
-	void expect_to_be_group(std::string);
-	
-	float run(float);
-	Frame run(Frame);
+	float run(const float);
+	Frame run(const Frame);
+
+	bool object_exists(const std::string&) const;
+	void expect_to_be_object(const std::string&) const;
+	void expect_to_be_group(const std::string&) const;
+
 	void finish();
 	void reset();
-	
+
 	auto begin() { return std::begin(table); }
 	auto end() { return std::end(table); }
 
 	template<class>
-	bool symbol_is_type(std::string);
-	
+	bool symbol_is_type(const std::string&) const;
+
 	template<class T>
-	T get_symbol_value(std::string);
+	T get_symbol_value(const std::string&) const;
 	
-	TypedValue get_symbol_value(std::string);
-	void add_symbol(std::string, TypedValue);
-	void remove_symbol(std::string);
-	bool symbol_exists(std::string);
+	TypedValue get_symbol_value(const std::string&) const;
+	void add_symbol(const std::string&, const TypedValue&);
+	void remove_symbol(const std::string&);
+	bool symbol_exists(const std::string&) const;
 
 	Program() :
 		distribution(0.f, 1.f), generator(std::chrono::system_clock::now().time_since_epoch().count())
@@ -203,35 +212,35 @@ using Graph = Program;
 
 
 template<class T>
-T* Program::get_audio_object_raw_pointer(std::string name)
+T* Program::get_audio_object_raw_pointer(const std::string& name) const
 {
 	static_assert(std::is_base_of<AudioObject, T>::value, "Type must be audio object");
-	return static_cast<T*>(table[name].get());
+	return static_cast<T*>(table.at(name).get());
 }
 
 template<class Object>
-void Program::create_object(std::string name, std::vector<TypedValue> arguments)
+void Program::create_object(const std::string& name, const std::vector<TypedValue>& arguments)
 {
 	if (table.count(name) != 0)	error("Symbol '" + name + "' is already used");
 	table[name] = std::make_unique<Object>(arguments);
 }
 
 template<class T>
-bool Program::symbol_is_type(std::string identifier)
+bool Program::symbol_is_type(const std::string& identifier) const
 {
 	if (!symbol_exists(identifier))
 		error("Symbol " + identifier + " does not exist, attempted to verify type");
-	return symbol_table[identifier].is_type<T>();
+	return symbol_table.at(identifier).is_type<T>();
 }
 
 template<class T>
-T Program::get_symbol_value(std::string identifier)
+T Program::get_symbol_value(const std::string& identifier) const
 {
 	if (!symbol_exists(identifier))
 		error("Symbol " + identifier + " does not exist, attempted to read value");
 	else if (!symbol_is_type<T>(identifier))
 		error("Symbol " + identifier + " is wrong type");
-	return symbol_table[identifier].get_value<T>();
+	return symbol_table.at(identifier).get_value<T>();
 }
 
 template<class T>
@@ -244,10 +253,18 @@ T& TypedValue::get_value()
 }
 
 template<class T>
-bool TypedValue::is_type()
+const T& TypedValue::get_value() const
+{
+	if (!is_type<T>())
+		error("Expected type " + type_debug_name<T>());
+
+	return std::get<T>(*this);
+}
+
+template<class T>
+bool TypedValue::is_type() const
 {
 	return std::holds_alternative<T>(*this);
 }
 
 }
-
