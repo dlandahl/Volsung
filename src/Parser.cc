@@ -318,7 +318,7 @@ void Parser::make_object(const std::string& object_type, const std::string& obje
     else if (object_type == "lpf")   program->create_object<LowpassObject>(object_name, arguments);
     else if (object_type == "hpf")   program->create_object<HighpassObject>(object_name, arguments);
     else if (object_type == "bpf")   program->create_object<BandpassObject>(object_name, arguments);
-    else if (object_type == "apf")   program->create_object<BandpassObject>(object_name, arguments);
+    else if (object_type == "apf")   program->create_object<AllpassObject>(object_name, arguments);
     else if (object_type == "env")   program->create_object<EnvelopeFollowerObject>(object_name, arguments);
     else if (program->subgraphs.count(object_type)) {
         auto io = program->subgraphs[object_type].second;
