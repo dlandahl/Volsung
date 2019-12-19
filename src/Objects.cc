@@ -22,9 +22,9 @@ AddObject::AddObject(const std::vector<TypedValue>& parameters)
 
 void DelayObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
 {
-    float lower = in[0][-sample_delay];
-    float upper = in[0][-(sample_delay+0.5)];
-    float ratio = sample_delay - (int) sample_delay;
+    const float lower = in[0][-sample_delay];
+    const float upper = in[0][-(sample_delay+0.5)];
+    const float ratio = sample_delay - (int) sample_delay;
     
     out[0][0] = (1-ratio) * lower + ratio * upper;
 }
@@ -64,7 +64,7 @@ void FileoutObject::finish()
     if (is_connected(0)) {
         log("writing file");
         std::ofstream file(filename, std::fstream::out | std::fstream::binary);
-        for (uint n = 0; n < in_data.size(); n++)
+        for (std::size_t n = 0; n < in_data.size(); n++)
             file.write((const char*)& in_data[n], sizeof(float));
 
         file.close();
@@ -336,7 +336,7 @@ void EnvelopeObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     if (gate_opened(0)) time = 0;
     if (time > length) time = length;
     
-    float ratio = float(time) / (length+0.001);
+    const float ratio = float(time) / (length+0.001);
     out[0][0] = (1-ratio) * start + ratio * end;
     time++;
 }
@@ -434,8 +434,8 @@ void BiquadObject::process(const MultichannelBuffer& in, MultichannelBuffer& out
 
     calculate_coefficients();
 
-    auto& x = in[0];
-    auto& y = out[0];
+    const auto& x = in[0];
+    const auto& y = out[0];
 
     y[0] = (b0*x[0] + b1*x[-1] + b2*x[-2] - a1*y[-1] - a2*y[-2]) / a0;
 }
@@ -493,10 +493,10 @@ void AllpassObject::calculate_coefficients()
 
 void EnvelopeFollowerObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
 {
-    float sample = std::fabs(in[0][0]);
+    const float sample = std::fabs(in[0][0]);
     
-    float const internal_attack = std::exp(time_constant / attack);
-    float const internal_release = std::exp(time_constant / release);
+    const float internal_attack = std::exp(time_constant / attack);
+    const float internal_release = std::exp(time_constant / release);
     
     float detector_value = 0.f;
     if (sample > last_value)
@@ -521,10 +521,10 @@ void SubgraphObject::process(const MultichannelBuffer& in, MultichannelBuffer& o
 {
     if (!graph) error("Null pointer for subpatch");
 
-    std::vector<float> input_frame;
+    Frame input_frame;
     for (std::size_t n = 0; n < inputs.size(); n++) input_frame.push_back(in[n][0]);
 
-    auto output_frame = graph->run(input_frame);
+    const Frame output_frame = graph->run(input_frame);
 
     for (std::size_t n = 0; n < outputs.size(); n++) out[n][0] = output_frame[n];
 }
