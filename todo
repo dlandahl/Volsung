@@ -9,3 +9,19 @@ eg~ should output gate
 
 Write all the overloads
 
+Move overloads into classes of typed values?
+
+Use references to blocks for signal flow, automatically copy blocks when needed
+
+Use an array of make_object functions to improve branch prediction
+
+Add named parameters to subgraphs
+    -> This may allow static analysis of subgraph validity, without a dynamic instance
+
+Update subgraph syntax
+
+Add Parameter~ / param~ object
+
+Rename objects with longer, more descriptive names?
+
+Add functions, load files into sequences instead
