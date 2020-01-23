@@ -266,12 +266,18 @@ void Program::create_user_object(const std::string& name, const uint inputs, con
     table[name] = std::make_unique<UserObject, std::vector<TypedValue>, const CallbackFunctor&, std::any&>({ TypedValue(inputs), TypedValue(outputs) }, callback, user_data);
 }
 
-void Program::connect_objects(std::unique_ptr<AudioObject> &a, const uint out,
-                              std::unique_ptr<AudioObject> &b, const uint in)
+void Program::check_io_and_connect_objects(const std::string& output_object, const uint output_index,
+                                           const std::string& input_object , const uint input_index)
 {
-    if (a->outputs.size() > out && b->inputs.size() > in)
-        a->outputs[out].connect(b->inputs[in]);
-    else error("Index out of range for connection");
+
+    if (table[output_object]->outputs.size() < output_index) {
+        error("Index out of range on output object: " + output_object + ". Index is: " + std::to_string(output_index));
+    }
+    
+    if (table[input_object]->inputs.size() < input_index)
+        error("Index out of range on input object: " + input_object + ". Index is: " + std::to_string(input_index));
+    
+    table[output_object]->outputs[output_index].connect(table[input_object]->inputs[input_index]);
 }
 
 void Program::expect_to_be_group(const std::string& name) const
@@ -286,47 +292,47 @@ void Program::expect_to_be_object(const std::string& name) const
     else if (!table.count(name)) error("Object " + name + " has not been declared");
 }
 
-void Program::connect_objects(const std::string& a, const uint out,
-                              const std::string& b, const uint in, const ConnectionType type)
+void Program::connect_objects(const std::string& output_object, const uint out,
+                              const std::string& input_object, const uint in, const ConnectionType type)
 {
     if (type == ConnectionType::one_to_one) {
-        expect_to_be_object(a);
-        expect_to_be_object(b);
-        connect_objects(table[a], out, table[b], in);
+        expect_to_be_object(output_object);
+        expect_to_be_object(input_object);
+        check_io_and_connect_objects(output_object, out, input_object, in);
     }
     
     else if (type == ConnectionType::many_to_one) {
-        expect_to_be_group(a);
-        expect_to_be_object(b);
-        for (std::size_t n = 0; n < group_sizes[a]; n++)
-            connect_objects(table["__grp_" + a + std::to_string(n)], out, table[b], in);
+        expect_to_be_group(output_object);
+        expect_to_be_object(input_object);
+        for (std::size_t n = 0; n < group_sizes[output_object]; n++)
+            check_io_and_connect_objects("__grp_" + output_object + std::to_string(n), out, input_object, in);
     }
     
     else if (type == ConnectionType::one_to_many) {
-        expect_to_be_object(a);
-        expect_to_be_group(b);
-        for (std::size_t n = 0; n < group_sizes[b]; n++)
-            connect_objects(table[a], out, table["__grp_" + b + std::to_string(n)], in);
+        expect_to_be_object(output_object);
+        expect_to_be_group(input_object);
+        for (std::size_t n = 0; n < group_sizes[input_object]; n++)
+            check_io_and_connect_objects(output_object, out, "__grp_" + input_object + std::to_string(n), in);
     }
 
     else if (type == ConnectionType::biclique) {
-        expect_to_be_group(a);
-        expect_to_be_group(b);
-        for (std::size_t na = 0; na < group_sizes[a]; na++) {
-            for (std::size_t nb = 0; nb < group_sizes[b]; nb++) {
-                connect_objects(table["__grp_" + a + std::to_string(na)], out,
-                                table["__grp_" + b + std::to_string(nb)], in);
+        expect_to_be_group(output_object);
+        expect_to_be_group(input_object);
+        for (std::size_t na = 0; na < group_sizes[output_object]; na++) {
+            for (std::size_t nb = 0; nb < group_sizes[input_object]; nb++) {
+                check_io_and_connect_objects("__grp_" + output_object + std::to_string(na), out,
+                                "__grp_" + input_object + std::to_string(nb), in);
             }
         }
     }
     
     else if (type == ConnectionType::many_to_many) {
-        expect_to_be_group(a);
-        expect_to_be_group(b);
-        if (group_sizes[a] != group_sizes[b]) error("Group sizes to be connected in parallel are not identical");
-        for (std::size_t n = 0; n < group_sizes[a]; n++)
-            connect_objects(table["__grp_" + a + std::to_string(n)], out,
-                            table["__grp_" + b + std::to_string(n)], in);
+        expect_to_be_group(output_object);
+        expect_to_be_group(input_object);
+        if (group_sizes[output_object] != group_sizes[input_object]) error("Group sizes to be connected in parallel are not identical");
+        for (std::size_t n = 0; n < group_sizes[output_object]; n++)
+            check_io_and_connect_objects("__grp_" + output_object + std::to_string(n), out,
+                            "__grp_" + input_object + std::to_string(n), in);
     }
 }
 

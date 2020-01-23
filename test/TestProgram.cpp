@@ -24,29 +24,12 @@ int main()
 
     std::string code =
 R"(
+eg: Envelope_Generator~ 30
 
-; Use five saw oscillators
-N: 5
-swarm: [N] Saw_Oscillator~ 
+Envelope_Generator~ 50|1
+-> eg -> output
 
-; Random offset frequencies
-offset: [N] Multiply~ (r-0.5) * 200
-
-; The base frequency for each oscillator will
-; be added to the offset
-base_frequency: [N] Add~ n * 55
-
-; Use a timer~ to decrease the amount of offset over time
-; sat~ is used to stop the timer exceeding 1
-Timer~
--> Tanh~ -> *-1 -> +1
-<> offset
-=> base_frequency
-=> swarm
->> *0.1 -> output
-
-
-&config 10, 1
+&config 100, 1
 
 )";
 

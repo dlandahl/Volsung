@@ -318,6 +318,7 @@ void Parser::make_object(const std::string& object_type, const std::string& obje
     else if (object_type == "Delay_Line")            program->create_object<DelayObject>(object_name, arguments);
     else if (object_type == "Clock_Generator")       program->create_object<ClockObject>(object_name, arguments);
     else if (object_type == "Envelope_Generator")    program->create_object<EnvelopeFollowerObject>(object_name, arguments);
+    else if (object_type == "Envelope_Follower")     program->create_object<EnvelopeObject>(object_name, arguments);
     else if (object_type == "Timer")                 program->create_object<TimerObject>(object_name, arguments);
     else if (object_type == "Tanh")                  program->create_object<DriveObject>(object_name, arguments);
     else if (object_type == "Modulo")                program->create_object<ModuloObject>(object_name, arguments);
@@ -328,7 +329,6 @@ void Parser::make_object(const std::string& object_type, const std::string& obje
     else if (object_type == "Step_Sequence")         program->create_object<StepSequence>(object_name, arguments);
     else if (object_type == "Index_Sequence")        program->create_object<SequenceObject>(object_name, arguments);
     else if (object_type == "Sample_And_Hold")       program->create_object<SampleAndHoldObject>(object_name, arguments);
-    else if (object_type == "Envelope_Generator")    program->create_object<EnvelopeObject>(object_name, arguments);
     else if (object_type == "Pole")                  program->create_object<FilterObject>(object_name, arguments);
     else if (object_type == "Lowpass_Filter")        program->create_object<LowpassObject>(object_name, arguments);
     else if (object_type == "Highpass_Filter")       program->create_object<HighpassObject>(object_name, arguments);
@@ -361,7 +361,7 @@ void Parser::make_object(const std::string& object_type, const std::string& obje
 
 void Parser::parse_connection()
 {
-    int output_index = 0, input_index = 0;
+    int output_index= 0, input_index = 0;
     std::string output_object = get_object_to_connect(), input_object;
 
     if (peek(TokenType::vertical_bar)) {
@@ -447,6 +447,12 @@ std::string Parser::get_object_to_connect()
 
     else if (current_token_is(TokenType::identifier)) {
         output = current.value;
+        if (peek(TokenType::colon)) {
+            next_token();
+            next_token();
+            parse_object_declaration(output);
+        }
+        
         if (peek(TokenType::open_bracket)) {
             expect(TokenType::open_bracket);
             next_token();

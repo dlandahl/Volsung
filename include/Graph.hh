@@ -163,8 +163,8 @@ public:
     template<typename T>
     T* get_audio_object_raw_pointer(const std::string&) const;
 
-    void connect_objects(std::unique_ptr<AudioObject>&, const uint,
-                         std::unique_ptr<AudioObject>&, const uint);
+    void check_io_and_connect_objects(const std::string&, const uint,
+                                      const std::string&, const uint);
 
     /*! \brief Used to connect audio objects manually
      *  

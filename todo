@@ -6,10 +6,11 @@ Automatically fall back to asm.js
 Allow request buffer size per input channel
 
 eg~ should output gate
+There is a bad bug, where multiple outputs causes double free on shared pointer
 
 Write all the overloads
 
-Move overloads into classes of typed values?
+Move overloads into classes of types?
 
 Use references to blocks for signal flow, automatically copy blocks when needed
 
@@ -22,6 +23,6 @@ Update subgraph syntax
 
 Add Parameter~ / param~ object
 
-Rename objects with longer, more descriptive names?
-
 Add functions, load files into sequences instead
+
+Declaring objects in connection statements is allowed, but not if it's the first object in a path??

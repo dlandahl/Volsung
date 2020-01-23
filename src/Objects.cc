@@ -256,6 +256,7 @@ ClockObject::ClockObject(const std::vector<TypedValue>& parameters)
 {
     init(1, 1, parameters, { &interval });
     set_defval(&interval, interval, 0);
+    Volsung::log("created clock objects, output count: " + std::to_string(outputs.size()));
 }
 
 
@@ -343,7 +344,11 @@ void EnvelopeObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     
     const float ratio = float(time) / (length+0.001);
     out[0][0] = (1-ratio) * start + ratio * end;
+    out[1][0] = 0.f;
     time++;
+    
+    //out[1][0] = 0.f;
+    //if (time == length) out[1][0] = 1.f;
 }
 
 EnvelopeObject::EnvelopeObject(const std::vector<TypedValue>& parameters)
