@@ -12,12 +12,11 @@
 
 namespace Volsung {
 
-class Program;
 
 enum class Type {
     number,
-    sequence,
-    text
+    text,
+    sequence
 };
 
 enum class ConnectionType {
@@ -28,26 +27,57 @@ enum class ConnectionType {
     biclique
 };
 
-using Number = float;
-using Text = std::string;
+class TypedValue;
+class Number;
+class Text;
+class Sequence;
+
+class Number
+{
+    float value = 0;
+public:
+    operator float&();
+    operator float() const;
+    operator Text() const;
+
+    Number(float);
+    Number() = default;
+};
+
+class Text
+{
+    std::string value;
+public:
+    void operator=(std::string string) { value = string; }
+    Text& operator+(Text rhs) {
+        value = value + rhs.value;
+        return *this;
+    }
+
+    operator std::string() const {
+        return value;
+    }
+
+    Text(std::string string) : value(string) {}
+    Text() = default;
+};
 
 class Sequence
 {
-    std::vector<float> data;
+    std::vector<Number> data;
 
 public:
     std::size_t size() const;
-    
-    operator std::string() const;
+    operator Text() const;
 
     void add_element(const Number);
-
-    float& operator[](const std::size_t);
-    const float& operator[](const std::size_t) const;
+    void perform_range_check(const std::size_t) const;
+    
+    Number& operator[](long long);
+    const Number& operator[](long long) const;
 
     auto begin() { return std::begin(data); }
     auto end() { return std::end(data); }
-
 };
 
 using TypedValueBase = std::variant<Number, Text, Sequence>;
@@ -72,8 +102,8 @@ public:
     void operator/=(const TypedValue&);
     void operator^=(const TypedValue&);
     TypedValue& operator-();
-
 };
+
 
 template<class>
 std::string type_debug_name() { return ""; }
@@ -82,11 +112,13 @@ template<>
 inline std::string type_debug_name<Number>() { return "Number"; }
 
 template<>
-inline std::string type_debug_name<Sequence>() { return "Sequence"; }
-
-template<>
 inline std::string type_debug_name<Text>() { return "Text"; }
 
+template<>
+inline std::string type_debug_name<Sequence>() { return "Sequence"; }
+
+
+class Program;
 using DirectiveFunctor = std::function<void(const std::vector<TypedValue>&, Program* const)>;
 using CallbackFunctor = std::function<void(const MultichannelBuffer&, MultichannelBuffer&, std::any)>;
 using SubgraphRepresentation = std::pair<const std::string, const std::array<float, 2>>;
@@ -169,17 +201,17 @@ public:
 
     /*! \brief Run the program
      *
-     *  Runs the program by running each audio object (unit generator) in the symbol table in turn.
+     *  Runs the program by running each audio object (unit generator) in the symbol table in turn. Doesn't give you back data.
      */
 
-    void run();
+    void simulate();
 
     /*! \brief Run the program with one input and one output
      *
      *  Runs the program by running each audio object (unit generator) in the symbol table in turn.
      *  Expects a sample which will be written to the "input" object, and returns a float sample from the "output" object, created by configure_io.
      */
-    float run(const float);
+    float run(const float = 0);
     Frame run(const Frame);
 
     bool object_exists(const std::string&) const;

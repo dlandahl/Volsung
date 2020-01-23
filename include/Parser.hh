@@ -10,7 +10,7 @@
 
 namespace Volsung {
 
-enum TokenType {
+enum class TokenType {
     invalid,
     identifier,
     object,
@@ -45,35 +45,35 @@ enum TokenType {
 };
 
 inline const std::map<TokenType, std::string> debug_names = {
-{ invalid, "Unrecognised Token" },
-{ identifier, "Identifier" },
-{ object, "Object Type" },
-{ numeric_literal, "Number" },
-{ string_literal, "String" },
-{ arrow, "Arrow" },
-{ colon, "Colon" },
-{ open_brace, "Open Brace" },
-{ close_brace, "Close Brace" },
-{ open_paren, "Open Parenthesis" },
-{ close_paren, "Close Parenthesis" },
-{ open_bracket, "Open Bracket" },
-{ close_bracket, "Close Bracket" },
-{ newline, "Newline" },
-{ comma, "Comma" },
-{ ampersand, "Ampersand" },
-{ plus, "Plus" },
-{ minus, "Minus" },
-{ slash, "Slash" },
-{ asterisk, "Asterisk" },
-{ caret, "Caret" },
-{ many_to_one, "Many-to-One" },
-{ one_to_many, "One-to-Many" },
-{ vertical_bar, "Vertical Bar" },
-{ parallel, "Parallel Connection Operator" },
-{ cross_connection, "Cross Connection Operator" },
-{ elipsis, "Elipsis" },
-{ dot, "Dot" },
-{ eof, "End of File" }
+{ TokenType::invalid, "Unrecognised Token" },
+{ TokenType::identifier, "Identifier" },
+{ TokenType::object, "Object Type" },
+{ TokenType::numeric_literal, "Number" },
+{ TokenType::string_literal, "String" },
+{ TokenType::arrow, "Arrow" },
+{ TokenType::colon, "Colon" },
+{ TokenType::open_brace, "Open Brace" },
+{ TokenType::close_brace, "Close Brace" },
+{ TokenType::open_paren, "Open Parenthesis" },
+{ TokenType::close_paren, "Close Parenthesis" },
+{ TokenType::open_bracket, "Open Bracket" },
+{ TokenType::close_bracket, "Close Bracket" },
+{ TokenType::newline, "Newline" },
+{ TokenType::comma, "Comma" },
+{ TokenType::ampersand, "Ampersand" },
+{ TokenType::plus, "Plus" },
+{ TokenType::minus, "Minus" },
+{ TokenType::slash, "Slash" },
+{ TokenType::asterisk, "Asterisk" },
+{ TokenType::caret, "Caret" },
+{ TokenType::many_to_one, "Many-to-One" },
+{ TokenType::one_to_many, "One-to-Many" },
+{ TokenType::vertical_bar, "Vertical Bar" },
+{ TokenType::parallel, "Parallel Connection Operator" },
+{ TokenType::cross_connection, "Cross Connection Operator" },
+{ TokenType::elipsis, "Elipsis" },
+{ TokenType::dot, "Dot" },
+{ TokenType::eof, "End of File" }
 };
 
 struct Token
@@ -97,6 +97,7 @@ protected:
     Token get_next_token();
     bool peek(const TokenType);
     bool peek_expression();
+    bool peek_connection();
     virtual ~Lexer() = 0;
     uint line = 1;
     std::size_t position = 0;

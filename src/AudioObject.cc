@@ -51,7 +51,7 @@ void AudioObject::init(const uint ins, const uint outs, std::vector<TypedValue> 
     set_io(ins, outs);
 
     for (std::size_t n = 0; n < arguments.size() && n < values.size(); n++) {
-        *values[n] = arguments[n].get_value<float>();
+        *values[n] = arguments[n].get_value<Number>();
     }
 }
 

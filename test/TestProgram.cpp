@@ -25,8 +25,28 @@ int main()
     std::string code =
 R"(
 
-[3] osc~ 100*n => [3] file~ (1..3)[n-1] + ""
-&config 3s
+; Use five saw oscillators
+N: 5
+swarm: [N] Saw_Oscillator~ 
+
+; Random offset frequencies
+offset: [N] Multiply~ (r-0.5) * 200
+
+; The base frequency for each oscillator will
+; be added to the offset
+base_frequency: [N] Add~ n * 55
+
+; Use a timer~ to decrease the amount of offset over time
+; sat~ is used to stop the timer exceeding 1
+Timer~
+-> Tanh~ -> *-1 -> +1
+<> offset
+=> base_frequency
+=> swarm
+>> *0.1 -> output
+
+
+&config 10, 1
 
 )";
 

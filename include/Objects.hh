@@ -238,7 +238,7 @@ public:
 class StepSequence : public AudioObject
 {
     Sequence sequence;
-    int current = 0;
+    std::size_t current = 0;
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:

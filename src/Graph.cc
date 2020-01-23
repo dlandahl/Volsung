@@ -11,20 +11,38 @@
 
 namespace Volsung {
 
+Number::operator float&()
+{
+    return value;
+}
+
+Number::operator float() const
+{
+    return value;
+}
+
+Number::operator Text() const
+{
+    return (Text) std::to_string(value);
+}
+
+Number::Number(float initial_value) : value(initial_value) {}
+
+
 std::size_t Sequence::size() const
 {
     return data.size();
 }
 
-Sequence::operator std::string() const
+Sequence::operator Text() const
 {
     std::string string = "{ ";
 
-    string += std::to_string(data[0]);
-    for (std::size_t n = 1; n < size(); n++) string += ", " + std::to_string(data[n]);
+    string += std::to_string((float) data[0]);
+    for (std::size_t n = 1; n < size(); n++) string += ", " + std::to_string((float) data[n]);
     string += " }\n";
 
-    return string;
+    return Text(string);
 }
 
 void Sequence::add_element(const Number value)
@@ -32,15 +50,22 @@ void Sequence::add_element(const Number value)
     data.push_back(value);
 }
 
-float& Sequence::operator[](const std::size_t n)
+void Sequence::perform_range_check(const std::size_t n) const
 {
-    if (size() >= n) error("Sequence index out of range");
-    return data.at(n);
+    if (n >= size()) error("Sequence index out of range. Index is: " + std::to_string(n) + ", length is: " + std::to_string(size()));
 }
 
-const float& Sequence::operator[](const std::size_t n) const
+Number& Sequence::operator[](long long n)
 {
-    if (size() >= n) error("Sequence index out of range");
+    if (n < 0) n += size();
+    perform_range_check(n);
+    return data[n];
+}
+
+const Number& Sequence::operator[](long long n) const
+{
+    if (n < 0) n += size();
+    perform_range_check(n);
     return data.at(n);
 }
 
@@ -55,16 +80,16 @@ Type TypedValue::get_type() const
 void TypedValue::operator+=(const TypedValue& other)
 {
     if (is_type<Text>() && other.is_type<Number>())
-        *this = get_value<Text>() + std::to_string((float) other.get_value<Number>());
+        *this = get_value<Text>() + (Text) other.get_value<Number>();
 
     else if (is_type<Number>() && other.is_type<Text>())
-        *this = std::to_string((float) get_value<Number>()) + other.get_value<Text>();
+        *this = (Text) std::to_string(get_value<Number>()) + other.get_value<Text>();
 
     else if (is_type<Sequence>() && other.is_type<Text>())
-        *this = std::string(get_value<Sequence>()) + other.get_value<Text>();
+        *this = (Text) get_value<Sequence>() + other.get_value<Text>();
 
     else if (is_type<Text>() && other.is_type<Sequence>())
-        *this = get_value<Text>() + std::string(other.get_value<Sequence>());
+        *this = get_value<Text>() + (Text) other.get_value<Sequence>();
 
     else if (is_type<Number>() && other.is_type<Number>())
         *this = TypedValue(get_value<Number>() + other.get_value<Number>());
@@ -122,6 +147,25 @@ void TypedValue::operator-=(const TypedValue& other)
     else error("Invalid argument on - operator");
 }
 
+/*
+template <typename Callable>
+void visit_typed_value(Callable function, TypedValue& value)
+{
+    Type type_id = value.get_type();
+    if (value.is_type<Number>())    function(value.get_value<Number>());
+    if (value.is_type<Text>())      function(value.get_value<Text>());
+    if (value.is_type<Sequence>())  function(value.get_value<Sequence>());
+}
+
+void TypedValue::operator-=(const TypedValue& other)
+{
+    std::visit([&other] (auto&& value) {
+        std::visit([&value] (auto&& other) { value.subtract(other); }, other);
+    }, *this);
+}
+*/
+
+
 void TypedValue::operator*=(const TypedValue& other)
 {
     if (is_type<Number>() && other.is_type<Number>())
@@ -163,11 +207,9 @@ void TypedValue::operator/=(const TypedValue& other)
 
     else if (is_type<Number>() && other.is_type<Sequence>()) {
         Sequence sequence = other.get_value<Sequence>();
-
         for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++) {
             sequence[n] = get_value<Number>() / sequence[n];
         }
-
         *this = sequence;
     }
 
@@ -188,16 +230,13 @@ void TypedValue::operator^=(const TypedValue& other)
     else if (is_type<Sequence>() && other.is_type<Number>()) {
         for (std::size_t n = 0; n < get_value<Sequence>().size(); n++)
             get_value<Sequence>()[n] = std::pow(get_value<Sequence>()[n], other.get_value<Number>());
-
     }
 
     else if (is_type<Number>() && other.is_type<Sequence>()) {
         Sequence sequence = other.get_value<Sequence>();
-
         for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++) {
             sequence[n] = std::pow(get_value<Number>(), sequence[n]);
         }
-
         *this = sequence;
     }
 
@@ -297,7 +336,7 @@ bool Program::object_exists(const std::string& name) const
     return false;
 }
 
-void Program::run()
+void Program::simulate()
 {
     for (auto const& entry : table) {
         entry.second->implement();
@@ -306,20 +345,7 @@ void Program::run()
 
 float Program::run(const float sample)
 {
-    if (inputs) {
-        AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
-        object->data = { 0 };
-        object->data[0] = sample;
-    }
-
-    run();
-    float out = 0;
-    
-    if (outputs) {
-        AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
-        out = object->data[0];
-    }
-    return out;
+    return run( Frame { sample } )[0];
 }
 
 Frame Program::run(const Frame sample)
@@ -327,15 +353,15 @@ Frame Program::run(const Frame sample)
     if (inputs) {
         AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
         object->data = { };
-        for (int n = 0; n < inputs; n++) object->data.push_back(sample.at(n));
+        for (std::size_t n = 0; n < inputs; n++) object->data.push_back(sample.at(n));
     }
     
-    run();
+    simulate();
     Frame out;
 
     if (outputs) {
         AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
-        for (int n = 0; n < outputs; n++) out.push_back(object->data[n]);
+        for (std::size_t n = 0; n < outputs; n++) out.push_back(object->data[n]);
         object->data = { };
     }
     return out;

@@ -73,7 +73,8 @@ void FileoutObject::finish()
 
 FileoutObject::FileoutObject(const std::vector<TypedValue>& parameters)
 {
-    filename = parameters[0].get_value<std::string>();
+    if (!parameters.size()) error("Expected a string argument on file object");
+    filename = parameters[0].get_value<Text>();
     std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
     
     if (file.good()) {
@@ -174,8 +175,8 @@ void UserObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
 UserObject::UserObject(const std::vector<TypedValue>& parameters, const CallbackFunctor callback_, std::any user_data_) : callback(callback_), user_data(user_data_)
 {
     float inputs = 0, outputs = 0;
-    inputs  = parameters[0].get_value<float>();
-    outputs = parameters[1].get_value<float>();
+    inputs  = parameters[0].get_value<Number>();
+    outputs = parameters[1].get_value<Number>();
     set_io(inputs, outputs);
 }
 
@@ -192,7 +193,7 @@ void AudioInputObject::process(const MultichannelBuffer&, MultichannelBuffer& ou
 AudioInputObject::AudioInputObject(const std::vector<TypedValue>& parameters)
 {
     float outputs = 0;
-    outputs = parameters[0].get_value<float>();
+    outputs = parameters[0].get_value<Number>();
     set_io(0, outputs);
     data.resize(outputs);
 }
@@ -307,7 +308,10 @@ AbsoluteValueObject::AbsoluteValueObject(const std::vector<TypedValue>&)
 
 void StepSequence::process(const MultichannelBuffer&, MultichannelBuffer& out)
 {
-    if (gate_opened(0)) current = ++current % sequence.size();
+    if (gate_opened(0)) {
+        current %= sequence.size();
+        current++;
+    }
     out[0][0] = sequence[current];
 }
 
@@ -316,6 +320,7 @@ StepSequence::StepSequence(const std::vector<TypedValue>& parameters)
     set_io(1, 1);
     sequence = parameters[0].get_value<Sequence>();
 }
+
 
 void PowerObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
 {
@@ -359,6 +364,7 @@ RoundObject::RoundObject(const std::vector<TypedValue>&)
     set_io(1, 1);
 }
 
+
 void SequenceObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
 {
     out[0][0] = sequence[(int) in[0][0]];
@@ -370,16 +376,18 @@ SequenceObject::SequenceObject(const std::vector<TypedValue>& parameters)
     sequence = parameters[0].get_value<Sequence>();
 }
 
+
 void SampleAndHoldObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
 {
     if (gate_opened(1)) value = in[0][0];
     out[0][0] = value;
 }
 
-SampleAndHoldObject::SampleAndHoldObject(const std::vector<TypedValue>& parameters)
+SampleAndHoldObject::SampleAndHoldObject(const std::vector<TypedValue>&)
 {
     set_io(2, 1);
 }
+
 
 void ConstObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
 {
@@ -391,6 +399,7 @@ ConstObject::ConstObject(const std::vector<TypedValue>& parameters)
     value = parameters[0].get_value<Number>();
     set_io(0, 1);
 }
+
 
 void SawObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
 {
@@ -424,18 +433,18 @@ TriangleObject::TriangleObject(const std::vector<TypedValue>& parameters)
     set_defval(&frequency, frequency, 0);
 }
 
-
+#include <limits>
 void BiquadObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
 {
-    if (!resonance) resonance = 0.0001;
+    if (!resonance) resonance = std::numeric_limits<float>::min();
     omega = TAU * frequency / sample_rate;
     alpha = std::sin(omega) / (2.f * resonance);
     cos_omega = std::cos(omega);
 
     calculate_coefficients();
 
-    const auto& x = in[0];
-    const auto& y = out[0];
+    auto& x = in[0];
+    auto& y = out[0];
 
     y[0] = (b0*x[0] + b1*x[-1] + b2*x[-2] - a1*y[-1] - a2*y[-2]) / a0;
 }
