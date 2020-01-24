@@ -24,10 +24,6 @@ int main()
 
     std::string code =
 R"(
-eg: Envelope_Generator~ 30
-
-Envelope_Generator~ 50|1
--> eg -> output
 
 &config 100, 1
 

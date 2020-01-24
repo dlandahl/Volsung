@@ -344,7 +344,6 @@ void EnvelopeObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     
     const float ratio = float(time) / (length+0.001);
     out[0][0] = (1-ratio) * start + ratio * end;
-    out[1][0] = 0.f;
     time++;
     
     //out[1][0] = 0.f;
