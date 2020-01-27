@@ -256,7 +256,6 @@ ClockObject::ClockObject(const std::vector<TypedValue>& parameters)
 {
     init(1, 1, parameters, { &interval });
     set_defval(&interval, interval, 0);
-    Volsung::log("created clock objects, output count: " + std::to_string(outputs.size()));
 }
 
 

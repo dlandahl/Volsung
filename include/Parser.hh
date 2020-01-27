@@ -6,7 +6,7 @@
 #include <exception>
 
 #include "Volsung.hh"
-#include "Graph.hh"
+#include "Objects.hh"
 
 namespace Volsung {
 

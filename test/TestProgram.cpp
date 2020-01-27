@@ -3,7 +3,7 @@
 #include <fstream>
 #include <array>
 
-#include "Volsung.hh"
+#include "VolsungHeader.hh"
 
 using namespace Volsung;
 
@@ -25,7 +25,10 @@ int main()
     std::string code =
 R"(
 
-&config 100, 1
+Sine_Oscillator~ 440
+-> File~ "noise"
+
+&config 10s
 
 )";
 

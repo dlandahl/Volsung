@@ -1,6 +1,5 @@
 
 #include "Parser.hh"
-#include "Objects.hh"
 
 namespace Volsung {
 
@@ -9,10 +8,49 @@ const char* VolsungException::what() const noexcept
     return "Volsung has encountered an error during parsing of the provided program and will exit the parsing stage.";
 }
 
+
+#define OBJECT(x) &Program::create_object<x>
+using ObjectMap = std::map<std::string, void(Program::*)(const std::string&, const std::vector<TypedValue>&)>;
+static const ObjectMap object_creators =
+{
+    { "Sine_Oscillator",     OBJECT(OscillatorObject) },
+    { "Saw_Oscillator",      OBJECT(SawObject) },
+    { "Square_Oscillator",   OBJECT(SquareObject) },
+    { "Triangle_Oscillator", OBJECT(TriangleObject) },
+    { "Noise",               OBJECT(NoiseObject) },
+    { "Constant",            OBJECT(ConstObject) },
+    { "Add",                 OBJECT(AddObject) },
+    { "Multiply",            OBJECT(MultObject) },
+    { "Subtract",            OBJECT(SubtractionObject) },
+    { "Divide",              OBJECT(DivisionObject) },
+    { "Power",               OBJECT(PowerObject) },
+    { "Delay_Line",          OBJECT(DelayObject) },
+    { "Clock_Generator",     OBJECT(ClockObject) },
+    { "Envelope_Follower",   OBJECT(EnvelopeFollowerObject) },
+    { "Envelope_Generator",  OBJECT(EnvelopeObject) },
+    { "Timer",               OBJECT(TimerObject) },
+    { "Tanh",                OBJECT(DriveObject) },
+    { "Modulo",              OBJECT(ModuloObject) },
+    { "Absolute_Value",      OBJECT(AbsoluteValueObject) },
+    { "Floor",               OBJECT(RoundObject) },
+    { "Comparator",          OBJECT(ComparatorObject) },
+    { "File",                OBJECT(FileoutObject) },
+    { "Step_Sequence",       OBJECT(StepSequence) },
+    { "Index_Sequence",      OBJECT(SequenceObject) },
+    { "Sample_And_Hold",     OBJECT(SampleAndHoldObject) },
+    { "Pole",                OBJECT(FilterObject) },
+    { "Lowpass_Filter",      OBJECT(LowpassObject) },
+    { "Highpass_Filter",     OBJECT(HighpassObject) },
+    { "Bandpass_Filter",     OBJECT(BandpassObject) },
+    { "Allpass_Filter",      OBJECT(AllpassObject) }
+};
+#undef OBJECT
+
+
 Token Lexer::get_next_token()
 {
-    if (position >= source_code.size() - 1) return { TokenType::eof, "" };
     position++;
+    if (current() == EOF) return { TokenType::eof, "" };
 
     while (current() == ' ' || current() == '\t') position++;
     if (current() == ';') while (current() != '\n') position++;
@@ -92,6 +130,7 @@ Token Lexer::get_next_token()
         while (is_char() || is_digit()) {
             id += current();
             position++;
+            if (position >= source_code.size()) break;
         }
         if (current() == '~') return { TokenType::object, id };
         position--;
@@ -114,6 +153,7 @@ Token Lexer::get_next_token()
 
 char Lexer::current() const
 {
+    if (position >= source_code.size()) return EOF;
     return source_code.at(position);
 }
 
@@ -304,43 +344,14 @@ std::string Parser::parse_object_declaration(std::string name)
 
 void Parser::make_object(const std::string& object_type, const std::string& object_name, const std::vector<TypedValue>& arguments)
 {
-    if (object_type == "Sine_Oscillator")            program->create_object<OscillatorObject>(object_name, arguments);
-    else if (object_type == "Saw_Oscillator")        program->create_object<SawObject>(object_name, arguments);
-    else if (object_type == "Square_Oscillator")     program->create_object<SquareObject>(object_name, arguments);
-    else if (object_type == "Triangle_Oscillator")   program->create_object<TriangleObject>(object_name, arguments);
-    else if (object_type == "Noise")                 program->create_object<NoiseObject>(object_name, arguments);
-    else if (object_type == "Constant")              program->create_object<ConstObject>(object_name, arguments);
-    else if (object_type == "Add")                   program->create_object<AddObject>(object_name, arguments);
-    else if (object_type == "Multiply")              program->create_object<MultObject>(object_name, arguments);
-    else if (object_type == "Subtract")              program->create_object<SubtractionObject>(object_name, arguments);
-    else if (object_type == "Divide")                program->create_object<DivisionObject>(object_name, arguments);
-    else if (object_type == "Power")                 program->create_object<PowerObject>(object_name, arguments);
-    else if (object_type == "Delay_Line")            program->create_object<DelayObject>(object_name, arguments);
-    else if (object_type == "Clock_Generator")       program->create_object<ClockObject>(object_name, arguments);
-    else if (object_type == "Envelope_Generator")    program->create_object<EnvelopeFollowerObject>(object_name, arguments);
-    else if (object_type == "Envelope_Follower")     program->create_object<EnvelopeObject>(object_name, arguments);
-    else if (object_type == "Timer")                 program->create_object<TimerObject>(object_name, arguments);
-    else if (object_type == "Tanh")                  program->create_object<DriveObject>(object_name, arguments);
-    else if (object_type == "Modulo")                program->create_object<ModuloObject>(object_name, arguments);
-    else if (object_type == "Absolute_Value")        program->create_object<AbsoluteValueObject>(object_name, arguments);
-    else if (object_type == "Floor")                 program->create_object<RoundObject>(object_name, arguments);
-    else if (object_type == "Comparator")            program->create_object<ComparatorObject>(object_name, arguments);
-    else if (object_type == "File")                  program->create_object<FileoutObject>(object_name, arguments);
-    else if (object_type == "Step_Sequence")         program->create_object<StepSequence>(object_name, arguments);
-    else if (object_type == "Index_Sequence")        program->create_object<SequenceObject>(object_name, arguments);
-    else if (object_type == "Sample_And_Hold")       program->create_object<SampleAndHoldObject>(object_name, arguments);
-    else if (object_type == "Pole")                  program->create_object<FilterObject>(object_name, arguments);
-    else if (object_type == "Lowpass_Filter")        program->create_object<LowpassObject>(object_name, arguments);
-    else if (object_type == "Highpass_Filter")       program->create_object<HighpassObject>(object_name, arguments);
-    else if (object_type == "Bandpass_Filter")       program->create_object<BandpassObject>(object_name, arguments);
-    else if (object_type == "Allpass_Filter")        program->create_object<AllpassObject>(object_name, arguments);
+    if (object_creators.count(object_type)) (program->*(object_creators.at(object_type)))(object_name, arguments);
     else if (program->subgraphs.count(object_type)) {
         auto io = program->subgraphs[object_type].second;
         std::vector<TypedValue> parameters = arguments;
         parameters.insert(parameters.begin(), TypedValue { (Number) io[0] });
         parameters.insert(parameters.begin() + 1, TypedValue { (Number) io[1] });
 
-        program->create_object<SubgraphObject>(object_name, arguments);
+        program->create_object<SubgraphObject>(object_name, parameters);
 
         program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph = std::make_unique<Program>();
         Program* const other_program = program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph.get();

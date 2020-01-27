@@ -31,6 +31,7 @@ class TypedValue;
 class Number;
 class Text;
 class Sequence;
+class AudioObject;
 
 class Number
 {

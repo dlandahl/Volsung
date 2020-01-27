@@ -17,10 +17,9 @@ inline float sample_rate = 44100.0f;
 #define PI          3.14159265f
 #define TAU         6.28318530f
 
-class AudioObject;
-class CircularBuffer;
-
 using uint = unsigned;
+
+class CircularBuffer;
 using MultichannelBuffer  = std::vector<CircularBuffer>;
 
 template <typename T>
@@ -65,7 +64,4 @@ inline void error(const std::string& message)
 
 }
 
-#include "Graph.hh"
-#include "Parser.hh"
-#include "AudioObject.hh"
 namespace vlsng = Volsung;

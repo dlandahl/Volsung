@@ -9,6 +9,7 @@
 #include "AudioDataflow.hh"
 
 namespace Volsung {
+class TypedValue;
 
 struct linked_value
 {

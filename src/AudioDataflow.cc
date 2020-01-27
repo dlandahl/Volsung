@@ -1,5 +1,4 @@
 
-#include "Volsung.hh"
 #include "AudioDataflow.hh"
 
 namespace Volsung {
@@ -56,12 +55,8 @@ void AudioOutput::write_value(const float value)
 
 void AudioOutput::connect(AudioInput &other)
 {
-    connections.push_back({ });
-    other.connections.push_back({ });
-
-    connections.back() =
-    other.connections.back() =
-        std::make_shared<AudioConnector>();
+    connections.push_back(std::make_shared<AudioConnector>());
+    other.connections.push_back(connections.back());
 }
 
 }

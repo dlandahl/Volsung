@@ -7,6 +7,7 @@
 #include <functional>
 #include <queue>
 
+#include "Volsung.hh"
 #include "AudioObject.hh"
 #include "Graph.hh"
 

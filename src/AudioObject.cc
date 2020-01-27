@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "AudioObject.hh"
+#include "Graph.hh"
 
 namespace Volsung {
 

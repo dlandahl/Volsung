@@ -5,12 +5,10 @@
 #include <string>
 #include <map>
 
-#include "Volsung.hh"
 #include "Graph.hh"
 #include "Objects.hh"
 
 namespace Volsung {
-
 Number::operator float&()
 {
     return value;
@@ -260,6 +258,7 @@ TypedValue& TypedValue::operator-()
     return *this;
 }
 
+
 void Program::create_user_object(const std::string& name, const uint inputs, const uint outputs, std::any user_data, const CallbackFunctor callback)
 {
     if (table.count(name) != 0) error("Symbol '" + name + "' is already used");
@@ -270,14 +269,14 @@ void Program::check_io_and_connect_objects(const std::string& output_object, con
                                            const std::string& input_object , const uint input_index)
 {
 
-    if (table[output_object]->outputs.size() < output_index) {
-        error("Index out of range on output object: " + output_object + ". Index is: " + std::to_string(output_index));
+    if (table[output_object]->outputs.size() <= output_index) {
+        error("Index out of range on output object '" + output_object + "'. Index is: " + std::to_string(output_index));
     }
     
-    if (table[input_object]->inputs.size() < input_index)
-        error("Index out of range on input object: " + input_object + ". Index is: " + std::to_string(input_index));
-    
-    table[output_object]->outputs[output_index].connect(table[input_object]->inputs[input_index]);
+    if (table[input_object]->inputs.size() <= input_index)
+        error("Index out of range on input object '" + input_object + "'. Index is: " + std::to_string(input_index));
+
+    table[output_object]->outputs[output_index].connect(table[input_object]->inputs.at(input_index));
 }
 
 void Program::expect_to_be_group(const std::string& name) const
