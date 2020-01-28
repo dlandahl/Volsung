@@ -58,6 +58,8 @@ inline const std::map<TokenType, std::string> debug_names = {
 { TokenType::close_paren, "Close Parenthesis" },
 { TokenType::open_bracket, "Open Bracket" },
 { TokenType::close_bracket, "Close Bracket" },
+{ TokenType::greater_than, "Greater Than" },
+{ TokenType::less_than, "Less Than" },
 { TokenType::newline, "Newline" },
 { TokenType::comma, "Comma" },
 { TokenType::ampersand, "Ampersand" },
@@ -89,18 +91,19 @@ struct Token
 
 class Lexer
 {
-    char current() const;
     bool is_digit() const;
     bool is_char() const;
 
 protected:
+    char current() const;
     Token get_next_token();
     bool peek(const TokenType);
     bool peek_expression();
     bool peek_connection();
     virtual ~Lexer() = 0;
+
     uint line = 1;
-    std::size_t position = 0;
+    std::size_t position = -1;
 
 public: 
     /*! \brief The source code to be lexed and parsed
@@ -118,7 +121,7 @@ public:
 
 class Parser : public Lexer
 {
-    Token current = { TokenType::invalid, "" };
+    Token current_token = { TokenType::invalid, "" };
     Token next_token();
     void error(const std::string&) const;
     void expect(const TokenType);

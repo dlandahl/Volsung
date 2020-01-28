@@ -25,10 +25,10 @@ int main()
     std::string code =
 R"(
 
-Sine_Oscillator~ 440
--> File~ "noise"
+N: 1000
+[N] Sine_Oscillator~ n*10 >> File~ "Sines"
 
-&config 10s
+&config 5s
 
 )";
 
