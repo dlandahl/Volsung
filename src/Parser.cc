@@ -42,7 +42,8 @@ static const ObjectMap object_creators =
     { "Lowpass_Filter",      OBJECT(LowpassObject) },
     { "Highpass_Filter",     OBJECT(HighpassObject) },
     { "Bandpass_Filter",     OBJECT(BandpassObject) },
-    { "Allpass_Filter",      OBJECT(AllpassObject) }
+    { "Allpass_Filter",      OBJECT(AllpassObject) },
+    { "Convolver",           OBJECT(ConvolveObject) }
 };
 #undef OBJECT
 

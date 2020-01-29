@@ -551,4 +551,20 @@ SubgraphObject::SubgraphObject(const std::vector<TypedValue>& parameters)
     set_io(inputs, outputs);
 }
 
+void ConvolveObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
+{
+    float value = 0;
+    for (std::size_t n = 0; n < impulse_response.size(); n++) {
+        value += impulse_response[n] * in[0][-n-1];
+    }
+    out[0][0] = value;
+}
+
+ConvolveObject::ConvolveObject(const std::vector<TypedValue>& parameters)
+{
+    set_io(1, 1);
+    impulse_response = parameters[0].get_value<Sequence>();
+    request_buffer_size(impulse_response.size());
+}
+
 }
