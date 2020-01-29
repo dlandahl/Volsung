@@ -370,7 +370,9 @@ RoundObject::RoundObject(const std::vector<TypedValue>&)
 
 void SequenceObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
 {
-    out[0][0] = sequence[(int) in[0][0]];
+    auto index = (std::size_t) std::max(0.f, in[0][0]);
+    if (index >= sequence.size()) index = sequence.size() - 1;
+    out[0][0] = sequence[index];
 }
 
 SequenceObject::SequenceObject(const std::vector<TypedValue>& parameters)

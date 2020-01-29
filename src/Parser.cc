@@ -25,13 +25,13 @@ static const ObjectMap object_creators =
     { "Divide",              OBJECT(DivisionObject) },
     { "Power",               OBJECT(PowerObject) },
     { "Delay_Line",          OBJECT(DelayObject) },
-    { "Clock_Generator",     OBJECT(ClockObject) },
+    { "Clock",               OBJECT(ClockObject) },
     { "Envelope_Follower",   OBJECT(EnvelopeFollowerObject) },
     { "Envelope_Generator",  OBJECT(EnvelopeObject) },
     { "Timer",               OBJECT(TimerObject) },
     { "Tanh",                OBJECT(DriveObject) },
     { "Modulo",              OBJECT(ModuloObject) },
-    { "Absolute_Value",      OBJECT(AbsoluteValueObject) },
+    { "Abs",                 OBJECT(AbsoluteValueObject) },
     { "Floor",               OBJECT(RoundObject) },
     { "Comparator",          OBJECT(ComparatorObject) },
     { "File",                OBJECT(FileoutObject) },
@@ -221,7 +221,7 @@ bool Parser::parse_program(Graph& graph)
             next_token();
             if (peek(TokenType::colon)) parse_declaration();
             else if (peek_connection()) parse_connection();
-            else if (peek(TokenType::less_than)) parse_subgraph_declaration();
+            else if (peek(TokenType::open_paren)) parse_subgraph_declaration();
             else {
                 next_token();
                 error("Expected colon or connection operator, got " + debug_names.at(current_token.type));
@@ -506,19 +506,20 @@ void Parser::parse_subgraph_declaration()
 {
     const std::string name = current_token.value;
 
-    expect(TokenType::less_than);
+    expect(TokenType::open_paren);
     next_token();
     const float inputs = parse_expression().get_value<Number>();
     expect(TokenType::comma);
     next_token();
     const float outputs = parse_expression().get_value<Number>();
-    expect(TokenType::greater_than);
+    expect(TokenType::close_paren);
     expect(TokenType::colon);
-    expect(TokenType::open_paren);
-
+    expect(TokenType::open_brace);
+    expect(TokenType::newline);
+    
     const std::size_t start_position = position;
     int num_braces_encountered = 0;
-
+    
     while (true) {
         position++;
         if (current() == '}') {
@@ -526,6 +527,7 @@ void Parser::parse_subgraph_declaration()
             num_braces_encountered--;
         }
         if (current() == '\n') line++;
+        if (current() == EOF) error("Program ended with incomplete subgraph definition");
         if (current() == '{') num_braces_encountered++;
     }
 
@@ -624,6 +626,8 @@ TypedValue Parser::parse_factor()
 
             value = s;
         }
+
+        else error("Index into sequence must be a number or a sequence");
     }
 
     if (peek(TokenType::elipsis)) {
