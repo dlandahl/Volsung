@@ -9,45 +9,6 @@ const char* VolsungException::what() const noexcept
 }
 
 
-using ObjectMap = std::map<std::string, void(Program::*)(const std::string&, const std::vector<TypedValue>&)>;
-#define OBJECT(x) &Program::create_object<x>
-static const ObjectMap object_creators =
-{
-    { "Sine_Oscillator",     OBJECT(OscillatorObject) },
-    { "Saw_Oscillator",      OBJECT(SawObject) },
-    { "Square_Oscillator",   OBJECT(SquareObject) },
-    { "Triangle_Oscillator", OBJECT(TriangleObject) },
-    { "Noise",               OBJECT(NoiseObject) },
-    { "Constant",            OBJECT(ConstObject) },
-    { "Add",                 OBJECT(AddObject) },
-    { "Multiply",            OBJECT(MultObject) },
-    { "Subtract",            OBJECT(SubtractionObject) },
-    { "Divide",              OBJECT(DivisionObject) },
-    { "Power",               OBJECT(PowerObject) },
-    { "Delay_Line",          OBJECT(DelayObject) },
-    { "Clock",               OBJECT(ClockObject) },
-    { "Envelope_Follower",   OBJECT(EnvelopeFollowerObject) },
-    { "Envelope_Generator",  OBJECT(EnvelopeObject) },
-    { "Timer",               OBJECT(TimerObject) },
-    { "Tanh",                OBJECT(DriveObject) },
-    { "Modulo",              OBJECT(ModuloObject) },
-    { "Abs",                 OBJECT(AbsoluteValueObject) },
-    { "Floor",               OBJECT(RoundObject) },
-    { "Comparator",          OBJECT(ComparatorObject) },
-    { "File",                OBJECT(FileoutObject) },
-    { "Step_Sequence",       OBJECT(StepSequence) },
-    { "Index_Sequence",      OBJECT(SequenceObject) },
-    { "Sample_And_Hold",     OBJECT(SampleAndHoldObject) },
-    { "Pole",                OBJECT(FilterObject) },
-    { "Lowpass_Filter",      OBJECT(LowpassObject) },
-    { "Highpass_Filter",     OBJECT(HighpassObject) },
-    { "Bandpass_Filter",     OBJECT(BandpassObject) },
-    { "Allpass_Filter",      OBJECT(AllpassObject) },
-    { "Convolver",           OBJECT(ConvolveObject) }
-};
-#undef OBJECT
-
-
 Token Lexer::get_next_token()
 {
     position++;
@@ -205,12 +166,52 @@ Lexer::~Lexer() {}
 
 
 
+using ObjectMap = std::map<std::string, void(Program::*)(const std::string&, const std::vector<TypedValue>&)>;
+#define OBJECT(x) &Program::create_object<x>
+static const ObjectMap object_creators =
+{
+    { "Sine_Oscillator",     OBJECT(OscillatorObject) },
+    { "Saw_Oscillator",      OBJECT(SawObject) },
+    { "Square_Oscillator",   OBJECT(SquareObject) },
+    { "Triangle_Oscillator", OBJECT(TriangleObject) },
+    { "Noise",               OBJECT(NoiseObject) },
+    { "Constant",            OBJECT(ConstObject) },
+    { "Add",                 OBJECT(AddObject) },
+    { "Multiply",            OBJECT(MultObject) },
+    { "Subtract",            OBJECT(SubtractionObject) },
+    { "Divide",              OBJECT(DivisionObject) },
+    { "Power",               OBJECT(PowerObject) },
+    { "Delay_Line",          OBJECT(DelayObject) },
+    { "Clock",               OBJECT(ClockObject) },
+    { "Envelope_Follower",   OBJECT(EnvelopeFollowerObject) },
+    { "Envelope_Generator",  OBJECT(EnvelopeObject) },
+    { "Timer",               OBJECT(TimerObject) },
+    { "Tanh",                OBJECT(DriveObject) },
+    { "Modulo",              OBJECT(ModuloObject) },
+    { "Abs",                 OBJECT(AbsoluteValueObject) },
+    { "Floor",               OBJECT(RoundObject) },
+    { "Comparator",          OBJECT(ComparatorObject) },
+    { "File",                OBJECT(FileoutObject) },
+    { "Step_Sequence",       OBJECT(StepSequence) },
+    { "Index_Sequence",      OBJECT(SequenceObject) },
+    { "Sample_And_Hold",     OBJECT(SampleAndHoldObject) },
+    { "Pole",                OBJECT(FilterObject) },
+    { "Lowpass_Filter",      OBJECT(LowpassObject) },
+    { "Highpass_Filter",     OBJECT(HighpassObject) },
+    { "Bandpass_Filter",     OBJECT(BandpassObject) },
+    { "Allpass_Filter",      OBJECT(AllpassObject) },
+    { "Convolver",           OBJECT(ConvolveObject) }
+};
+#undef OBJECT
+
+
 bool Parser::parse_program(Graph& graph)
 {
     program = &graph;
     program->add_symbol("sample_rate", sample_rate);
     program->add_symbol("fs", sample_rate);
     program->add_symbol("tau", TAU);
+    program->add_symbol("e", 2.718281828459045f);
     try {
 
     while (true) {
@@ -378,7 +379,8 @@ void Parser::parse_connection()
         expect(TokenType::vertical_bar);
         expect(TokenType::numeric_literal);
         output_index = std::stoi(current_token.value);
-    } else (output_index = 0);
+    }
+    else (output_index = 0);
 
     while (peek(TokenType::newline)) {
         next_token();
@@ -401,7 +403,8 @@ void Parser::parse_connection()
             expect(TokenType::numeric_literal);
             input_index = std::stoi(current_token.value);
             expect(TokenType::vertical_bar);
-        } else input_index = 0;
+        }
+        else input_index = 0;
 
         next_token();
         input_object = get_object_to_connect();
@@ -412,7 +415,8 @@ void Parser::parse_connection()
             expect(TokenType::vertical_bar);
             expect(TokenType::numeric_literal);
             output_index = std::stoi(current_token.value);
-        } else output_index = 0;
+        }
+        else output_index = 0;
 
         got_newline = false;
         while (peek(TokenType::newline)) { next_token(); got_newline = true; }
@@ -604,7 +608,7 @@ TypedValue Parser::parse_factor()
             value = -parse_product();
             break;
 
-        default: error("Couldn't get value of expression factor of type " + debug_names.at(current_token.type));
+        default: error("Couldn't get value of expression factor of token type " + debug_names.at(current_token.type));
     }
 
     if (peek(TokenType::open_bracket)) {
@@ -617,7 +621,9 @@ TypedValue Parser::parse_factor()
 
         if (index.is_type<Number>()) {
             value = value.get_value<Sequence>()[(int) index.get_value<Number>()];
-        } else if (index.is_type<Sequence>()) {
+        }
+
+        else if (index.is_type<Sequence>()) {
             Sequence s;
             const Sequence& index_sequence = index.get_value<Sequence>();
             const Sequence& value_sequence = value.get_value<Sequence>();
@@ -635,8 +641,8 @@ TypedValue Parser::parse_factor()
         expect(TokenType::elipsis);
         next_token();
 
-        float const lower = value.get_value<Number>();
-        float const upper = parse_expression().get_value<Number>();
+        const float lower = value.get_value<Number>();
+        const float upper = parse_expression().get_value<Number>();
         float step = 1;
 
         if (peek(TokenType::vertical_bar)) {
@@ -727,3 +733,4 @@ void Parser::verify(TokenType expected) const
 }
 
 }
+

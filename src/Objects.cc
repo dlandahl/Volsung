@@ -1,4 +1,5 @@
 
+#include <limits>
 #include <fstream>
 #include <vector>
 #include <cmath>
@@ -438,7 +439,6 @@ TriangleObject::TriangleObject(const std::vector<TypedValue>& parameters)
     set_defval(&frequency, frequency, 0);
 }
 
-#include <limits>
 void BiquadObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
 {
     if (!resonance) resonance = std::numeric_limits<float>::min();

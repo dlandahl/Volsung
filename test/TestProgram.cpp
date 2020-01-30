@@ -26,16 +26,8 @@ int main()
         Volsung::log((Text) arguments[0].get_value<Sequence>());
     });
 
-    std::string code =
-R"(
-
-&length 5s
-
-Seq: (10..0) / 10
-
-Noise~ -> Convolver~ ((5..0) / 50)^8 -> /10 -> File~ "filtered"
-
-)";
+    const std::string code =
+    #include "VolsungProgram.vlsng"
 
     Parser parser;
     parser.source_code = code;
@@ -47,3 +39,4 @@ Noise~ -> Convolver~ ((5..0) / 50)^8 -> /10 -> File~ "filtered"
     else for (uint n = 0; n < time; n++) prog.run(0.f);
     prog.finish();
 }
+
