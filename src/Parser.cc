@@ -392,12 +392,14 @@ void Parser::parse_connection()
     do {
         next_token();
 
-        if (current_token_is(TokenType::arrow))                 connection_type = ConnectionType::one_to_one;
-        else if (current_token_is(TokenType::many_to_one))      connection_type = ConnectionType::many_to_one;
-        else if (current_token_is(TokenType::one_to_many))      connection_type = ConnectionType::one_to_many;
-        else if (current_token_is(TokenType::parallel))         connection_type = ConnectionType::many_to_many;
-        else if (current_token_is(TokenType::cross_connection)) connection_type = ConnectionType::biclique;
-        else error("Expected connection operator, got " + debug_names.at(current_token.type));
+        switch (current_token.type) {
+            case TokenType::arrow:            connection_type = ConnectionType::one_to_one; break;
+            case TokenType::many_to_one:      connection_type = ConnectionType::many_to_one; break;
+            case TokenType::one_to_many:      connection_type = ConnectionType::one_to_many; break;
+            case TokenType::parallel:         connection_type = ConnectionType::many_to_many; break;
+            case TokenType::cross_connection: connection_type = ConnectionType::biclique; break;
+            default: error("Expected connection operator, got " + debug_names.at(current_token.type));
+        }
 
         if (peek(TokenType::numeric_literal)) {
             expect(TokenType::numeric_literal);
