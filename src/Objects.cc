@@ -63,7 +63,6 @@ void FileoutObject::process(const MultichannelBuffer& in, MultichannelBuffer& ou
 void FileoutObject::finish()
 {
     if (is_connected(0)) {
-        log("writing file");
         std::ofstream file(filename, std::fstream::out | std::fstream::binary);
         for (std::size_t n = 0; n < in_data.size(); n++)
             file.write((const char*)& in_data[n], sizeof(float));
@@ -79,8 +78,6 @@ FileoutObject::FileoutObject(const std::vector<TypedValue>& parameters)
     std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
     
     if (file.good()) {
-        log("reading file");
-        log("size: " + std::to_string(file.tellg()));
         out_data.resize(file.tellg() / sizeof(float));
         file.seekg(0);
         file.read(reinterpret_cast<char*>(out_data.data()), out_data.size() * sizeof(float));
