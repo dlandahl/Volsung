@@ -12,7 +12,7 @@ const char* VolsungException::what() const noexcept
 Token Lexer::get_next_token()
 {
     position++;
-    if (current() == EOF) return { TokenType::eof, "" };
+    if (current() == EOF || current() == -1) return { TokenType::eof, "" };
 
     while (current() == ' ' || current() == '\t') position++;
     if (current() == ';') while (current() != '\n') position++;
@@ -462,6 +462,8 @@ std::string Parser::get_object_to_connect()
 
     else if (current_token_is(TokenType::identifier)) {
         output = current_token.value;
+        Volsung::assert(program->object_exists(output), "Undefined identifier: " + output);
+        
         if (peek(TokenType::colon)) {
             next_token();
             next_token();

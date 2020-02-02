@@ -18,5 +18,3 @@ Sine_Oscillator~ modulator_f
 ; the square of the elapsed time
 Timer~ -> ^2 -> *100 -> 1|index
 
-&length 5s
-

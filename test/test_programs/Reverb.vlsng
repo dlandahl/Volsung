@@ -1,0 +1,32 @@
+
+; Modulated Schroeder-Moorer lowpass feedback comb filter
+LBCF (1, 1): {
+	M: _1 ; Filter order
+
+    buffer: Delay_Line~ M
+    sum: Add~
+
+    input
+    -> sum
+    -> buffer
+    -> *-0.84       ; Decay
+    -> Pole~ 15000  ; Colour
+    -> 1|sum
+
+	-> output
+
+    ModAmt: 0.2
+    Sine_Oscillator~ r / 10
+    -> *0.5 -> +0.5
+    -> *M*ModAmt -> +M-M*ModAmt
+    -> 1|buffer
+}
+
+; From Freeverb
+orders: { 1557, 1617, 1491, 1422, 1277, 1356, 1188, 1113 }
+
+; Eight parallel combs
+File~ "files/drumbeat"
+<> [8] LBCF~ orders[n-1]
+>> * 0.1 -> output
+
