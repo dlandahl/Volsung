@@ -27,7 +27,13 @@ int main()
     });
 
     const std::string code =
-    #include "VolsungProgram.vlsng"
+R"(
+
+N: 30
+Noise~ -> Convolver~ e^((N..0) / N) - 1 -> File~ "fir"
+&length 5s
+
+)";
 
     Parser parser;
     parser.source_code = code;

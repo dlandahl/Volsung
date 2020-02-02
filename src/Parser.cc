@@ -241,7 +241,6 @@ bool Parser::parse_program(Graph& graph)
     }
 
     } catch (const VolsungException& exception) {
-        log(std::string(exception.what()));
         program->reset();
         return false;
     }

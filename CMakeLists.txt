@@ -17,13 +17,19 @@ add_library( Volsung STATIC
 set_target_properties( Volsung PROPERTIES
                        ARCHIVE_OUTPUT_DIRECTORY ../lib )
 
-add_executable( TestProgram
-                test/TestProgram.cpp )
+add_executable( DevSandbox
+                test/DevSandbox.cc )
+add_executable( TestSuite
+                test/Tests.cc )
 
-target_include_directories( TestProgram PUBLIC
+target_include_directories( DevSandbox PUBLIC
+                            include )
+target_include_directories( TestSuite PUBLIC
                             include )
 
-target_link_libraries( TestProgram
+target_link_libraries( DevSandbox
+                       Volsung )
+target_link_libraries( TestSuite
                        Volsung )
                        
 

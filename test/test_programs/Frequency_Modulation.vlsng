@@ -1,0 +1,22 @@
+
+; Specify basic parameters for synthesis
+carrier_f: 220
+ratio: 0.201
+
+; Calculate modulator frequency from carrier and ratio
+modulator_f: carrier_f * ratio
+
+index: Multiply~
+; Connect everything up
+Sine_Oscillator~ modulator_f
+-> index
+-> Add~ carrier_f
+-> Sine_Oscillator~
+-> *0.5 -> output
+
+; Have the modulation index increase proportional to
+; the square of the elapsed time
+Timer~ -> ^2 -> *100 -> 1|index
+
+&length 5s
+

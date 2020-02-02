@@ -38,7 +38,7 @@ inline std::function<void(std::string)> debug_callback = [] (std::string message
 
 inline void log(const std::string& message)
 {
-    debug_callback(message + '\n');
+    debug_callback(message);
 }
 
 
