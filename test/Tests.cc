@@ -35,7 +35,7 @@ int main()
         if (!parser.parse_program(*program)) {
             std::cout << "[" << ANSI_RED << "Failed test" << ANSI_RESET << "] ";
             std::cout << "Parsing " << (std::string) file.path().stem();
-            std::cout << ". Message:\n\t" << error_message;
+            std::cout << "...\nMessage:\n\t" << error_message;
             delete program;
         }
         else {
@@ -52,6 +52,7 @@ int main()
         for (std::size_t n = 0; n < 100; n++) {
             program->run();
         }
+        delete program;
     }
 }
 
