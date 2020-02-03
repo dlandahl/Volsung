@@ -357,7 +357,7 @@ Frame Program::run(const Frame sample)
 {
     if (inputs) {
         AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
-        object->data = { };
+        std::fill(object->data.begin(), object->data.end(), 0.f);
         for (std::size_t n = 0; n < inputs; n++) object->data.push_back(sample.at(n));
     }
     
@@ -367,7 +367,7 @@ Frame Program::run(const Frame sample)
     if (outputs) {
         AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
         for (std::size_t n = 0; n < outputs; n++) out.push_back(object->data[n]);
-        object->data = { };
+        std::fill(object->data.begin(), object->data.end(), 0.f);
     }
     return out;
 }
