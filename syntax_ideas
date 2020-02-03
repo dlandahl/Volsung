@@ -1,8 +1,0 @@
-
-Infrared_Noise: <2, 1> {
-    filter: [8] Bandpass_Filter~
-    Noise~ -> filter[0] --> filter[8] -> output
-
-    frequency: Parameter~ 0, input|1, 5
-    -> 1|filter
-}
