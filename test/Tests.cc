@@ -54,17 +54,17 @@ int main()
         error_message.clear();
     }
 
-    using hrc = std::chrono::high_resolution_clock;
+    namespace chrono = std::chrono;
     std::cout << "\nGenerating " << Volsung::sample_rate << " samples\n";
     
     for (std::size_t p = 0; p < programs.size(); p++) {
-        const auto start_time = hrc::now();
+        const auto start_time = chrono::high_resolution_clock::now();
 
         for (std::size_t s = 0; s < Volsung::sample_rate; s++) {
             programs[p]->run();
         }
         
-        const auto time_taken_usecs = std::chrono::duration_cast<std::chrono::microseconds>(hrc::now() - start_time).count();
+        const auto time_taken_usecs = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - start_time);
 
         std::cout << "[" << ANSI_BLUE << "Timer" << ANSI_RESET << "] ";
         std::cout << names[p];
@@ -72,7 +72,7 @@ int main()
         for (std::size_t n = 0; n < 30 - names[p].size(); n++)
             std::cout << ".";
 
-        std::cout << time_taken_usecs / 1000000.f << "s";
+        std::cout << time_taken_usecs.count() / 1000000.f << "s";
         std::cout << std::endl;
         delete programs[p];
     }
