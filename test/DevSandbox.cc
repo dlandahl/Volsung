@@ -13,7 +13,7 @@ int main()
 
     prog.configure_io(0, 1);
 
-    debug_callback = [] (std::string message) { std::cout << message; };
+    debug_callback = [] (std::string message) { std::cout << message << '\n'; };
 
     uint time = 10;
     bool print = false;
@@ -23,15 +23,13 @@ int main()
     });
 
     Program::add_directive("print", [] (std::vector<TypedValue> arguments, Program*) {
-        Volsung::log((Text) arguments[0].get_value<Sequence>());
+        Volsung::log((Text) arguments[0].get_value<Number>());
     });
 
     const std::string code =
 R"(
 
-N: 30
-Noise~ -> Convolver~ e^((N..0) / N) - 1 -> File~ "fir"
-&length 5s
+&print (1..10..1)[5]
 
 )";
 

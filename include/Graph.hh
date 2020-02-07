@@ -12,7 +12,6 @@
 
 namespace Volsung {
 
-
 enum class Type {
     number,
     text,
@@ -28,21 +27,35 @@ enum class ConnectionType {
 };
 
 class TypedValue;
-class Number;
 class Text;
 class Sequence;
 class AudioObject;
 
 class Number
 {
-    float value = 0;
+    float real_part = 0;
+    float imag_part = 0;
 public:
     operator float&();
     operator float() const;
     operator Text() const;
 
+    bool is_complex() const;
     Number(float);
+    Number(float, float);
     Number() = default;
+
+    TypedValue add(const TypedValue&);
+    TypedValue subtract(const TypedValue&);
+    TypedValue multiply(const TypedValue&);
+    TypedValue divide(const TypedValue&);
+    TypedValue exponentiate(const TypedValue&);
+    
+    Number add_num(const Number&) const;
+    Number subtract_num(const Number&) const;
+    Number multiply_num(const Number&) const;
+    Number divide_num(const Number&) const;
+    Number exponentiate_num(const Number&) const;
 };
 
 class Text
@@ -50,7 +63,7 @@ class Text
     std::string value;
 public:
     void operator=(std::string string) { value = string; }
-    Text& operator+(Text rhs) {
+    Text& operator+(const Text& rhs) {
         value = value + rhs.value;
         return *this;
     }
@@ -72,10 +85,16 @@ public:
     operator Text() const;
 
     void add_element(const Number);
-    void perform_range_check(const std::size_t) const;
+    void perform_range_check(const long long) const;
     
     Number& operator[](long long);
     const Number& operator[](long long) const;
+
+    TypedValue add(const TypedValue&);
+    TypedValue subtract(const TypedValue&);
+    TypedValue multiply(const TypedValue&);
+    TypedValue divide(const TypedValue&);
+    TypedValue exponentiate(const TypedValue&);
 
     auto begin() { return std::begin(data); }
     auto end() { return std::end(data); }
@@ -96,6 +115,8 @@ public:
     bool is_type() const;
 
     Type get_type() const;
+
+    std::string as_string() const;
 
     void operator+=(const TypedValue&);
     void operator-=(const TypedValue&);
@@ -300,4 +321,15 @@ bool TypedValue::is_type() const
     return std::holds_alternative<T>(*this);
 }
 
+/*
+template <typename Callable>
+void visit_typed_value(Callable function, TypedValue& value, const TypedValue& other)
+{
+    switch(value.get_type()) {
+        case(Type::number):   value = function(&value.get_value<Number>(), other); break;
+        case(Type::sequence): value = function(&value.get_value<Sequence>(), other); break;
+        case(Type::text):     value = function(&value.get_value<Text>(), other); break;
+    }
+}
+*/
 }

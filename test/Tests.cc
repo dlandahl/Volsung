@@ -8,10 +8,10 @@
 
 using namespace Volsung;
 
-const std::string ANSI_RED   = "\033[31m";
-const std::string ANSI_GREEN = "\033[32m";
-const std::string ANSI_BLUE  = "\033[34m";
-const std::string ANSI_RESET = "\033[0m";
+const std::string Ansi_Red   = "\033[31m";
+const std::string Ansi_Green = "\033[32m";
+const std::string Ansi_Blue  = "\033[34m";
+const std::string Ansi_Reset = "\033[0m";
 
 int main()
 {
@@ -37,14 +37,14 @@ int main()
         }
         
         if (!parser.parse_program(*program)) {
-            std::cout << "[" << ANSI_RED << "Failed test" << ANSI_RESET << "] ";
+            std::cout << "[" << Ansi_Red << "Failed test" << Ansi_Reset << "] ";
             std::cout << "Parsing " << (std::string) file.path().stem();
             std::cout << "...\nMessage:\n\t" << error_message;
             delete program;
         }
 
         else {
-            std::cout << "[" << ANSI_GREEN << "Passed test" << ANSI_RESET << "] ";
+            std::cout << "[" << Ansi_Green << "Passed test" << Ansi_Reset << "] ";
             std::cout << "Parsing " << (std::string) file.path().stem();
             programs.push_back(program);
             names.push_back((std::string) file.path().stem());
@@ -66,7 +66,7 @@ int main()
         
         const auto time_taken_usecs = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - start_time);
 
-        std::cout << "[" << ANSI_BLUE << "Timer" << ANSI_RESET << "] ";
+        std::cout << "[" << Ansi_Blue << "Timer" << Ansi_Reset << "] ";
         std::cout << names[p];
 
         for (std::size_t n = 0; n < 30 - names[p].size(); n++)

@@ -9,23 +9,117 @@
 #include "Objects.hh"
 
 namespace Volsung {
+
 Number::operator float&()
 {
-    return value;
+    return real_part;
 }
 
 Number::operator float() const
 {
-    return value;
+    return real_part;
 }
 
 Number::operator Text() const
 {
-    return (Text) std::to_string(value);
+    std::string ret = std::to_string(real_part);
+    if (imag_part) ret += " + " + std::to_string(imag_part) + "i";
+    return (Text) ret;
 }
 
-Number::Number(float initial_value) : value(initial_value) {}
+bool Number::is_complex() const
+{
+    return (bool) imag_part;
+}
 
+Number::Number(float initial_value) : real_part(initial_value) {}
+
+Number::Number(float initial_real_part, float initial_imag_part)
+    : real_part(initial_real_part),
+      imag_part(initial_imag_part) {}
+
+
+#define DEFINE_ARITHMETIC_OPERATION_ON_NUMBER(op)                               \
+TypedValue Number::op(const TypedValue& other)                                  \
+{                                                                               \
+    switch (other.get_type()) {                                                 \
+        case (Type::number): return op##_num(other.get_value<Number>());        \
+        case (Type::sequence): {                                                \
+            Sequence seq = other.get_value<Sequence>();                         \
+            for (auto& element: seq) element = op##_num(element);               \
+            return seq;                                                         \
+        }                                                                       \
+        case (Type::text): error("Cannot perform arithmetic on expression of type 'Text'");       \
+    }                                                                           \
+    return TypedValue(0);                                                       \
+}                                                                               \
+
+DEFINE_ARITHMETIC_OPERATION_ON_NUMBER(add)
+DEFINE_ARITHMETIC_OPERATION_ON_NUMBER(subtract)
+DEFINE_ARITHMETIC_OPERATION_ON_NUMBER(multiply)
+DEFINE_ARITHMETIC_OPERATION_ON_NUMBER(divide)
+DEFINE_ARITHMETIC_OPERATION_ON_NUMBER(exponentiate)
+#undef DEFINE_ARITHMETIC_OPERATION_ON_NUMBER
+
+#define DEFINE_ARITHMETIC_OPERATION_ON_SEQUENCE(op)                             \
+TypedValue Sequence::op(const TypedValue& other)                                \
+{                                                                               \
+    switch (other.get_type()) {                                                 \
+        case (Type::number): {                                                  \
+            const Number value = other.get_value<Number>();                     \
+            for (auto& element: *this) element = element.op##_num(value);       \
+            return *this;                                                       \
+        }                                                                       \
+        case (Type::sequence): {                                                \
+            Sequence seq = other.get_value<Sequence>();                         \
+            for (std::size_t n = 0; n < size(); n++)                            \
+                data[n] = data[n].op##_num(other.get_value<Sequence>()[n]);     \
+            return seq;                                                         \
+        }                                                                       \
+        case (Type::text): error("Cannot perform arithmetic on expression of type 'Text'");       \
+    }                                                                           \
+    return TypedValue(0);                                                       \
+}                                                                               \
+
+DEFINE_ARITHMETIC_OPERATION_ON_SEQUENCE(add)
+DEFINE_ARITHMETIC_OPERATION_ON_SEQUENCE(subtract)
+DEFINE_ARITHMETIC_OPERATION_ON_SEQUENCE(multiply)
+DEFINE_ARITHMETIC_OPERATION_ON_SEQUENCE(divide)
+DEFINE_ARITHMETIC_OPERATION_ON_SEQUENCE(exponentiate)
+#undef DEFINE_ARITHMETIC_OPERATION_ON_SEQUENCE
+
+
+Number Number::add_num(const Number& other) const
+{
+    return Number(real_part + other.real_part,
+           imag_part + other.imag_part);
+}
+
+Number Number::subtract_num(const Number& other) const
+{
+    return Number(real_part - other.real_part,
+           imag_part - other.imag_part);
+}
+
+Number Number::multiply_num(const Number& other) const
+{
+    const float new_real_part = real_part * other.real_part - imag_part * other.imag_part;
+    const float new_imag_part = imag_part * other.real_part + real_part * other.imag_part;
+    return Number (new_real_part, new_imag_part);
+}
+
+Number Number::divide_num(const Number& other) const
+{
+    const Number conjugate = Number(real_part, -imag_part);
+    const Number denominator = other.multiply_num(conjugate);
+    const Number inter = multiply_num(conjugate);
+    return Number(inter.real_part / denominator.real_part, inter.imag_part / denominator.real_part);
+}
+
+Number Number::exponentiate_num(const Number& other) const
+{
+    return (Number) std::pow(real_part, other.real_part);
+}
 
 std::size_t Sequence::size() const
 {
@@ -48,9 +142,10 @@ void Sequence::add_element(const Number value)
     data.push_back(value);
 }
 
-void Sequence::perform_range_check(const std::size_t n) const
+void Sequence::perform_range_check(const long long n) const
 {
-    if (n >= size()) error("Sequence index out of range. Index is: " + std::to_string(n) + ", length is: " + std::to_string(size()));
+    if (n >= size() || n < -long(size()))
+        error("Sequence index out of range. Index is: " + std::to_string(n) + ", length is: " + std::to_string(size()));
 }
 
 Number& Sequence::operator[](long long n)
@@ -67,7 +162,6 @@ const Number& Sequence::operator[](long long n) const
     return data.at(n);
 }
 
-
 Type TypedValue::get_type() const
 {
     if (is_type<Number>()) return Type::number;
@@ -77,175 +171,47 @@ Type TypedValue::get_type() const
 
 void TypedValue::operator+=(const TypedValue& other)
 {
-    if (is_type<Text>() && other.is_type<Number>())
-        *this = get_value<Text>() + (Text) other.get_value<Number>();
-
-    else if (is_type<Number>() && other.is_type<Text>())
-        *this = (Text) std::to_string(get_value<Number>()) + other.get_value<Text>();
-
-    else if (is_type<Sequence>() && other.is_type<Text>())
-        *this = (Text) get_value<Sequence>() + other.get_value<Text>();
-
-    else if (is_type<Text>() && other.is_type<Sequence>())
-        *this = get_value<Text>() + (Text) other.get_value<Sequence>();
-
-    else if (is_type<Number>() && other.is_type<Number>())
-        *this = TypedValue(get_value<Number>() + other.get_value<Number>());
-
-    else if (is_type<Sequence>() && other.is_type<Number>()) {
-        for (std::size_t n = 0; n < get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] += other.get_value<Number>();
+    switch(get_type()) {
+        case(Type::number): *this = get_value<Number>().add(other); break;
+        case(Type::sequence): *this = get_value<Sequence>().add(other); break;
+        case(Type::text): error("Attempted to exponentiate expression of type string");
     }
-
-    else if (is_type<Number>() && other.is_type<Sequence>()) {
-        Sequence sequence = other.get_value<Sequence>();
-
-        for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++) {
-            sequence[n] = get_value<Number>() + sequence[n];
-        }
-
-        *this = sequence;
-    }
-
-    else if (is_type<Sequence>() && other.is_type<Sequence>()) {
-        if (get_value<Sequence>().size() != other.get_value<Sequence>().size()) error("Attempted to sum sequences of inequal size");
-        for (std::size_t n = 0; n < get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] += other.get_value<Sequence>()[n];
-    }
-
-    else error("Invalid arguments on + operator");
 }
 
 void TypedValue::operator-=(const TypedValue& other)
 {
-    if (is_type<Number>() && other.is_type<Number>())
-        *this = TypedValue(get_value<Number>() - other.get_value<Number>());
-
-    else if (is_type<Sequence>() && other.is_type<Number>()) {
-        for (std::size_t n = 0; n < get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] -= other.get_value<Number>();
+    switch(get_type()) {
+        case(Type::number): *this = get_value<Number>().subtract(other); break;
+        case(Type::sequence): *this = get_value<Sequence>().subtract(other); break;
+        case(Type::text): error("Attempted to exponentiate expression of type string");
     }
-
-    else if (is_type<Number>() && other.is_type<Sequence>()) {
-        Sequence sequence = other.get_value<Sequence>();
-
-        for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++) {
-            sequence[n] = get_value<Number>() - sequence[n];
-        }
-
-        *this = sequence;
-    }
-
-    else if (is_type<Sequence>() && other.is_type<Sequence>()) {
-        assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to subtract sequences of inequal size");
-        for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] = other.get_value<Sequence>()[n];
-    }
-
-    else error("Invalid argument on - operator");
 }
-
-/*
-template <typename Callable>
-void visit_typed_value(Callable function, TypedValue& value)
-{
-    Type type_id = value.get_type();
-    if (value.is_type<Number>())    function(value.get_value<Number>());
-    if (value.is_type<Text>())      function(value.get_value<Text>());
-    if (value.is_type<Sequence>())  function(value.get_value<Sequence>());
-}
-
-void TypedValue::operator-=(const TypedValue& other)
-{
-    std::visit([&other] (auto&& value) {
-        std::visit([&value] (auto&& other) { value.subtract(other); }, other);
-    }, *this);
-}
-*/
-
 
 void TypedValue::operator*=(const TypedValue& other)
 {
-    if (is_type<Number>() && other.is_type<Number>())
-        *this = TypedValue(get_value<Number>() * other.get_value<Number>());
-
-    else if (is_type<Sequence>() && other.is_type<Number>()) {
-        for (std::size_t n = 0; n < get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] *= other.get_value<Number>();
+    switch(get_type()) {
+        case(Type::number): *this = get_value<Number>().multiply(other); break;
+        case(Type::sequence): *this = get_value<Sequence>().multiply(other); break;
+        case(Type::text): error("Attempted to exponentiate expression of type string");
     }
-
-    else if (is_type<Number>() && other.is_type<Sequence>()) {
-        Sequence sequence = other.get_value<Sequence>();
-
-        for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++) {
-            sequence[n] = get_value<Number>() * sequence[n];
-        }
-
-        *this = sequence;
-    }
-
-    else if (is_type<Sequence>() && other.is_type<Sequence>()) {
-        assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to multiply sequences of inequal size");
-        for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] *= other.get_value<Sequence>()[n];
-    }
-
-    else error("Invalid arguments on * operator");
 }
 
 void TypedValue::operator/=(const TypedValue& other)
 {
-    if (is_type<Number>() && other.is_type<Number>())
-        *this = TypedValue(get_value<Number>() / other.get_value<Number>());
-
-    else if (is_type<Sequence>() && other.is_type<Number>()) {
-        for (std::size_t n = 0; n < get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] /= other.get_value<Number>();
+    switch(get_type()) {
+        case(Type::number): *this = get_value<Number>().divide(other); break;
+        case(Type::sequence): *this = get_value<Sequence>().divide(other); break;
+        case(Type::text): error("Attempted to exponentiate expression of type string");
     }
-
-    else if (is_type<Number>() && other.is_type<Sequence>()) {
-        Sequence sequence = other.get_value<Sequence>();
-        for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++) {
-            sequence[n] = get_value<Number>() / sequence[n];
-        }
-        *this = sequence;
-    }
-
-    else if (is_type<Sequence>() && other.is_type<Sequence>()) {
-        assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to divide sequences of inequal size");
-        for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] /= other.get_value<Sequence>()[n];
-    }
-
-    else error("Invalid argument on / operator");
 }
 
 void TypedValue::operator^=(const TypedValue& other)
 {
-    if (is_type<Number>() && other.is_type<Number>())
-        *this = std::pow(get_value<Number>(), other.get_value<Number>());
-
-    else if (is_type<Sequence>() && other.is_type<Number>()) {
-        for (std::size_t n = 0; n < get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] = std::pow(get_value<Sequence>()[n], other.get_value<Number>());
+    switch(get_type()) {
+        case(Type::number): *this = get_value<Number>().exponentiate(other); break;
+        case(Type::sequence): *this = get_value<Sequence>().exponentiate(other); break;
+        case(Type::text): error("Attempted to exponentiate expression of type string");
     }
-
-    else if (is_type<Number>() && other.is_type<Sequence>()) {
-        Sequence sequence = other.get_value<Sequence>();
-        for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++) {
-            sequence[n] = std::pow(get_value<Number>(), sequence[n]);
-        }
-        *this = sequence;
-    }
-
-    else if (is_type<Sequence>() && other.is_type<Sequence>()) {
-        assert(get_value<Sequence>().size() == other.get_value<Sequence>().size(), "Attempted to exponentiate sequences of inequal size");
-        for (std::size_t n = 0; n < other.get_value<Sequence>().size(); n++)
-            get_value<Sequence>()[n] = std::pow(other.get_value<Sequence>()[n],
-                                                      get_value<Sequence>()[n]);
-    }
-
-    else error("Invalid argument on ^ operator");
 }
 
 TypedValue& TypedValue::operator-()

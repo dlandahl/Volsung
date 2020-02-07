@@ -140,6 +140,7 @@ class Parser : public Lexer
     std::string parse_object_declaration(std::string = "");
 
     TypedValue parse_expression();
+    TypedValue parse_sequence_generator();
     TypedValue parse_product();
     TypedValue parse_power();
     TypedValue parse_factor();

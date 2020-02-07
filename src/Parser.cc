@@ -212,6 +212,7 @@ bool Parser::parse_program(Graph& graph)
     program->add_symbol("fs", sample_rate);
     program->add_symbol("tau", TAU);
     program->add_symbol("pi", TAU / 2.f);
+    program->add_symbol("i", Number(0, 1));
     program->add_symbol("e", 2.718281828459045f);
     
     try {
@@ -548,15 +549,53 @@ void Parser::parse_subgraph_declaration()
 
 TypedValue Parser::parse_expression()
 {
-    TypedValue value = parse_product();
+    TypedValue value = parse_sequence_generator();
     while (peek(TokenType::plus) || peek(TokenType::minus)) {
         next_token();
         const bool subtract = current_token_is(TokenType::minus);
         next_token();
-        const TypedValue operand = parse_product();
+        const TypedValue operand = parse_sequence_generator();
 
         if (subtract) value -= operand;
         else value += operand;
+    }
+    return value;
+}
+
+TypedValue Parser::parse_sequence_generator()
+{
+    TypedValue value = parse_product();
+    if (peek(TokenType::elipsis)) {
+        expect(TokenType::elipsis);
+        next_token();
+
+        const float lower = value.get_value<Number>();
+        const float upper = parse_product().get_value<Number>();
+
+        if (peek(TokenType::elipsis)) {
+            next_token();
+            next_token();
+            const float target = parse_product().get_value<Number>();
+            const float step_size = (target - lower) / (upper - 1);
+            Sequence s;
+            for (std::size_t n = 0; n < upper; n++)
+                s.add_element(lower + n * step_size);
+            value = s;
+        }
+        
+        else {
+            float step = 1;
+            if (peek(TokenType::vertical_bar)) {
+                next_token();
+                next_token();
+                step = parse_product().get_value<Number>();
+            }
+
+            Sequence s;
+            if (lower > upper) for (float n = lower; n >= upper; n -= step) s.add_element(n);
+            else for (float n = lower; n <= upper; n += step) s.add_element(n);
+            value = s;
+        }
     }
     return value;
 }
@@ -638,35 +677,16 @@ TypedValue Parser::parse_factor()
 
             value = s;
         }
-
+        
         else error("Index into sequence must be a number or a sequence");
     }
 
-    if (peek(TokenType::elipsis)) {
-        expect(TokenType::elipsis);
-        next_token();
 
-        const float lower = value.get_value<Number>();
-        const float upper = parse_expression().get_value<Number>();
-        float step = 1;
-
-        if (peek(TokenType::vertical_bar)) {
-            next_token();
-            next_token();
-            step = parse_expression().get_value<Number>();
-        }
-
-        Sequence s;
-        if (lower > upper) for (float n = lower; n >= upper; n -= step) s.add_element(n);
-        else for (float n = lower; n <= upper; n += step) s.add_element(n);
-        value = s;
-    }
     return value;
 }
 
 Number Parser::parse_number()
 {
-    float multiplier = 1;
     verify(TokenType::numeric_literal);
     std::string number = current_token.value;
 
@@ -677,13 +697,17 @@ Number Parser::parse_number()
         number += current_token.value;
     }
 
+    float multiplier = 1;
+    bool imaginary = false;
     if (peek(TokenType::identifier)) {
         next_token();
         if (current_token.value == "s")       multiplier = sample_rate;
         else if (current_token.value == "ms") multiplier = sample_rate / 1000;
+        else if (current_token.value == "i") imaginary = true;
         else error("Invalid literal operator or stray identifier");
     }
 
+    if (imaginary) return Number(0, std::stof(number));
     return std::stof(number) * multiplier;
 }
 
