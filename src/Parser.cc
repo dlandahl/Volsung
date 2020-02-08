@@ -200,7 +200,8 @@ static const ObjectMap object_creators =
     { "Highpass_Filter",     OBJECT(HighpassObject) },
     { "Bandpass_Filter",     OBJECT(BandpassObject) },
     { "Allpass_Filter",      OBJECT(AllpassObject) },
-    { "Convolver",           OBJECT(ConvolveObject) }
+    { "Convolver",           OBJECT(ConvolveObject) },
+    { "Z_Plane",             OBJECT(ZPlaneObject) }
 };
 #undef OBJECT
 

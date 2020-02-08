@@ -42,6 +42,9 @@ public:
     operator Text() const;
 
     bool is_complex() const;
+    float magnitude() const;
+    float angle() const;
+
     Number(float);
     Number(float, float);
     Number() = default;
@@ -153,6 +156,19 @@ template <class T>
 using SymbolTable = std::unordered_map<std::string, T>;
 using Frame = std::vector<float>;
 
+/*
+class Allocator
+{
+    void* data;
+    std::size_t blocksize_bytes;
+    std::size_t num_blocks;
+public:
+    Allocator(Program* program) {
+        
+    }
+};
+*/
+
 /*! \brief An instance of a Volsung program
  *  
  *  This class stores a representation of a parsed Volsung program.
@@ -255,7 +271,7 @@ public:
 
     template<class T>
     T get_symbol_value(const std::string&) const;
-    
+
     TypedValue get_symbol_value(const std::string&) const;
     void add_symbol(const std::string&, const TypedValue&);
     void remove_symbol(const std::string&);

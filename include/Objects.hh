@@ -368,4 +368,15 @@ public:
     ConvolveObject(const ArgumentList&);
 };
 
+class ZPlaneObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+    float a1, a2, b1, b2;
+    Number pole = 0;
+    Number zero = 0;
+    
+public:
+    ZPlaneObject(const ArgumentList&);
+};
+
 }

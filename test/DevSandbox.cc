@@ -29,8 +29,8 @@ int main()
     const std::string code =
 R"(
 
-x: 5
-x: 2
+Noise~ -> Z_Plane~ 0, 0.9995i -> File~ "Zplane"
+&length 10s
 
 )";
 

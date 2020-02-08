@@ -3,6 +3,30 @@
 
 namespace Volsung {
 
+/*
+float& AudioBuffer::operator[](std::size_t n)
+{
+    return stream[n];
+}
+
+float AudioBuffer::operator[](std::size_t n) const
+{
+    return stream[n];
+}
+
+std::size_t AudioBuffer::size() const
+{
+    return stream.size();
+}
+
+float* const AudioBuffer::data_pointer()
+{
+    return stream.data();
+}
+*/
+
+
+
 float& CircularBuffer::operator[](long n)
 {
     n += pointer;
@@ -29,6 +53,10 @@ void CircularBuffer::increment_pointer()
     pointer++;
     if (pointer >= stream.size()) pointer -= stream.size();
 }
+
+
+
+
 
 bool AudioInput::is_connected() const
 {

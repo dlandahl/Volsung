@@ -11,6 +11,19 @@ struct AudioConnector
     float stored_value;
 };
 
+/*
+class AudioBuffer
+{
+    std::vector<float> stream;
+
+public:
+    float& operator[](std::size_t);
+    float operator[](std::size_t) const;
+    std::size_t size() const;
+    float* const data_pointer();
+};
+*/
+
 class CircularBuffer
 {
     std::vector<float> stream = { 0.f, 0.f };
@@ -22,7 +35,9 @@ public:
     void resize_stream(const std::size_t);
     void increment_pointer();
 };
-using MultichannelBuffer  = std::vector<CircularBuffer>;
+using MultichannelBuffer = std::vector<CircularBuffer>;
+
+
 
 struct AudioInput
 {
@@ -41,3 +56,4 @@ struct AudioOutput
 };
 
 }
+

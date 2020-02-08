@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <cmath>
 #include <memory>
 #include <type_traits>
 #include <string>
@@ -30,6 +31,20 @@ Number::operator Text() const
 bool Number::is_complex() const
 {
     return (bool) imag_part;
+}
+
+float Number::magnitude() const
+{
+    float const value = std::sqrt(real_part * real_part + imag_part * imag_part);
+    //Volsung::log("Magnitude: " + std::to_string(value));
+    // if (angle() > TAU / 4.f) return -value;
+    return value;
+}
+
+float Number::angle() const
+{
+    //Volsung::log("Angle: " + std::to_string(std::atan2(imag_part, real_part)));
+    return std::atan2(imag_part, real_part);
 }
 
 Number::Number(float initial_value) : real_part(initial_value) {}

@@ -564,4 +564,31 @@ ConvolveObject::ConvolveObject(const ArgumentList& parameters)
     request_buffer_size(impulse_response.size());
 }
 
+void ZPlaneObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
+{
+    if (zero.magnitude()) {
+        b1 = -2.f * zero.magnitude() * std::cos(zero.angle());
+        b2 = zero.magnitude() * zero.magnitude();
+    }
+
+    if (pole.magnitude()) {
+        a1 = -2.f * pole.magnitude() * std::cos(pole.angle());
+        a2 = pole.magnitude() * pole.magnitude();
+    }
+    
+    auto& x = in[0];
+    auto& y = out[0];
+
+    y[0] = (x[0] + b1*x[-1] + b2*x[-2] - a1*y[-1] - a2*y[-2]);
 }
+
+ZPlaneObject::ZPlaneObject(const ArgumentList& parameters)
+{
+    set_io(1, 1);
+    if (parameters.size() > 0) zero = parameters[0].get_value<Number>();
+    if (parameters.size() > 1) pole = parameters[1].get_value<Number>();
+    request_buffer_size(4);
+}
+
+}
+
