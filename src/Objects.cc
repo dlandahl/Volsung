@@ -13,7 +13,7 @@ void AddObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
     out[0][0] = in[0][0] + default_value;
 }
 
-AddObject::AddObject(const std::vector<TypedValue>& parameters)
+AddObject::AddObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &default_value });
     set_defval(&default_value, default_value, 1);
@@ -30,7 +30,7 @@ void DelayObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
     out[0][0] = (1-ratio) * lower + ratio * upper;
 }
 
-DelayObject::DelayObject(const std::vector<TypedValue>& parameters)
+DelayObject::DelayObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &sample_delay });
     set_defval(&sample_delay, sample_delay, 1);
@@ -44,7 +44,7 @@ void DriveObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
     out[0][0] = tanh(in[0][0]);
 }
 
-DriveObject::DriveObject(const std::vector<TypedValue>&)
+DriveObject::DriveObject(const ArgumentList&)
 {
     set_io(2, 1);
 }
@@ -71,7 +71,7 @@ void FileoutObject::finish()
     }
 }
 
-FileoutObject::FileoutObject(const std::vector<TypedValue>& parameters)
+FileoutObject::FileoutObject(const ArgumentList& parameters)
 {
     if (!parameters.size()) error("Expected a string argument on file object");
     filename = parameters[0].get_value<Text>();
@@ -96,7 +96,7 @@ void FilterObject::process(const MultichannelBuffer& x, MultichannelBuffer& y)
     y[0][0] = a*x[0][0] - b*y[0][-1];
 }
 
-FilterObject::FilterObject(const std::vector<TypedValue>& parameters)
+FilterObject::FilterObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &frequency });
     set_defval(&frequency, frequency, 1);
@@ -109,7 +109,7 @@ void MultObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
     out[0][0] = in[0][0] * default_value;
 }
 
-MultObject::MultObject(const std::vector<TypedValue>& parameters)
+MultObject::MultObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &default_value });
     set_defval(&default_value, default_value, 1);
@@ -122,7 +122,7 @@ void NoiseObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     out[0][0] = distribution(generator);
 }
 
-NoiseObject::NoiseObject(const std::vector<TypedValue>&) :
+NoiseObject::NoiseObject(const ArgumentList&) :
     distribution(-1.0f, 1.0f), generator(std::chrono::system_clock::now().time_since_epoch().count())
 { set_io(0, 1); }
 
@@ -138,7 +138,7 @@ void OscillatorObject::process(const MultichannelBuffer&, MultichannelBuffer& ou
     if (gate_opened(1)) phase = 0;
 }
 
-OscillatorObject::OscillatorObject(const std::vector<TypedValue>& parameters) :  phase(0)
+OscillatorObject::OscillatorObject(const ArgumentList& parameters) :  phase(0)
 {
     init(2, 1, parameters, {&frequency} );
     set_defval(&frequency, frequency, 0);
@@ -155,7 +155,7 @@ void SquareObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     if (phase >= 1.0) { phase -= 1.0; }
 }
 
-SquareObject::SquareObject(const std::vector<TypedValue>& parameters)
+SquareObject::SquareObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &frequency, &pw });
     set_defval(&frequency, frequency, 0);
@@ -170,7 +170,7 @@ void UserObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
         callback(in, out, user_data);
 }
 
-UserObject::UserObject(const std::vector<TypedValue>& parameters, const CallbackFunctor callback_, std::any user_data_) : callback(callback_), user_data(user_data_)
+UserObject::UserObject(const ArgumentList& parameters, const AudioProcessingCallback callback_, std::any user_data_) : callback(callback_), user_data(user_data_)
 {
     float inputs = 0, outputs = 0;
     inputs  = parameters[0].get_value<Number>();
@@ -188,7 +188,7 @@ void AudioInputObject::process(const MultichannelBuffer&, MultichannelBuffer& ou
     for (std::size_t n = 0; n < out.size(); n++) out[n][0] = data[n];
 }
 
-AudioInputObject::AudioInputObject(const std::vector<TypedValue>& parameters)
+AudioInputObject::AudioInputObject(const ArgumentList& parameters)
 {
     float outputs = 0;
     outputs = parameters[0].get_value<Number>();
@@ -203,7 +203,7 @@ void AudioOutputObject::process(const MultichannelBuffer& in, MultichannelBuffer
     for (std::size_t n = 0; n < in.size(); n++) data[n] = in[n][0];
 }
 
-AudioOutputObject::AudioOutputObject(const std::vector<TypedValue>& parameters)
+AudioOutputObject::AudioOutputObject(const ArgumentList& parameters)
 {
     float inputs = 0;
     inputs = parameters[0].get_value<Number>();
@@ -219,7 +219,7 @@ void ComparatorObject::process(const MultichannelBuffer& in, MultichannelBuffer&
     else out[0][0] = 0.f;
 }
 
-ComparatorObject::ComparatorObject(const std::vector<TypedValue>& parameters)
+ComparatorObject::ComparatorObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &value });
     set_defval(&value, value, 1);
@@ -233,7 +233,7 @@ void TimerObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     if (gate_opened(0)) value = 0.f;
 }
 
-TimerObject::TimerObject(const std::vector<TypedValue>&)
+TimerObject::TimerObject(const ArgumentList&)
 {
     set_io(1, 1);
 }
@@ -250,7 +250,7 @@ void ClockObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     elapsed += 1.f;
 }
 
-ClockObject::ClockObject(const std::vector<TypedValue>& parameters)
+ClockObject::ClockObject(const ArgumentList& parameters)
 {
     init(1, 1, parameters, { &interval });
     set_defval(&interval, interval, 0);
@@ -262,7 +262,7 @@ void DivisionObject::process(const MultichannelBuffer& in, MultichannelBuffer& o
     out[0][0] = in[0][0] / divisor;
 }
 
-DivisionObject::DivisionObject(const std::vector<TypedValue>& parameters)
+DivisionObject::DivisionObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &divisor });
     set_defval(&divisor, divisor, 1);
@@ -274,7 +274,7 @@ void SubtractionObject::process(const MultichannelBuffer& in, MultichannelBuffer
     out[0][0] = in[0][0] - subtrahend;
 }
 
-SubtractionObject::SubtractionObject(const std::vector<TypedValue>& parameters)
+SubtractionObject::SubtractionObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &subtrahend });
     set_defval(&subtrahend, subtrahend, 1);
@@ -286,7 +286,7 @@ void ModuloObject::process(const MultichannelBuffer& in, MultichannelBuffer& out
     out[0][0] = std::fmod(in[0][0], divisor);
 }
 
-ModuloObject::ModuloObject(const std::vector<TypedValue>& parameters)
+ModuloObject::ModuloObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &divisor });
     set_defval(&divisor, divisor, 1);
@@ -298,7 +298,7 @@ void AbsoluteValueObject::process(const MultichannelBuffer& in, MultichannelBuff
     out[0][0] = std::fabs(in[0][0]);
 }
 
-AbsoluteValueObject::AbsoluteValueObject(const std::vector<TypedValue>&)
+AbsoluteValueObject::AbsoluteValueObject(const ArgumentList&)
 {
     set_io(1, 1);
 }
@@ -313,7 +313,7 @@ void StepSequence::process(const MultichannelBuffer&, MultichannelBuffer& out)
     out[0][0] = sequence[current];
 }
 
-StepSequence::StepSequence(const std::vector<TypedValue>& parameters)
+StepSequence::StepSequence(const ArgumentList& parameters)
 {
     set_io(1, 1);
     sequence = parameters[0].get_value<Sequence>();
@@ -325,7 +325,7 @@ void PowerObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
     out[0][0] = std::pow(in[0][0], exponent);
 }
 
-PowerObject::PowerObject(const std::vector<TypedValue>& parameters)
+PowerObject::PowerObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &exponent });
     set_defval(&exponent, exponent, 1);
@@ -347,7 +347,7 @@ void EnvelopeObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     //if (time == length) out[1][0] = 1.f;
 }
 
-EnvelopeObject::EnvelopeObject(const std::vector<TypedValue>& parameters)
+EnvelopeObject::EnvelopeObject(const ArgumentList& parameters)
 {
     init(4, 1, parameters, { &length, &start, &end });
     set_defval(&length, length, 1);
@@ -360,7 +360,7 @@ void RoundObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
     out[0][0] = std::round(in[0][0]);
 }
 
-RoundObject::RoundObject(const std::vector<TypedValue>&)
+RoundObject::RoundObject(const ArgumentList&)
 {
     set_io(1, 1);
 }
@@ -373,7 +373,7 @@ void SequenceObject::process(const MultichannelBuffer& in, MultichannelBuffer& o
     out[0][0] = sequence[index];
 }
 
-SequenceObject::SequenceObject(const std::vector<TypedValue>& parameters)
+SequenceObject::SequenceObject(const ArgumentList& parameters)
 {
     set_io(1, 1);
     sequence = parameters[0].get_value<Sequence>();
@@ -386,7 +386,7 @@ void SampleAndHoldObject::process(const MultichannelBuffer& in, MultichannelBuff
     out[0][0] = value;
 }
 
-SampleAndHoldObject::SampleAndHoldObject(const std::vector<TypedValue>&)
+SampleAndHoldObject::SampleAndHoldObject(const ArgumentList&)
 {
     set_io(2, 1);
 }
@@ -397,7 +397,7 @@ void ConstObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     out[0][0] = value;
 }
 
-ConstObject::ConstObject(const std::vector<TypedValue>& parameters)
+ConstObject::ConstObject(const ArgumentList& parameters)
 {
     value = parameters[0].get_value<Number>();
     set_io(0, 1);
@@ -415,7 +415,7 @@ void SawObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     else out[0][0] = phase;
 }
 
-SawObject::SawObject(const std::vector<TypedValue>& parameters)
+SawObject::SawObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &frequency });
     set_defval(&frequency, frequency, 0);
@@ -430,7 +430,7 @@ void TriangleObject::process(const MultichannelBuffer&, MultichannelBuffer& out)
     out[0][0] = 2.f * fabs(2.f * phase - 1.f) - 1.f;
 }
 
-TriangleObject::TriangleObject(const std::vector<TypedValue>& parameters)
+TriangleObject::TriangleObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &frequency });
     set_defval(&frequency, frequency, 0);
@@ -451,7 +451,7 @@ void BiquadObject::process(const MultichannelBuffer& in, MultichannelBuffer& out
     y[0] = (b0*x[0] + b1*x[-1] + b2*x[-2] - a1*y[-1] - a2*y[-2]) / a0;
 }
 
-BiquadObject::BiquadObject(const std::vector<TypedValue>& parameters)
+BiquadObject::BiquadObject(const ArgumentList& parameters)
 {
     init(3, 1, parameters, { &frequency, &resonance });
     set_defval(&frequency, frequency, 1);
@@ -521,7 +521,7 @@ void EnvelopeFollowerObject::process(const MultichannelBuffer& in, MultichannelB
     out[0][0] = detector_value;
 }
 
-EnvelopeFollowerObject::EnvelopeFollowerObject(const std::vector<TypedValue>& parameters)
+EnvelopeFollowerObject::EnvelopeFollowerObject(const ArgumentList& parameters)
 {
     init(3, 1, parameters, { &attack, &release });
     set_defval(&attack, attack, 1);
@@ -540,7 +540,7 @@ void SubgraphObject::process(const MultichannelBuffer& in, MultichannelBuffer& o
     for (std::size_t n = 0; n < outputs.size(); n++) out[n][0] = output_frame[n];
 }
 
-SubgraphObject::SubgraphObject(const std::vector<TypedValue>& parameters)
+SubgraphObject::SubgraphObject(const ArgumentList& parameters)
 {
     float inputs = 0, outputs = 0;
     inputs  = parameters[0].get_value<Number>();
@@ -557,7 +557,7 @@ void ConvolveObject::process(const MultichannelBuffer& in, MultichannelBuffer& o
     out[0][0] = value;
 }
 
-ConvolveObject::ConvolveObject(const std::vector<TypedValue>& parameters)
+ConvolveObject::ConvolveObject(const ArgumentList& parameters)
 {
     set_io(1, 1);
     impulse_response = parameters[0].get_value<Sequence>();

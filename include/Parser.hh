@@ -136,7 +136,7 @@ class Parser : public Lexer
     Number parse_number();
     void parse_directive();
     std::string get_object_to_connect();
-    void make_object(const std::string&, const std::string&, const std::vector<TypedValue>&);
+    void make_object(const std::string&, const std::string&, const ArgumentList&);
     std::string parse_object_declaration(std::string = "");
 
     TypedValue parse_expression();

@@ -23,13 +23,14 @@ int main()
     });
 
     Program::add_directive("print", [] (std::vector<TypedValue> arguments, Program*) {
-        Volsung::log((Text) arguments[0].get_value<Number>());
+        Volsung::log((Text) arguments[0].as_string());
     });
 
     const std::string code =
 R"(
 
-&print (1..10..1)[5]
+x: 5
+x: 2
 
 )";
 

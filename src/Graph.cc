@@ -73,7 +73,7 @@ TypedValue Sequence::op(const TypedValue& other)                                
         case (Type::sequence): {                                                \
             Sequence seq = other.get_value<Sequence>();                         \
             for (std::size_t n = 0; n < size(); n++)                            \
-                data[n] = data[n].op##_num(other.get_value<Sequence>()[n]);     \
+                seq[n] = data[n].op##_num(seq[n]);                              \
             return seq;                                                         \
         }                                                                       \
         case (Type::text): error("Cannot perform arithmetic on expression of type 'Text'");       \
@@ -144,7 +144,7 @@ void Sequence::add_element(const Number value)
 
 void Sequence::perform_range_check(const long long n) const
 {
-    if (n >= size() || n < -long(size()))
+    if (n >= long(size()) || n < -long(size()))
         error("Sequence index out of range. Index is: " + std::to_string(n) + ", length is: " + std::to_string(size()));
 }
 
@@ -167,6 +167,16 @@ Type TypedValue::get_type() const
     if (is_type<Number>()) return Type::number;
     if (is_type<Sequence>()) return Type::sequence;
     return Type::text;
+}
+
+std::string TypedValue::as_string() const
+{
+    switch(get_type()) {
+        case(Type::number): return (Text) get_value<Number>();
+        case(Type::sequence): return (Text) get_value<Sequence>();
+        case(Type::text): return get_value<Text>();
+    }
+    return "";
 }
 
 void TypedValue::operator+=(const TypedValue& other)
@@ -225,10 +235,10 @@ TypedValue& TypedValue::operator-()
 }
 
 
-void Program::create_user_object(const std::string& name, const uint inputs, const uint outputs, std::any user_data, const CallbackFunctor callback)
+void Program::create_user_object(const std::string& name, const uint inputs, const uint outputs, std::any user_data, const AudioProcessingCallback callback)
 {
     if (table.count(name) != 0) error("Symbol '" + name + "' is already used");
-    table[name] = std::make_unique<UserObject, std::vector<TypedValue>, const CallbackFunctor&, std::any&>({ TypedValue(inputs), TypedValue(outputs) }, callback, user_data);
+    table[name] = std::make_unique<UserObject, ArgumentList, const AudioProcessingCallback&, std::any&>({ TypedValue(inputs), TypedValue(outputs) }, callback, user_data);
 }
 
 void Program::check_io_and_connect_objects(const std::string& output_object, const uint output_index,
@@ -361,7 +371,7 @@ void Program::add_directive(const std::string& name, const DirectiveFunctor func
         custom_directives[name] = function;
 }
 
-void Program::invoke_directive(const std::string& name, const std::vector<TypedValue>& arguments)
+void Program::invoke_directive(const std::string& name, const ArgumentList& arguments)
 {
     if (!custom_directives.count(name)) error("Unknown directive");
 
@@ -376,7 +386,7 @@ void Program::configure_io(const uint i, const uint o)
 
 void Program::add_symbol(const std::string& identifier, const TypedValue& value)
 {
-    if (identifier == "r") error("Name 'r' is reserved");
+    if (symbol_exists(identifier)) error("Identifier '" + identifier + "' is already in use");
     symbol_table[identifier] = value;
 }
 
@@ -393,10 +403,11 @@ bool Program::symbol_exists(const std::string& identifier) const
 
 TypedValue Program::get_symbol_value(const std::string& identifier) const
 {
-    float r = distribution(generator);
-    if (identifier == "r") return r;
+    if (identifier == "r") return distribution(generator);
 
     return symbol_table.at(identifier);
 }
 
+
 }
+

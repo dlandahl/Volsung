@@ -8,13 +8,9 @@ Allow request buffer size per input channel
 eg~ should output gate
 There is a bad bug, where multiple outputs causes double free on shared pointer
 
-Write all the overloads
-
-Move overloads into classes of types?
+Write concatenation operator
 
 Use references to blocks for signal flow, automatically copy blocks when needed
-
-Use an array of make_object functions to improve branch prediction
 
 Add named parameters to subgraphs
     -> This may allow static analysis of subgraph validity, without a dynamic instance
@@ -26,3 +22,9 @@ Add Parameter~ / param~ object
 Add functions, load files into sequences instead
 
 Declaring objects in connection statements is allowed, but not if it's the first object in a path??
+
+Add better complex arithmetic
+
+Warn or error when discarding imaginary part of number
+
+

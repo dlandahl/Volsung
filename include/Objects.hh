@@ -19,7 +19,7 @@ class AddObject : public AudioObject
     float default_value = 1;
 
 public:
-    AddObject(const std::vector<TypedValue>&);
+    AddObject(const ArgumentList&);
 };
 
 class DelayObject : public AudioObject
@@ -28,7 +28,7 @@ class DelayObject : public AudioObject
     float sample_delay = sample_rate;
 
 public:
-    DelayObject(const std::vector<TypedValue>&);
+    DelayObject(const ArgumentList&);
 };
 
 class DriveObject : public AudioObject
@@ -36,7 +36,7 @@ class DriveObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
-    DriveObject(const std::vector<TypedValue>&);
+    DriveObject(const ArgumentList&);
 };
 
 class FileoutObject : public AudioObject
@@ -49,7 +49,7 @@ class FileoutObject : public AudioObject
     std::string filename;
     std::size_t pos = 0;
 public:
-    FileoutObject(const std::vector<TypedValue>&);
+    FileoutObject(const ArgumentList&);
 };
 
 class FilterObject : public AudioObject
@@ -61,7 +61,7 @@ class FilterObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
-    FilterObject(const std::vector<TypedValue>&);
+    FilterObject(const ArgumentList&);
 };
 
 class MultObject : public AudioObject
@@ -70,7 +70,7 @@ class MultObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
-    MultObject(const std::vector<TypedValue>&);
+    MultObject(const ArgumentList&);
 };
 
 class NoiseObject : public AudioObject
@@ -81,7 +81,7 @@ class NoiseObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
-    NoiseObject(const std::vector<TypedValue>&);
+    NoiseObject(const ArgumentList&);
 };
 
 class OscillatorObject : public AudioObject
@@ -92,7 +92,7 @@ class OscillatorObject : public AudioObject
     float frequency = 100;
 
 public:
-    OscillatorObject(const std::vector<TypedValue>&);
+    OscillatorObject(const ArgumentList&);
 };
 
 class SquareObject : public AudioObject
@@ -104,17 +104,17 @@ class SquareObject : public AudioObject
     float frequency = 100;
 
 public:
-    SquareObject(const std::vector<TypedValue>&);
+    SquareObject(const ArgumentList&);
 };
 
 class UserObject : public AudioObject
 {
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
-    const CallbackFunctor callback;
+    const AudioProcessingCallback callback;
     std::any user_data;
 public:
-    UserObject(const std::vector<TypedValue>&, const CallbackFunctor, std::any);
+    UserObject(const ArgumentList&, const AudioProcessingCallback, std::any);
 };
 
 class AudioInputObject : public AudioObject
@@ -123,7 +123,7 @@ class AudioInputObject : public AudioObject
     
 public:
     Frame data;
-    AudioInputObject(const std::vector<TypedValue>&);
+    AudioInputObject(const ArgumentList&);
 };
 
 class AudioOutputObject : public AudioObject
@@ -132,7 +132,7 @@ class AudioOutputObject : public AudioObject
 
 public:
     Frame data;
-    AudioOutputObject(const std::vector<TypedValue>&);
+    AudioOutputObject(const ArgumentList&);
 };
 
 class ComparatorObject : public AudioObject
@@ -141,7 +141,7 @@ class ComparatorObject : public AudioObject
     float value = 0.f;
 
 public:
-    ComparatorObject(const std::vector<TypedValue>&);
+    ComparatorObject(const ArgumentList&);
 };
 
 class TimerObject : public AudioObject
@@ -150,7 +150,7 @@ class TimerObject : public AudioObject
     float value = 0;
 
 public:
-    TimerObject(const std::vector<TypedValue>&);
+    TimerObject(const ArgumentList&);
 };
 
 class ClockObject : public AudioObject
@@ -160,7 +160,7 @@ class ClockObject : public AudioObject
     float elapsed = 0;
 
 public:
-    ClockObject(const std::vector<TypedValue>&);
+    ClockObject(const ArgumentList&);
 };
 
 class DivisionObject : public AudioObject
@@ -169,7 +169,7 @@ class DivisionObject : public AudioObject
     float divisor = 0;
 
 public:
-    DivisionObject(const std::vector<TypedValue>&);
+    DivisionObject(const ArgumentList&);
 };
 
 class SubtractionObject : public AudioObject
@@ -178,7 +178,7 @@ class SubtractionObject : public AudioObject
     float subtrahend = 0;
 
 public:
-    SubtractionObject(const std::vector<TypedValue>&);
+    SubtractionObject(const ArgumentList&);
 };
 
 class ModuloObject : public AudioObject
@@ -187,7 +187,7 @@ class ModuloObject : public AudioObject
     float divisor = 0;
 
 public:
-    ModuloObject(const std::vector<TypedValue>&);
+    ModuloObject(const ArgumentList&);
 };
 
 class AbsoluteValueObject : public AudioObject
@@ -195,7 +195,7 @@ class AbsoluteValueObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
-    AbsoluteValueObject(const std::vector<TypedValue>&);
+    AbsoluteValueObject(const ArgumentList&);
 };
 
 class StepSequence : public AudioObject
@@ -205,7 +205,7 @@ class StepSequence : public AudioObject
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
-    StepSequence(const std::vector<TypedValue>&);
+    StepSequence(const ArgumentList&);
 };
 
 class PowerObject : public AudioObject
@@ -214,7 +214,7 @@ class PowerObject : public AudioObject
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
-    PowerObject(const std::vector<TypedValue>&);
+    PowerObject(const ArgumentList&);
 };
 
 class EnvelopeObject : public AudioObject
@@ -226,14 +226,14 @@ class EnvelopeObject : public AudioObject
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
-    EnvelopeObject(const std::vector<TypedValue>&);
+    EnvelopeObject(const ArgumentList&);
 };
 
 class RoundObject : public AudioObject
 {
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
-    RoundObject(const std::vector<TypedValue>&);
+    RoundObject(const ArgumentList&);
 };
 
 class SequenceObject : public AudioObject
@@ -242,7 +242,7 @@ class SequenceObject : public AudioObject
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
-    SequenceObject(const std::vector<TypedValue>&);
+    SequenceObject(const ArgumentList&);
 };
 
 class SampleAndHoldObject : public AudioObject
@@ -251,7 +251,7 @@ class SampleAndHoldObject : public AudioObject
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
-    SampleAndHoldObject(const std::vector<TypedValue>&);
+    SampleAndHoldObject(const ArgumentList&);
 };
 
 class ConstObject : public AudioObject
@@ -260,7 +260,7 @@ class ConstObject : public AudioObject
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
-    ConstObject(const std::vector<TypedValue>&);
+    ConstObject(const ArgumentList&);
 };
 
 class SawObject : public AudioObject
@@ -270,7 +270,7 @@ class SawObject : public AudioObject
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
-    SawObject(const std::vector<TypedValue>&);
+    SawObject(const ArgumentList&);
 };
 
 class TriangleObject : public AudioObject
@@ -281,7 +281,7 @@ class TriangleObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
-    TriangleObject(const std::vector<TypedValue>&);
+    TriangleObject(const ArgumentList&);
 };
 
 class BiquadObject : public AudioObject
@@ -301,14 +301,14 @@ protected:
     virtual void calculate_coefficients() = 0;
 
 public:
-    BiquadObject(const std::vector<TypedValue>&);
+    BiquadObject(const ArgumentList&);
 };
 
 class LowpassObject : public BiquadObject
 {
     void calculate_coefficients() override;
 public:
-    LowpassObject(const std::vector<TypedValue>& parameters) :
+    LowpassObject(const ArgumentList& parameters) :
         BiquadObject(parameters) { }
 };
 
@@ -316,7 +316,7 @@ class HighpassObject : public BiquadObject
 {
     void calculate_coefficients() override;
 public:
-    HighpassObject(const std::vector<TypedValue>& parameters) :
+    HighpassObject(const ArgumentList& parameters) :
         BiquadObject(parameters) { }
 };
 
@@ -324,7 +324,7 @@ class BandpassObject : public BiquadObject
 {
     void calculate_coefficients() override;
 public:
-    BandpassObject(const std::vector<TypedValue>& parameters) :
+    BandpassObject(const ArgumentList& parameters) :
         BiquadObject(parameters) { }
 };
 
@@ -332,7 +332,7 @@ class AllpassObject : public BiquadObject
 {
     void calculate_coefficients() override;
 public:
-    AllpassObject(const std::vector<TypedValue>& parameters) :
+    AllpassObject(const ArgumentList& parameters) :
         BiquadObject(parameters) { }
 };
 
@@ -347,7 +347,7 @@ class EnvelopeFollowerObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
-    EnvelopeFollowerObject(const std::vector<TypedValue>&);
+    EnvelopeFollowerObject(const ArgumentList&);
 };
 
 class SubgraphObject : public AudioObject
@@ -356,7 +356,7 @@ class SubgraphObject : public AudioObject
 
 public:
     std::unique_ptr<Program> graph;
-    SubgraphObject(const std::vector<TypedValue>&);
+    SubgraphObject(const ArgumentList&);
 };
 
 class ConvolveObject : public AudioObject
@@ -365,7 +365,7 @@ class ConvolveObject : public AudioObject
 
 public:
     Sequence impulse_response;
-    ConvolveObject(const std::vector<TypedValue>&);
+    ConvolveObject(const ArgumentList&);
 };
 
 }

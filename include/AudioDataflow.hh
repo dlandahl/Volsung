@@ -22,6 +22,7 @@ public:
     void resize_stream(const std::size_t);
     void increment_pointer();
 };
+using MultichannelBuffer  = std::vector<CircularBuffer>;
 
 struct AudioInput
 {

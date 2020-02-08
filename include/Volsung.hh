@@ -19,8 +19,6 @@ inline float sample_rate = 44100.0f;
 
 using uint = unsigned;
 
-class CircularBuffer;
-using MultichannelBuffer  = std::vector<CircularBuffer>;
 
 template <typename T>
 int sign(const T val)

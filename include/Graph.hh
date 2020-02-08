@@ -9,6 +9,7 @@
 #include <chrono>
 
 #include "Volsung.hh"
+#include "AudioDataflow.hh"
 
 namespace Volsung {
 
@@ -50,7 +51,7 @@ public:
     TypedValue multiply(const TypedValue&);
     TypedValue divide(const TypedValue&);
     TypedValue exponentiate(const TypedValue&);
-    
+
     Number add_num(const Number&) const;
     Number subtract_num(const Number&) const;
     Number multiply_num(const Number&) const;
@@ -141,9 +142,12 @@ inline std::string type_debug_name<Sequence>() { return "Sequence"; }
 
 
 class Program;
-using DirectiveFunctor = std::function<void(const std::vector<TypedValue>&, Program* const)>;
-using CallbackFunctor = std::function<void(const MultichannelBuffer&, MultichannelBuffer&, std::any)>;
+
+using ArgumentList = std::vector<TypedValue>;
+using DirectiveFunctor = std::function<void(const ArgumentList&, Program* const)>;
+using AudioProcessingCallback = std::function<void(const MultichannelBuffer&, MultichannelBuffer&, std::any)>;
 using SubgraphRepresentation = std::pair<const std::string, const std::array<float, 2>>;
+//using Procedure = std::function<TypedValue(const ArgumentList&)>;
 
 template <class T>
 using SymbolTable = std::unordered_map<std::string, T>;
@@ -176,11 +180,11 @@ public:
     /*! \brief Used to create audio objects manually
      *  
      *  This template can be used to inject audio objects into the symbol table without
-     *  through the interpreter.
+     *  using the interpreter.
      */
 
     template<typename>
-    void create_object(const std::string&, const std::vector<TypedValue>&);
+    void create_object(const std::string&, const ArgumentList&);
 
     template<typename T>
     T* get_audio_object_raw_pointer(const std::string&) const;
@@ -201,7 +205,7 @@ public:
      */
 
     static void add_directive(const std::string&, const DirectiveFunctor);
-    void invoke_directive(const std::string&, const std::vector<TypedValue>&);
+    void invoke_directive(const std::string&, const ArgumentList&);
 
     /*! \brief Create an ambient user object
      *
@@ -210,7 +214,7 @@ public:
      *  User objects will be added to the symbol table upon reset of the program.
      */
 
-    void create_user_object(const std::string&, const uint, const uint, std::any, CallbackFunctor);
+    void create_user_object(const std::string&, const uint, const uint, std::any, AudioProcessingCallback);
 
     /*! \brief Add inputs and outputs to a program 
      *
@@ -223,14 +227,14 @@ public:
 
     /*! \brief Run the program
      *
-     *  Runs the program by running each audio object (unit generator) in the symbol table in turn. Doesn't give you back data.
+     *  Runs the program by running each audio object in the audio processing graph in turn. Doesn't give you back data.
      */
 
     void simulate();
 
     /*! \brief Run the program with one input and one output
      *
-     *  Runs the program by running each audio object (unit generator) in the symbol table in turn.
+     *  Runs the program by running each audio object in the audio processing graph in turn.
      *  Expects a sample which will be written to the "input" object, and returns a float sample from the "output" object, created by configure_io.
      */
     float run(const float = 0);
@@ -265,6 +269,27 @@ public:
 using Graph = Program;
 
 
+class Procedure
+{
+public:
+    virtual Type return_type() const = 0;
+    virtual TypedValue operator()(const ArgumentList&) = 0;
+};
+
+class Random : public Procedure
+{
+    std::uniform_real_distribution<float> distribution;
+    std::default_random_engine generator;
+public:
+    Type return_type() const override;
+    TypedValue operator()(const ArgumentList&) override;
+
+    Random() :
+        distribution(0.f, 1.f), generator(std::chrono::system_clock::now().time_since_epoch().count())
+    { }
+};
+
+
 template<class T>
 T* Program::get_audio_object_raw_pointer(const std::string& name) const
 {
@@ -273,7 +298,7 @@ T* Program::get_audio_object_raw_pointer(const std::string& name) const
 }
 
 template<class Object>
-void Program::create_object(const std::string& name, const std::vector<TypedValue>& arguments)
+void Program::create_object(const std::string& name, const ArgumentList& arguments)
 {
     if (table.count(name) != 0) error("Symbol '" + name + "' is already used");
     table[name] = std::make_unique<Object>(arguments);

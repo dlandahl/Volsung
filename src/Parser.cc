@@ -166,7 +166,7 @@ Lexer::~Lexer() {}
 
 
 
-using ObjectMap = std::map<std::string, void(Program::*)(const std::string&, const std::vector<TypedValue>&)>;
+using ObjectMap = std::map<std::string, void(Program::*)(const std::string&, const ArgumentList&)>;
 #define OBJECT(x) &Program::create_object<x>
 static const ObjectMap object_creators =
 {
@@ -305,7 +305,7 @@ std::string Parser::parse_object_declaration(std::string name)
             program->remove_symbol("n");
             program->add_symbol("n", n+1);
 
-            std::vector<TypedValue> arguments = { };
+            ArgumentList arguments = { };
             if (peek_expression()) {
                 next_token();
                 arguments.push_back(parse_expression());
@@ -327,7 +327,7 @@ std::string Parser::parse_object_declaration(std::string name)
 
     else {
         if (program->group_sizes.count(name)) error("Object " + name + " already exists as group");
-        std::vector<TypedValue> arguments = { };
+        ArgumentList arguments = { };
         if (peek_expression()) {
             next_token();
             arguments.push_back(parse_expression());
@@ -344,12 +344,12 @@ std::string Parser::parse_object_declaration(std::string name)
     return name;
 }
 
-void Parser::make_object(const std::string& object_type, const std::string& object_name, const std::vector<TypedValue>& arguments)
+void Parser::make_object(const std::string& object_type, const std::string& object_name, const ArgumentList& arguments)
 {
     if (object_creators.count(object_type)) (program->*(object_creators.at(object_type)))(object_name, arguments);
     else if (program->subgraphs.count(object_type)) {
         auto io = program->subgraphs[object_type].second;
-        std::vector<TypedValue> parameters = arguments;
+        ArgumentList parameters = arguments;
         parameters.insert(parameters.begin(), TypedValue { (Number) io[0] });
         parameters.insert(parameters.begin() + 1, TypedValue { (Number) io[1] });
 
@@ -445,7 +445,7 @@ std::string Parser::get_object_to_connect()
 
         const Token operation = current_token;
         next_token();
-        const std::vector<TypedValue> argument = { parse_expression() };
+        const ArgumentList argument = { parse_expression() };
 
         output = "Unnamed Object " + std::to_string(inline_object_index++);
 
@@ -498,7 +498,7 @@ void Parser::parse_directive()
     expect(TokenType::ampersand);
     expect(TokenType::identifier);
     const std::string directive = current_token.value;
-    std::vector<TypedValue> arguments;
+    ArgumentList arguments;
 
     if (!peek(TokenType::newline)) {
         next_token();
