@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <array>
+#include <iomanip>
 
 #include "VolsungHeader.hh"
 
@@ -12,8 +13,9 @@ int main()
     Program prog;
 
     prog.configure_io(0, 1);
-
-    debug_callback = [] (std::string message) { std::cout << message << '\n'; };
+    debug_callback = [] (std::string message) {
+        std::cout << std::setprecision(3) << message << '\n';
+    };
 
     uint time = 10;
     bool print = false;
@@ -29,13 +31,7 @@ int main()
     const std::string code =
 R"(
 
-Noise~
--> pole: Pole~
--> File~ "Output"
-
-Sine_Oscillator~ 1 -> 1|pole
-
-&length 10s
+&print 
 
 )";
 

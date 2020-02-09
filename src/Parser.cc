@@ -635,10 +635,13 @@ TypedValue Parser::parse_factor()
 {
     TypedValue value = 0;
     switch (current_token.type) {
-        case TokenType::identifier:
-            if (program->symbol_exists(current_token.value)) value = program->get_symbol_value(current_token.value);
-            else error("Symbol not found: " + current_token.value);
+        case TokenType::identifier: {
+            const std::string id = current_token.value;
+            if (peek(TokenType::open_paren)) value = parse_procedure_call(id);
+            else if (program->symbol_exists(id)) value = program->get_symbol_value(id);
+            else error("Symbol not found: " + id);
             break;
+        }
 
         case TokenType::numeric_literal: value = parse_number(); break;
         case TokenType::string_literal:  value = current_token.value; break;
@@ -728,6 +731,32 @@ Sequence Parser::parse_sequence()
 
     expect(TokenType::close_brace);
     return s;
+}
+
+TypedValue Parser::parse_procedure_call(const std::string& name)
+{
+    ArgumentList arguments;
+    expect(TokenType::open_paren);
+    
+    if (peek_expression()) {
+        next_token();
+        arguments.push_back(parse_expression());
+    }
+
+    while (peek(TokenType::comma)) {
+        expect(TokenType::comma);
+        next_token();
+        arguments.push_back(parse_expression());
+    }
+    expect(TokenType::close_paren);
+    auto& procedure = Program::procedures.at(name);
+    if (procedure.max_arguments < arguments.size())
+        Volsung::error("Too many arguments in procedure call to '" + name +"'. Expected " + std::to_string(procedure.max_arguments) +", got " + std::to_string(arguments.size()));
+
+    if (procedure.min_arguments > arguments.size())
+        Volsung::error("Too few arguments in procedure call to '" + name +"'. Expected " + std::to_string(procedure.min_arguments) +", got " + std::to_string(arguments.size()));
+
+    return procedure(arguments);
 }
 
 bool Parser::line_end() const

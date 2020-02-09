@@ -150,11 +150,25 @@ using ArgumentList = std::vector<TypedValue>;
 using DirectiveFunctor = std::function<void(const ArgumentList&, Program* const)>;
 using AudioProcessingCallback = std::function<void(const MultichannelBuffer&, MultichannelBuffer&, std::any)>;
 using SubgraphRepresentation = std::pair<const std::string, const std::array<float, 2>>;
-//using Procedure = std::function<TypedValue(const ArgumentList&)>;
 
 template <class T>
 using SymbolTable = std::unordered_map<std::string, T>;
 using Frame = std::vector<float>;
+
+
+class Procedure
+{
+    using Implementation = std::function<TypedValue(const ArgumentList&)>;
+    Implementation implementation;
+    
+public:
+    const std::size_t min_arguments;
+    const std::size_t max_arguments;
+    const bool can_be_mapped;
+    TypedValue operator()(const ArgumentList&) const;
+    Procedure(Implementation, std::size_t, std::size_t, bool = false);
+};
+
 
 /*
 class Allocator
@@ -185,10 +199,9 @@ class Program
     SymbolTable<std::unique_ptr<AudioObject>> table;
     SymbolTable<TypedValue> symbol_table;
 
-    mutable std::uniform_real_distribution<float> distribution;
-    mutable std::default_random_engine generator;
-
 public:
+    static const SymbolTable<Procedure> procedures;
+
     SymbolTable<const std::size_t> group_sizes;
     SymbolTable<const SubgraphRepresentation> subgraphs;
     Program* parent = nullptr;
@@ -276,34 +289,9 @@ public:
     void add_symbol(const std::string&, const TypedValue&);
     void remove_symbol(const std::string&);
     bool symbol_exists(const std::string&) const;
-
-    Program() :
-        distribution(0.f, 1.f), generator(std::chrono::system_clock::now().time_since_epoch().count())
-    { }
 };
 
 using Graph = Program;
-
-
-class Procedure
-{
-public:
-    virtual Type return_type() const = 0;
-    virtual TypedValue operator()(const ArgumentList&) = 0;
-};
-
-class Random : public Procedure
-{
-    std::uniform_real_distribution<float> distribution;
-    std::default_random_engine generator;
-public:
-    Type return_type() const override;
-    TypedValue operator()(const ArgumentList&) override;
-
-    Random() :
-        distribution(0.f, 1.f), generator(std::chrono::system_clock::now().time_since_epoch().count())
-    { }
-};
 
 
 template<class T>

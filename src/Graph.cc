@@ -1,4 +1,5 @@
 
+#include <complex>
 #include <iostream>
 #include <cmath>
 #include <memory>
@@ -23,8 +24,23 @@ Number::operator float() const
 
 Number::operator Text() const
 {
-    std::string ret = std::to_string(real_part);
-    if (imag_part) ret += " + " + std::to_string(imag_part) + "i";
+    std::string ret = "";
+    bool const real = std::abs(real_part) >= 0.001;
+    bool const imag = std::abs(imag_part) >= 0.001;
+
+    if (real) {
+        ret += std::to_string(real_part);
+        ret.erase(ret.end() - 3, ret.end());
+        if (imag) ret += " + ";
+    }
+
+    if (imag) {
+        ret += std::to_string(imag_part);
+        ret.erase(ret.end() - 3, ret.end());
+        ret += "i";
+    }
+    if (ret.empty()) ret = "0";
+
     return (Text) ret;
 }
 
@@ -87,6 +103,7 @@ TypedValue Sequence::op(const TypedValue& other)                                
         }                                                                       \
         case (Type::sequence): {                                                \
             Sequence seq = other.get_value<Sequence>();                         \
+            Volsung::assert(size() == seq.size(), "Attempted to perform arithmetic on sequences of inequal length");       \
             for (std::size_t n = 0; n < size(); n++)                            \
                 seq[n] = data[n].op##_num(seq[n]);                              \
             return seq;                                                         \
@@ -120,20 +137,25 @@ Number Number::multiply_num(const Number& other) const
 {
     const float new_real_part = real_part * other.real_part - imag_part * other.imag_part;
     const float new_imag_part = imag_part * other.real_part + real_part * other.imag_part;
-    return Number (new_real_part, new_imag_part);
+    return Number(new_real_part, new_imag_part);
 }
 
 Number Number::divide_num(const Number& other) const
 {
-    const Number conjugate = Number(real_part, -imag_part);
-    const Number denominator = other.multiply_num(conjugate);
-    const Number inter = multiply_num(conjugate);
-    return Number(inter.real_part / denominator.real_part, inter.imag_part / denominator.real_part);
+    if (is_complex()) {
+        const Number conjugate = Number(real_part, -imag_part);
+        const Number denominator = other.multiply_num(conjugate);
+        const Number inter = multiply_num(conjugate);
+        return Number(inter.real_part / denominator.real_part, inter.imag_part / denominator.real_part);
+    }
+    return (real_part / other.real_part);
 }
 
 Number Number::exponentiate_num(const Number& other) const
 {
-    return (Number) std::pow(real_part, other.real_part);
+    auto complex = std::pow(std::complex(real_part, imag_part), std::complex(other.real_part, other.imag_part));
+    Number out(complex.real(), complex.imag());
+    return out;
 }
 
 std::size_t Sequence::size() const
@@ -145,8 +167,8 @@ Sequence::operator Text() const
 {
     std::string string = "{ ";
 
-    string += std::to_string((float) data[0]);
-    for (std::size_t n = 1; n < size(); n++) string += ", " + std::to_string((float) data[n]);
+    string += (std::string) (Text) data[0];
+    for (std::size_t n = 1; n < size(); n++) string += ", " + (std::string) (Text) data[n];
     string += " }\n";
 
     return Text(string);
@@ -199,7 +221,7 @@ void TypedValue::operator+=(const TypedValue& other)
     switch(get_type()) {
         case(Type::number): *this = get_value<Number>().add(other); break;
         case(Type::sequence): *this = get_value<Sequence>().add(other); break;
-        case(Type::text): error("Attempted to exponentiate expression of type string");
+        case(Type::text): error("Attempted to add expression of type string");
     }
 }
 
@@ -208,7 +230,7 @@ void TypedValue::operator-=(const TypedValue& other)
     switch(get_type()) {
         case(Type::number): *this = get_value<Number>().subtract(other); break;
         case(Type::sequence): *this = get_value<Sequence>().subtract(other); break;
-        case(Type::text): error("Attempted to exponentiate expression of type string");
+        case(Type::text): error("Attempted to subtract expression of type string");
     }
 }
 
@@ -217,7 +239,7 @@ void TypedValue::operator*=(const TypedValue& other)
     switch(get_type()) {
         case(Type::number): *this = get_value<Number>().multiply(other); break;
         case(Type::sequence): *this = get_value<Sequence>().multiply(other); break;
-        case(Type::text): error("Attempted to exponentiate expression of type string");
+        case(Type::text): error("Attempted to multiply expression of type string");
     }
 }
 
@@ -226,7 +248,7 @@ void TypedValue::operator/=(const TypedValue& other)
     switch(get_type()) {
         case(Type::number): *this = get_value<Number>().divide(other); break;
         case(Type::sequence): *this = get_value<Sequence>().divide(other); break;
-        case(Type::text): error("Attempted to exponentiate expression of type string");
+        case(Type::text): error("Attempted to divide expression of type string");
     }
 }
 
@@ -249,6 +271,65 @@ TypedValue& TypedValue::operator-()
     return *this;
 }
 
+
+TypedValue Procedure::operator()(const ArgumentList& args) const
+{
+    Volsung::assert((bool) implementation, "Internal error: procedure has no implementation");
+    
+    if (can_be_mapped && args[0].is_type<Sequence>()) {
+        auto sequence = args[0].get_value<Sequence>();
+        auto parameters = args;
+
+        for (std::size_t n = 0; n < sequence.size(); n++) {
+            parameters[0] = sequence[n];
+            sequence[n] = implementation(parameters).get_value<Number>();
+        }
+        return sequence;
+    }
+    return implementation(args);
+}
+
+Procedure::Procedure(Implementation impl, std::size_t min_args, std::size_t max_args, bool _can_be_mapped)
+    : implementation(impl), min_arguments(min_args), max_arguments(max_args), can_be_mapped(_can_be_mapped)
+{ }
+
+const SymbolTable<Procedure> Program::procedures = {
+    { "random", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+        float min = 0.f;
+        float max = 1.f;
+
+        if (arguments.size() >= 1) max = arguments[0].get_value<Number>();
+        if (arguments.size() == 2) {
+            min = max;
+            max = arguments[1].get_value<Number>();
+        }
+        
+        std::uniform_real_distribution<float> distribution(min, max);
+        static std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+
+        return (Number) distribution(generator);
+    }, 0, 2) },
+
+    { "Arg", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+        return arguments[0].get_value<Number>().angle();
+    }, 1, 1, true)},
+    
+    { "abs", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+        return arguments[0].get_value<Number>().magnitude();
+    }, 1, 1, true)},
+    
+    { "sin", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+        return std::sin(arguments[0].get_value<Number>());
+    }, 1, 1, true)},
+
+    { "Re", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+        return (float) arguments[0].get_value<Number>();
+    }, 1, 1, true)},
+
+    { "Im", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+        return arguments[0].get_value<Number>().subtract_num((Number) float(arguments[0].get_value<Number>()));
+    }, 1, 1, true)}
+};
 
 void Program::create_user_object(const std::string& name, const uint inputs, const uint outputs, std::any user_data, const AudioProcessingCallback callback)
 {
@@ -412,13 +493,11 @@ void Program::remove_symbol(const std::string& identifier)
 
 bool Program::symbol_exists(const std::string& identifier) const
 {
-    if (identifier == "r") return true;
     return symbol_table.count(identifier) == 1;
 }
 
 TypedValue Program::get_symbol_value(const std::string& identifier) const
 {
-    if (identifier == "r") return distribution(generator);
 
     return symbol_table.at(identifier);
 }
