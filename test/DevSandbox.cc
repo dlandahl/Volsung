@@ -31,7 +31,42 @@ int main()
     const std::string code =
 R"(
 
-&print 
+
+; Define a vocoder type
+Vocoder(2, 1): {
+    N: _1
+
+    ; Frequency bands are spaced evenly on a logarithmic scale
+    frequency_bands: ((1..N)/N)^2 * 3000
+    
+    &print "Frequency Bands: "
+    &print frequency_bands
+    
+    ; Define bandpass filter banks for carrier and modulator
+    carrier_bands: [N] Bandpass_Filter~ frequency_bands[n-1], 16
+    mod_bands: [N] Bandpass_Filter~ frequency_bands[n-1], 8
+
+    ; Envelope followers applied to the modulator bands determine
+    ; the gain applied to the carrier bands
+    amps: [N] Multiply~
+    followers: [N] Envelope_Follower~ 10ms
+
+    ; Connect them up
+    input|0 <> mod_bands     => followers => 1|amps
+    input|1 <> carrier_bands => amps      >> /6 -> output
+}
+
+&length 13.5s
+
+; Make a vocoder with twenty-four bands
+voc: Vocoder~ 24
+
+; Acquire carrier and modulator signals
+carrier: [4] Saw_Oscillator~ n*85
+modulator: File~ "antikythera"
+
+carrier >> 1|voc
+modulator -> voc -> File~ "vocode"
 
 )";
 
