@@ -590,5 +590,30 @@ ZPlaneObject::ZPlaneObject(const ArgumentList& parameters)
     request_buffer_size(4);
 }
 
+
+void PoleObject::process(const MultichannelBuffer& x, MultichannelBuffer& y)
+{
+    y[0][0] = x[0][0] + a*y[0][-1];
+}
+
+PoleObject::PoleObject(const ArgumentList& parameters)
+{
+    init(2, 1, parameters, { &a });
+    set_defval(&a, a, 1);
+}
+
+
+void ZeroObject::process(const MultichannelBuffer& x, MultichannelBuffer& y)
+{
+    y[0][0] = x[0][0] + b*x[0][-1];
+}
+
+ZeroObject::ZeroObject(const ArgumentList& parameters)
+{
+    init(2, 1, parameters, { &b });
+    set_defval(&b, b, 1);
+}
+
+
 }
 

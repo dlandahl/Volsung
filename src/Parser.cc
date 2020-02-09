@@ -195,13 +195,15 @@ static const ObjectMap object_creators =
     { "Step_Sequence",       OBJECT(StepSequence) },
     { "Index_Sequence",      OBJECT(SequenceObject) },
     { "Sample_And_Hold",     OBJECT(SampleAndHoldObject) },
-    { "Pole",                OBJECT(FilterObject) },
+    { "Smooth",              OBJECT(FilterObject) },
     { "Lowpass_Filter",      OBJECT(LowpassObject) },
     { "Highpass_Filter",     OBJECT(HighpassObject) },
     { "Bandpass_Filter",     OBJECT(BandpassObject) },
     { "Allpass_Filter",      OBJECT(AllpassObject) },
     { "Convolver",           OBJECT(ConvolveObject) },
-    { "Z_Plane",             OBJECT(ZPlaneObject) }
+    { "Z_Plane",             OBJECT(ZPlaneObject) },
+    { "Pole",                OBJECT(PoleObject) },
+    { "Zero",                OBJECT(ZeroObject) }
 };
 #undef OBJECT
 
@@ -466,13 +468,13 @@ std::string Parser::get_object_to_connect()
 
     else if (current_token_is(TokenType::identifier)) {
         output = current_token.value;
-        Volsung::assert(program->object_exists(output), "Undefined identifier: " + output);
         
         if (peek(TokenType::colon)) {
             next_token();
             next_token();
             parse_object_declaration(output);
         }
+        Volsung::assert(program->object_exists(output), "Undefined identifier: " + output);
         
         if (peek(TokenType::open_bracket)) {
             expect(TokenType::open_bracket);
@@ -594,7 +596,7 @@ TypedValue Parser::parse_sequence_generator()
 
             Sequence s;
             if (lower > upper) for (float n = lower; n >= upper; n -= step) s.add_element(n);
-            else for (float n = lower; n <= upper; n += step) s.add_element(n);
+            else               for (float n = lower; n <= upper; n += step) s.add_element(n);
             value = s;
         }
     }

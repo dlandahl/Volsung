@@ -379,4 +379,24 @@ public:
     ZPlaneObject(const ArgumentList&);
 };
 
+class PoleObject : public AudioObject
+{
+    float a = 0;
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+public:
+    PoleObject(const ArgumentList&);
+};
+
+class ZeroObject : public AudioObject
+{
+    float b = 0;
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+public:
+    ZeroObject(const ArgumentList&);
+};
+
+
 }
+

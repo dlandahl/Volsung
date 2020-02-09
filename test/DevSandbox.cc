@@ -29,7 +29,12 @@ int main()
     const std::string code =
 R"(
 
-Noise~ -> Z_Plane~ 0, 0.9995i -> File~ "Zplane"
+Noise~
+-> pole: Pole~
+-> File~ "Output"
+
+Sine_Oscillator~ 1 -> 1|pole
+
 &length 10s
 
 )";
