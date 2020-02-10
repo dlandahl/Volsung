@@ -614,6 +614,16 @@ ZeroObject::ZeroObject(const ArgumentList& parameters)
     set_defval(&b, b, 1);
 }
 
+void BiToUnipolarObject::process(const MultichannelBuffer& in, MultichannelBuffer& out)
+{
+    out[0][0] = 0.5 + 0.5 * in[0][0];
+}
+
+BiToUnipolarObject::BiToUnipolarObject(const ArgumentList&)
+{
+    set_io(1, 1);
+}
+
 
 }
 

@@ -167,9 +167,9 @@ Sequence::operator Text() const
 {
     std::string string = "{ ";
 
-    string += (std::string) (Text) data[0];
+    if (data.size()) string += (std::string) (Text) data[0];
     for (std::size_t n = 1; n < size(); n++) string += ", " + (std::string) (Text) data[n];
-    string += " }\n";
+    string += " }";
 
     return Text(string);
 }
@@ -275,7 +275,7 @@ TypedValue& TypedValue::operator-()
 TypedValue Procedure::operator()(const ArgumentList& args) const
 {
     Volsung::assert((bool) implementation, "Internal error: procedure has no implementation");
-    
+
     if (can_be_mapped && args[0].is_type<Sequence>()) {
         auto sequence = args[0].get_value<Sequence>();
         auto parameters = args;
@@ -303,32 +303,48 @@ const SymbolTable<Procedure> Program::procedures = {
             min = max;
             max = arguments[1].get_value<Number>();
         }
-        
+
         std::uniform_real_distribution<float> distribution(min, max);
         static std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
 
         return (Number) distribution(generator);
     }, 0, 2) },
 
-    { "Arg", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+    { "Arg", Procedure([] (const ArgumentList& arguments) {
         return arguments[0].get_value<Number>().angle();
     }, 1, 1, true)},
-    
-    { "abs", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+
+    { "abs", Procedure([] (const ArgumentList& arguments) {
         return arguments[0].get_value<Number>().magnitude();
     }, 1, 1, true)},
-    
-    { "sin", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+
+    { "sin", Procedure([] (const ArgumentList& arguments) {
         return std::sin(arguments[0].get_value<Number>());
     }, 1, 1, true)},
 
-    { "Re", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+    { "Re", Procedure([] (const ArgumentList& arguments) {
         return (float) arguments[0].get_value<Number>();
     }, 1, 1, true)},
 
-    { "Im", Procedure([] (const ArgumentList& arguments) -> TypedValue {
-        return arguments[0].get_value<Number>().subtract_num((Number) float(arguments[0].get_value<Number>()));
-    }, 1, 1, true)}
+    { "Im", Procedure([] (const ArgumentList& arguments) {
+        const Number num = arguments[0].get_value<Number>();
+        return num.subtract_num((Number) float(num));
+    }, 1, 1, true)},
+
+    { "reverse", Procedure([] (const ArgumentList& arguments) {
+        const Sequence source = arguments[0].get_value<Sequence>();
+        Sequence reverse;
+        for (std::size_t n = 1; n <= source.size(); n++) {
+            reverse.add_element(source[source.size() - n]);
+        }
+        return reverse;
+    }, 1, 1)},
+
+    { "print", Procedure([] (const ArgumentList& arguments) {
+        for (const auto& arg : arguments) Volsung::log(arg.as_string());
+        return 0;
+    }, 1, -1)},
+
 };
 
 void Program::create_user_object(const std::string& name, const uint inputs, const uint outputs, std::any user_data, const AudioProcessingCallback callback)
@@ -344,7 +360,7 @@ void Program::check_io_and_connect_objects(const std::string& output_object, con
     if (table[output_object]->outputs.size() <= output_index) {
         error("Index out of range on output object '" + output_object + "'. Index is: " + std::to_string(output_index));
     }
-    
+
     if (table[input_object]->inputs.size() <= input_index)
         error("Index out of range on input object '" + input_object + "'. Index is: " + std::to_string(input_index));
 
@@ -371,14 +387,14 @@ void Program::connect_objects(const std::string& output_object, const uint out,
         expect_to_be_object(input_object);
         check_io_and_connect_objects(output_object, out, input_object, in);
     }
-    
+
     else if (type == ConnectionType::many_to_one) {
         expect_to_be_group(output_object);
         expect_to_be_object(input_object);
         for (std::size_t n = 0; n < group_sizes[output_object]; n++)
             check_io_and_connect_objects("__grp_" + output_object + std::to_string(n), out, input_object, in);
     }
-    
+
     else if (type == ConnectionType::one_to_many) {
         expect_to_be_object(output_object);
         expect_to_be_group(input_object);
@@ -396,7 +412,7 @@ void Program::connect_objects(const std::string& output_object, const uint out,
             }
         }
     }
-    
+
     else if (type == ConnectionType::many_to_many) {
         expect_to_be_group(output_object);
         expect_to_be_group(input_object);
@@ -432,7 +448,7 @@ Frame Program::run(const Frame sample)
         object->data.clear();
         for (std::size_t n = 0; n < inputs; n++) object->data.push_back(sample.at(n));
     }
-    
+
     simulate();
     Frame out;
 
@@ -456,7 +472,7 @@ void Program::reset()
     table.clear();
     symbol_table.clear();
     group_sizes.clear();
-    
+
     if (inputs) create_object<AudioInputObject>("input", { inputs });
     if (outputs) create_object<AudioOutputObject>("output", { outputs });
 }

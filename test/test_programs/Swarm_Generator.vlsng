@@ -4,7 +4,7 @@ N: 5
 swarm: [N] Saw_Oscillator~ 
 
 ; Random offset frequencies
-offset: [N] Multiply~ (r-0.5) * 200
+offset: [N] Multiply~ random(-100, 100)
 
 ; The base frequency for each oscillator will
 ; be added to the offset

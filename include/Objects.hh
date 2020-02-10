@@ -398,5 +398,14 @@ public:
 };
 
 
+class BiToUnipolarObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+public:
+    BiToUnipolarObject(const ArgumentList&);
+};
+
+
 }
 

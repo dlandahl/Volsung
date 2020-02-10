@@ -191,6 +191,7 @@ static const ObjectMap object_creators =
     { "Abs",                 OBJECT(AbsoluteValueObject) },
     { "Floor",               OBJECT(RoundObject) },
     { "Comparator",          OBJECT(ComparatorObject) },
+    { "Bi_to_Unipolar",      OBJECT(BiToUnipolarObject) },
     { "File",                OBJECT(FileoutObject) },
     { "Step_Sequence",       OBJECT(StepSequence) },
     { "Index_Sequence",      OBJECT(SequenceObject) },
@@ -229,7 +230,11 @@ bool Parser::parse_program(Graph& graph)
             next_token();
             if (peek(TokenType::colon)) parse_declaration();
             else if (peek_connection()) parse_connection();
-            else if (peek(TokenType::open_paren)) parse_subgraph_declaration();
+            else if (peek(TokenType::open_paren)) {
+                const std::string id = current_token.value;
+                parse_procedure_call(id);
+            }
+            else if (peek(TokenType::less_than)) parse_subgraph_declaration();
             else {
                 next_token();
                 error("Expected colon or connection operator, got " + debug_names.at(current_token.type));
@@ -520,13 +525,13 @@ void Parser::parse_subgraph_declaration()
 {
     const std::string name = current_token.value;
 
-    expect(TokenType::open_paren);
+    expect(TokenType::less_than);
     next_token();
     const float inputs = parse_expression().get_value<Number>();
     expect(TokenType::comma);
     next_token();
     const float outputs = parse_expression().get_value<Number>();
-    expect(TokenType::close_paren);
+    expect(TokenType::greater_than);
     expect(TokenType::colon);
     expect(TokenType::open_brace);
     expect(TokenType::newline);
@@ -737,7 +742,6 @@ TypedValue Parser::parse_procedure_call(const std::string& name)
 {
     ArgumentList arguments;
     expect(TokenType::open_paren);
-    
     if (peek_expression()) {
         next_token();
         arguments.push_back(parse_expression());

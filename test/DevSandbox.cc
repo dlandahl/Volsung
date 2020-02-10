@@ -32,41 +32,85 @@ int main()
 R"(
 
 
-; Define a vocoder type
-Vocoder(2, 1): {
-    N: _1
 
-    ; Frequency bands are spaced evenly on a logarithmic scale
-    frequency_bands: ((1..N)/N)^2 * 3000
-    
-    &print "Frequency Bands: "
-    &print frequency_bands
-    
-    ; Define bandpass filter banks for carrier and modulator
-    carrier_bands: [N] Bandpass_Filter~ frequency_bands[n-1], 16
-    mod_bands: [N] Bandpass_Filter~ frequency_bands[n-1], 8
+; Try editing these
+rate: 1s / 3
+max_decay: 330ms
+delay_scale: 1
 
-    ; Envelope followers applied to the modulator bands determine
-    ; the gain applied to the carrier bands
-    amps: [N] Multiply~
-    followers: [N] Envelope_Follower~ 10ms
+Stereo_Delay <1, 2>: {
+	; Stereo delay with adjustable feedback,
+    ; left delay time, and right delay time
 
-    ; Connect them up
-    input|0 <> mod_bands     => followers => 1|amps
-    input|1 <> carrier_bands => amps      >> /6 -> output
+    fb: _1
+    delay_L: _2
+    delay_R: _3
+
+	delay: [2] Delay_Line~ { delay_L, delay_R }[n-1]
+	feedback: [2] Multiply~ fb
+    attenuate: [2] Divide~ 3
+
+    input <> delay
+	=> feedback
+	=> delay
+    => [2] Tanh~
+    => attenuate
+
+    attenuate[0] -> 0|output
+	attenuate[1] -> 1|output
 }
 
-&length 13.5s
+Random_Range <1, 1>: {
+	; Generates a random value in a given range
+    ; every time a gate is recieved
 
-; Make a vocoder with twenty-four bands
-voc: Vocoder~ 24
+    min: _1
+    max: _2
 
-; Acquire carrier and modulator signals
-carrier: [4] Saw_Oscillator~ n*85
-modulator: File~ "antikythera"
+    Noise~ -> Bi_to_Unipolar~
+    -> Multiply~ max - min
+    -> Add~ min
+    -> snh: Sample_And_Hold~
+    -> output
 
-carrier >> 1|voc
-modulator -> voc -> File~ "vocode"
+    input -> 1|snh
+}
+
+; Generate the frequencies of the pentatonic scale
+freqs: (2^(1/12))^{ 0, 2, 4, 7, 9 } * 329.63
+
+; Master clock
+clock: Clock~ rate
+
+; Trigger envelope into VCA
+eg: Envelope_Generator~
+vca: Multiply~
+clock
+-> eg
+-> Smooth~ 30
+-> 1|vca
+
+; Randomise decay time on clock pulse
+clock
+-> Random_Range~ 10ms, max_decay
+-> 1|eg
+
+
+; Choose a random note from the
+; pentatonic scale on clock pulse
+clock
+-> Random_Range~ 0, 4.99
+-> Index_Sequence~ freqs
+-> Sine_Oscillator~
+-> vca
+
+; Apply echo and output
+echo: Stereo_Delay~ 0.5, 500ms * delay_scale, 833.33ms * delay_scale
+vca -> echo
+echo|0 -> File~ "left"
+echo|1 -> File~ "right"
+
+&length(10s)
 
 )";
 
@@ -76,7 +120,9 @@ modulator -> voc -> File~ "vocode"
     parser.parse_program(prog);
     log("Finished parsing");
 
-    if (print) for (uint n = 0; n < time; n++) std::cout << prog.run(0.f) << '\n' << std::flush;
+    if (print) for (uint n = 0; n < time; n++)
+        std::cout << prog.run(0.f) << '\n' << std::flush;
+
     else for (uint n = 0; n < time; n++) prog.run(0.f);
     prog.finish();
 }

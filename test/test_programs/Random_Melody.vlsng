@@ -4,40 +4,42 @@ rate: 1s / 3
 max_decay: 330ms
 delay_scale: 1
 
-Stereo_Delay(1, 2): {
+Stereo_Delay <1, 2>: {
 	; Stereo delay with adjustable feedback,
     ; left delay time, and right delay time
-    
-	fb: _1
+
+    fb: _1
     delay_L: _2
     delay_R: _3
 
 	delay: [2] Delay_Line~ { delay_L, delay_R }[n-1]
 	feedback: [2] Multiply~ fb
     attenuate: [2] Divide~ 3
-    
-	input <> delay
+
+    input <> delay
 	=> feedback
 	=> delay
     => [2] Tanh~
     => attenuate
-    
+
     attenuate[0] -> 0|output
 	attenuate[1] -> 1|output
 }
 
-Random_Range(1, 1): {
+Random_Range <1, 1>: {
 	; Generates a random value in a given range
     ; every time a gate is recieved
-    
-	min: _1
+
+    min: _1
     max: _2
-    
-	snh: Sample_And_Hold~
+
+    Noise~ -> Bi_to_Unipolar~
+    -> Multiply~ max - min
+    -> Add~ min
+    -> snh: Sample_And_Hold~
+    -> output
+
     input -> 1|snh
-    Noise~ -> *0.5 -> +0.5
-    -> *max - min -> +min
-    -> snh -> output
 }
 
 ; Generate the frequencies of the pentatonic scale

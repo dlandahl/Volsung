@@ -1,24 +1,22 @@
 
 ; Modulated Schroeder-Moorer lowpass feedback comb filter
-LBCF (1, 1): {
+LBCF <1, 1>: {
 	M: _1 ; Filter order
 
-    buffer: Delay_Line~ M
-    sum: Add~
-
     input
-    -> sum
-    -> buffer
-    -> *-0.84       ; Decay
-    -> Pole~ 15000  ; Colour
+    -> sum: Add~
+    -> buffer: Delay_Line~ M
+    -> *-0.84         ; Decay
+    -> Smooth~ 15000  ; Colour
     -> 1|sum
 
 	-> output
 
-    ModAmt: 0.2
-    Sine_Oscillator~ r / 10
-    -> *0.5 -> +0.5
-    -> *M*ModAmt -> +M-M*ModAmt
+    mod_scale: 0.2
+    Sine_Oscillator~ random(0.1)
+    -> Bi_to_Unipolar~
+    -> Multiply~ M * mod_scale
+    -> Add~  M - M * mod_scale
     -> 1|buffer
 }
 
