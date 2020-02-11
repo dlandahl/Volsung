@@ -345,6 +345,10 @@ const SymbolTable<Procedure> Program::procedures = {
         return 0;
     }, 1, -1)},
 
+    { "length", Procedure([] (const ArgumentList& arguments) {
+        return arguments[0].get_value<Sequence>().size();
+    }, 1, 1)},
+
 };
 
 void Program::create_user_object(const std::string& name, const uint inputs, const uint outputs, std::any user_data, const AudioProcessingCallback callback)
@@ -431,7 +435,7 @@ bool Program::object_exists(const std::string& name) const
 
 void Program::simulate()
 {
-    for (auto const& entry : table) {
+    for (const auto& entry : table) {
         entry.second->implement();
     }
 }
@@ -459,7 +463,6 @@ Frame Program::run(const Frame sample)
     }
     return out;
 }
-
 
 void Program::finish()
 {

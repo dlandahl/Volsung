@@ -160,7 +160,7 @@ class Procedure
 {
     using Implementation = std::function<TypedValue(const ArgumentList&)>;
     Implementation implementation;
-    
+
 public:
     const std::size_t min_arguments;
     const std::size_t max_arguments;

@@ -26,7 +26,6 @@ float* const AudioBuffer::data_pointer()
 */
 
 
-
 float& CircularBuffer::operator[](long n)
 {
     n += pointer;
