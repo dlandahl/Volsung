@@ -218,7 +218,7 @@ bool Parser::parse_program(Graph& graph)
     program->add_symbol("pi", TAU / 2.f);
     program->add_symbol("i", Number(0, 1));
     program->add_symbol("e", 2.718281828459045f);
-    
+
     try {
 
     while (true) {
@@ -699,15 +699,16 @@ TypedValue Parser::parse_factor()
 Number Parser::parse_number()
 {
     verify(TokenType::numeric_literal);
-    std::string number = current_token.value;
+    std::string number_string = current_token.value;
 
     if (peek(TokenType::dot)) {
         next_token();
-        number += '.';
+        number_string += '.';
         expect(TokenType::numeric_literal);
-        number += current_token.value;
+        number_string += current_token.value;
     }
 
+    float number = std::stof(number_string);
     float multiplier = 1;
     bool imaginary = false;
     if (peek(TokenType::identifier)) {
@@ -715,11 +716,13 @@ Number Parser::parse_number()
         if (current_token.value == "s")       multiplier = sample_rate;
         else if (current_token.value == "ms") multiplier = sample_rate / 1000;
         else if (current_token.value == "i") imaginary = true;
+        else if (current_token.value == "dB"
+              || current_token.value == "db") number = std::log10(number * 20);
         else error("Invalid literal operator or stray identifier");
     }
 
-    if (imaginary) return Number(0, std::stof(number));
-    return std::stof(number) * multiplier;
+    if (imaginary) return Number(0, number);
+    return number * multiplier;
 }
 
 Sequence Parser::parse_sequence()
@@ -760,7 +763,7 @@ TypedValue Parser::parse_procedure_call(const std::string& name)
     if (procedure.min_arguments > arguments.size())
         Volsung::error("Too few arguments in procedure call to '" + name +"'. Expected " + std::to_string(procedure.min_arguments) +", got " + std::to_string(arguments.size()));
 
-    return procedure(arguments);
+    return procedure(arguments, program);
 }
 
 bool Parser::line_end() const

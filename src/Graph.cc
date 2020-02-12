@@ -52,14 +52,11 @@ bool Number::is_complex() const
 float Number::magnitude() const
 {
     float const value = std::sqrt(real_part * real_part + imag_part * imag_part);
-    //Volsung::log("Magnitude: " + std::to_string(value));
-    // if (angle() > TAU / 4.f) return -value;
     return value;
 }
 
 float Number::angle() const
 {
-    //Volsung::log("Angle: " + std::to_string(std::atan2(imag_part, real_part)));
     return std::atan2(imag_part, real_part);
 }
 
@@ -153,7 +150,7 @@ Number Number::divide_num(const Number& other) const
 
 Number Number::exponentiate_num(const Number& other) const
 {
-    auto complex = std::pow(std::complex(real_part, imag_part), std::complex(other.real_part, other.imag_part));
+    const auto complex = std::pow(std::complex(real_part, imag_part), std::complex(other.real_part, other.imag_part));
     Number out(complex.real(), complex.imag());
     return out;
 }
@@ -272,7 +269,7 @@ TypedValue& TypedValue::operator-()
 }
 
 
-TypedValue Procedure::operator()(const ArgumentList& args) const
+TypedValue Procedure::operator()(const ArgumentList& args, const Program* program) const
 {
     Volsung::assert((bool) implementation, "Internal error: procedure has no implementation");
 
@@ -282,11 +279,11 @@ TypedValue Procedure::operator()(const ArgumentList& args) const
 
         for (std::size_t n = 0; n < sequence.size(); n++) {
             parameters[0] = sequence[n];
-            sequence[n] = implementation(parameters).get_value<Number>();
+            sequence[n] = implementation(parameters, program).get_value<Number>();
         }
         return sequence;
     }
-    return implementation(args);
+    return implementation(args, program);
 }
 
 Procedure::Procedure(Implementation impl, std::size_t min_args, std::size_t max_args, bool _can_be_mapped)
@@ -294,7 +291,7 @@ Procedure::Procedure(Implementation impl, std::size_t min_args, std::size_t max_
 { }
 
 const SymbolTable<Procedure> Program::procedures = {
-    { "random", Procedure([] (const ArgumentList& arguments) -> TypedValue {
+    { "random", Procedure([] (const ArgumentList& arguments, const Program*) -> TypedValue {
         float min = 0.f;
         float max = 1.f;
 
@@ -310,28 +307,28 @@ const SymbolTable<Procedure> Program::procedures = {
         return (Number) distribution(generator);
     }, 0, 2) },
 
-    { "Arg", Procedure([] (const ArgumentList& arguments) {
+    { "Arg", Procedure([] (const ArgumentList& arguments, const Program*) {
         return arguments[0].get_value<Number>().angle();
     }, 1, 1, true)},
 
-    { "abs", Procedure([] (const ArgumentList& arguments) {
+    { "abs", Procedure([] (const ArgumentList& arguments, const Program*) {
         return arguments[0].get_value<Number>().magnitude();
     }, 1, 1, true)},
 
-    { "sin", Procedure([] (const ArgumentList& arguments) {
+    { "sin", Procedure([] (const ArgumentList& arguments, const Program*) {
         return std::sin(arguments[0].get_value<Number>());
     }, 1, 1, true)},
 
-    { "Re", Procedure([] (const ArgumentList& arguments) {
+    { "Re", Procedure([] (const ArgumentList& arguments, const Program*) {
         return (float) arguments[0].get_value<Number>();
     }, 1, 1, true)},
 
-    { "Im", Procedure([] (const ArgumentList& arguments) {
+    { "Im", Procedure([] (const ArgumentList& arguments, const Program*) {
         const Number num = arguments[0].get_value<Number>();
         return num.subtract_num((Number) float(num));
     }, 1, 1, true)},
 
-    { "reverse", Procedure([] (const ArgumentList& arguments) {
+    { "reverse", Procedure([] (const ArgumentList& arguments, const Program*) {
         const Sequence source = arguments[0].get_value<Sequence>();
         Sequence reverse;
         for (std::size_t n = 1; n <= source.size(); n++) {
@@ -340,14 +337,26 @@ const SymbolTable<Procedure> Program::procedures = {
         return reverse;
     }, 1, 1)},
 
-    { "print", Procedure([] (const ArgumentList& arguments) {
+    { "print", Procedure([] (const ArgumentList& arguments, const Program*) {
         for (const auto& arg : arguments) Volsung::log(arg.as_string());
         return 0;
     }, 1, -1)},
 
-    { "length", Procedure([] (const ArgumentList& arguments) {
+    { "length_of", Procedure([] (const ArgumentList& arguments, const Program*) {
         return arguments[0].get_value<Sequence>().size();
     }, 1, 1)},
+
+    { "implementation_of", Procedure([] (const ArgumentList& arguments, const Program* program) {
+        const std::string object_type = arguments[0].get_value<Text>();
+        if (!program->subgraphs.count(object_type))
+            error("'implementation_of(" + object_type + ")': Subgraph implementation not found");
+
+        return (Text) program->subgraphs.at(object_type).first;
+    }, 1, 1)},
+
+    { "count_nodes", Procedure([] (const ArgumentList&, const Program* program) {
+        return (Number) program->table.size();
+    }, 0, 0)},
 
 };
 

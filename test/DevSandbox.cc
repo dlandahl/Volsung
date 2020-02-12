@@ -31,7 +31,8 @@ int main()
     const std::string code =
 R"(
 
-print(length(0 .. 12 | 0.7))
+tset: [100] Add~
+print(count_nodes())
 
 )";
 
