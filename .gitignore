@@ -7,7 +7,6 @@ bin/
 
 .directory
 
-*.ygg
 *.raw
 
 *.a

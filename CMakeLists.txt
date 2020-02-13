@@ -27,3 +27,14 @@ add_executable            ( TestSuite test/Tests.cc )
 target_include_directories( TestSuite PUBLIC include )
 target_link_libraries     ( TestSuite Volsung )
 
+
+
+add_executable            ( Volsung_Runner extra/runner/runner.cc )
+target_include_directories( Volsung_Runner PUBLIC include )
+target_include_directories( Volsung_Runner PUBLIC extra/runner )
+target_link_libraries     ( Volsung_Runner Volsung )
+
+if (UNIX AND NOT APPLE)
+    target_link_libraries ( Volsung_Runner asound )
+endif()
+
