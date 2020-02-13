@@ -29,12 +29,12 @@ target_link_libraries     ( TestSuite Volsung )
 
 
 
-add_executable            ( Volsung_Runner extra/runner/runner.cc )
-target_include_directories( Volsung_Runner PUBLIC include )
-target_include_directories( Volsung_Runner PUBLIC extra/runner )
-target_link_libraries     ( Volsung_Runner Volsung )
+add_executable            ( VlsngPlayer extra/Player/VlsngPlayer.cc )
+target_include_directories( VlsngPlayer PUBLIC include )
+target_include_directories( VlsngPlayer PUBLIC extra/Player )
+target_link_libraries     ( VlsngPlayer Volsung )
 
 if (UNIX AND NOT APPLE)
-    target_link_libraries ( Volsung_Runner asound )
+    target_link_libraries ( VlsngPlayer asound )
 endif()
 

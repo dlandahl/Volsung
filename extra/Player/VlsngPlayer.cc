@@ -3,11 +3,10 @@
 #include <iostream>
 #include <sstream>
 
-#include "runner.hh"
 #include "VolsungHeader.hh"
 
 #if defined(__linux__)
-#include "linux.hh"
+#include "AudioPlayer_Linux.hh"
 #endif
 
 std::string get_option(const std::string& command, const std::string& option)
@@ -29,6 +28,11 @@ int main(const int num_arguments, const char* arguments[])
         }
         return command;
     }();
+
+    if (num_arguments < 2) {
+        std::cout << "Please provide a file name" << std::endl;
+        std::exit(1);
+    }
 
     const auto filename = [&] () -> std::string {
         std::string name = get_option(command, "-f");
@@ -79,7 +83,6 @@ int main(const int num_arguments, const char* arguments[])
         for (size_t sample = 0; sample < AudioPlayer::blocksize; sample++) {
             data[sample] = program.run();
         }
-        std::cout << "Playing chunk " << n << std::endl;
         player.play(data);
     }
 

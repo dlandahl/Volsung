@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include "VolsungHeader.hh"
-
 struct AudioPlayer_Interface
 {
     static const size_t blocksize = 1024;

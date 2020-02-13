@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "runner.hh"
+#include "AudioPlayer_Interface.hh"
 #include "alsa/asoundlib.h"
 
 class AudioPlayer : public AudioPlayer_Interface
