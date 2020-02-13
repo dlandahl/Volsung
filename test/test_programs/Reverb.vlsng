@@ -1,7 +1,7 @@
 
 ; Modulated Schroeder-Moorer lowpass feedback comb filter
 LBCF <1, 1>: {
-	M: _1 ; Filter order
+    M: _1 ; Filter order
 
     input
     -> sum: Add~
