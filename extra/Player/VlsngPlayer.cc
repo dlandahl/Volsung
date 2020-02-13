@@ -19,6 +19,8 @@ int main(const int num_args, const char* args[])
     float time_seconds = 5.f;
     size_t num_channels = 1;
 
+    std::map<std::string, float> parameters;
+
     for (int n = 1; n < num_args; n++) {
         const std::string arg = arguments[n];
 
@@ -37,6 +39,13 @@ int main(const int num_args, const char* args[])
             }
             else if (arg == "-t" || arg == "--time") time_seconds = std::stof(next_arg);
             else if (arg == "-c" || arg == "--channels") num_channels = std::stoi(next_arg);
+            else if (arg == "-p" || arg == "--parameter") {
+                const std::string& key_value = next_arg;
+                const size_t pos = key_value.find("=");
+                const std::string key = key_value.substr(0, pos);
+                const std::string value = key_value.substr(pos + 1, key_value.size() - pos);
+                parameters[key] = std::stof(value);
+            }
             else std::cout << "Flag not recognised: " << arg << ". Ignoring." << std::endl;
             n++;
         } 
@@ -76,6 +85,10 @@ int main(const int num_args, const char* args[])
 
     program.configure_io(0, num_channels);
     program.reset();
+    for (auto& [key, value] : parameters) {
+        program.add_symbol(key, value);
+    }
+    
     if (!parser.parse_program(program)) std::exit(0);
 
     AudioPlayer player;
@@ -84,11 +97,10 @@ int main(const int num_args, const char* args[])
     auto* data = new float[AudioPlayer::blocksize * num_channels];
 
     auto const play_one_block = [&] () {
-        for (size_t sample = 0; sample < AudioPlayer::blocksize; sample++)
-        {
+        for (size_t sample = 0; sample < AudioPlayer::blocksize; sample++) {
             Volsung::Frame frame = program.run(Volsung::Frame {});
-            for (size_t channel = 0; channel < num_channels; channel++)
-            {
+            
+            for (size_t channel = 0; channel < num_channels; channel++) {
                 data[sample * num_channels + channel] = frame[channel];
             }
         }
