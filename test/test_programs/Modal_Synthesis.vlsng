@@ -1,0 +1,9 @@
+
+freqs: { random(150, 700), random(150, 700), random(150, 700), random(150, 700) }
+
+Noise~
+<> [4] Bandpass_Filter~ freqs[n-1], 280
+=> [4] Bandpass_Filter~ freqs[n-1], 280
+>> Multiply~ 0.0001 -> output
+
+

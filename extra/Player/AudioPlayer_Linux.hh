@@ -9,17 +9,11 @@ class AudioPlayer : public AudioPlayer_Interface
     snd_pcm_t *stream;
 
 public:
-    void initialize() override {
+    void initialize(int channels) override {
         snd_pcm_open(&stream, "default", SND_PCM_STREAM_PLAYBACK, 0);
 
-        snd_pcm_hw_params_t *params;
-        snd_pcm_hw_params_alloca ( &params );
-
-        snd_pcm_hw_params_any(stream, params);
-        snd_pcm_hw_params_set_format(stream, params, SND_PCM_FORMAT_FLOAT_LE);
-        snd_pcm_hw_params_set_rate(stream, params, Volsung::sample_rate, 0);
-
-        snd_pcm_hw_params(stream, params);
+        snd_pcm_set_params(stream, SND_PCM_FORMAT_FLOAT_LE, SND_PCM_ACCESS_RW_INTERLEAVED,
+                           channels, Volsung::sample_rate, 1, 10000);
     }
 
     void play(float* data) override {

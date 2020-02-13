@@ -6,7 +6,7 @@ if exists("b:current_syntax")
 endif
 
 syn match vlsng_arrow "\(->\|=>\|<>\|x>\|>>\|-->\)"
-syn match vlsng_number "\d\+\(\.\d+\)\?"
+syn match vlsng_number "\d\+\(\.\d\+\)\?"
 syn match vlsng_comment ";.*$"
 syn match vlsng_object "\w\+\~"
 syn match vlsng_string '\".*\"'
