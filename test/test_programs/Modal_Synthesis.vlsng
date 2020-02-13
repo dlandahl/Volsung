@@ -1,9 +1,18 @@
 
-freqs: { random(150, 700), random(150, 700), random(150, 700), random(150, 700) }
+; A bank of bandpass filters, the centre frequencies 
+; of which represent modes of resonance
+Filter_Bank <1, 1>: {
+    freqs: { 100, 200, 350, 500 }
+    
+    input
+    <> [4] Bandpass_Filter~ freqs[n-1], 280
+    >> Multiply~ 0.01 -> output
+}
 
-Noise~
-<> [4] Bandpass_Filter~ freqs[n-1], 280
-=> [4] Bandpass_Filter~ freqs[n-1], 280
->> Multiply~ 0.0001 -> output
+[2] Noise~
+=>      [2] Filter_Bank~
+=> out: [2] Filter_Bank~
 
+out[0] -> 0|output
+out[1] -> 1|output
 

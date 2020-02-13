@@ -81,12 +81,9 @@ int main(const int num_args, const char* args[])
     AudioPlayer player;
     player.initialize(num_channels);
 
-    if (time_seconds == -1.f) time_seconds = std::numeric_limits<float>::max();
     auto* data = new float[AudioPlayer::blocksize * num_channels];
 
-    const auto blocks_to_generate = Volsung::sample_rate / AudioPlayer::blocksize * time_seconds;
-    for (size_t n = 0; n < blocks_to_generate; n++)
-    {
+    auto const play_one_block = [&] () {
         for (size_t sample = 0; sample < AudioPlayer::blocksize; sample++)
         {
             Volsung::Frame frame = program.run(Volsung::Frame {});
@@ -96,6 +93,15 @@ int main(const int num_args, const char* args[])
             }
         }
         player.play(data);
+    };
+    
+    if (time_seconds == -1.f) {
+        while (true) play_one_block();
+    }
+    else {
+        const auto blocks_to_generate = Volsung::sample_rate / AudioPlayer::blocksize * time_seconds;
+        for (size_t n = 0; n < blocks_to_generate; n++)
+            play_one_block();
     }
 
     player.clean_up();
