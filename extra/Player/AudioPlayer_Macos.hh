@@ -11,6 +11,7 @@ class Ringbuffer {
     size_t head = 0;
     size_t tail = 0;
 
+    bool underflow_flag = false;
     bool full = false;
     std::mutex mutex;
 
@@ -27,14 +28,14 @@ public:
     size_t size() const;
 };
 
-
 class AudioPlayer : public AudioPlayer_Interface
 {
     AudioQueueRef queue;
-    AudioStreamBasicDescription stream_desc = { 0 };
     AudioQueueBufferRef buffers[4];
+    Ringbuffer ringbuffer;
 
-    AudioQueueOutputCallback callback = [] (void* user, AudioQueueRef queue, AudioQueueBufferRef buffer) {
+    AudioQueueOutputCallback callback = [] (void* user, AudioQueueRef queue, AudioQueueBufferRef buffer)
+    {
         auto* player = (AudioPlayer*) user;
         static int phase = 0;
         float* out_buffer = (float*) buffer->mAudioData;
@@ -42,42 +43,42 @@ class AudioPlayer : public AudioPlayer_Interface
             out_buffer[n] = player->ringbuffer.read_sample();
         }
         AudioQueueEnqueueBuffer(queue, buffer, 0, nullptr);
-        std::cout << "Callback!" << std::endl;
     };
 
 public:
-    Ringbuffer ringbuffer;
-
-    void initialize(unsigned channels) override {
-        int errors = 0;
-        stream_desc.mSampleRate = Volsung::sample_rate;
-        stream_desc.mBitsPerChannel = 8 * sizeof (float);
-        stream_desc.mBytesPerFrame = sizeof (float);
-        stream_desc.mBytesPerPacket = sizeof (float);
-        stream_desc.mChannelsPerFrame = 1;
-        stream_desc.mFramesPerPacket = 1;
-        stream_desc.mFormatID = kAudioFormatLinearPCM;
-        stream_desc.mFormatFlags = kLinearPCMFormatFlagIsFloat | kAudioFormatFlagIsPacked;
-        errors += AudioQueueNewOutput(&stream_desc, callback, this, NULL, NULL, 0, &queue);
+    void initialize(unsigned channels) override
+    {
+        AudioStreamBasicDescription format = { 0 };
+        
+        format.mSampleRate = Volsung::sample_rate;
+        format.mBitsPerChannel = 8 * sizeof (float) * channels;
+        format.mChannelsPerFrame = channels;
+        format.mBytesPerFrame = sizeof (float) * channels;
+        format.mBytesPerPacket = format.mBytesPerFrame;
+        format.mFramesPerPacket = 1;
+        format.mFormatID = kAudioFormatLinearPCM;
+        format.mFormatFlags = kLinearPCMFormatFlagIsFloat | kAudioFormatFlagIsPacked;
+        
+        AudioQueueNewOutput(&format, callback, this, NULL, NULL, 0, &queue);
 
         for (auto& buffer: buffers) {
-            errors += AudioQueueAllocateBuffer(queue, blocksize, &buffer);
+            AudioQueueAllocateBuffer(queue, blocksize, &buffer);
             buffer->mAudioDataByteSize = blocksize;
             callback(this, queue, buffer);
         }
 
-        //AudioQueueEnqueueBuffer(queue, buffers[0], 0, nullptr);
         AudioQueueStart(queue, NULL);
-        std::cout << "Error code: " << errors << std::endl;
     }
 
-    void play(float* data) override {
+    void play(float* data) override
+    {
         while (ringbuffer.capacity() < ringbuffer.size() + blocksize);
         for (size_t n = 0; n < blocksize; n++)
             ringbuffer.submit_sample(data[n]);
     }
 
-    void clean_up() override {
+    void clean_up() override
+    {
         AudioQueueStop(queue, false);
         AudioQueueDispose(queue, false);
     }
