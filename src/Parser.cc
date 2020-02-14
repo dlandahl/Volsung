@@ -216,6 +216,8 @@ bool Parser::parse_program(Graph& graph)
     program->add_symbol("fs", sample_rate);
     program->add_symbol("tau", TAU);
     program->add_symbol("pi", TAU / 2.f);
+    program->add_symbol("true", 1);
+    program->add_symbol("false", 0);
     program->add_symbol("i", Number(0, 1));
     program->add_symbol("e", 2.718281828459045f);
 

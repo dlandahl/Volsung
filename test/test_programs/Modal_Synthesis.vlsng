@@ -1,9 +1,9 @@
 
-; A bank of bandpass filters, the centre frequencies 
+; A bank of bandpass filters, the centre frequencies
 ; of which represent modes of resonance
 Filter_Bank <1, 1>: {
     freqs: { 100, 200, 350, 500 }
-    
+
     input
     <> [4] Bandpass_Filter~ freqs[n-1], 280
     >> Multiply~ 0.01 -> output
@@ -15,4 +15,3 @@ Filter_Bank <1, 1>: {
 
 out[0] -> 0|output
 out[1] -> 1|output
-

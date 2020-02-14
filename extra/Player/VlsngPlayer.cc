@@ -88,7 +88,7 @@ int main(const int num_args, const char* args[])
     for (auto& [key, value] : parameters) {
         program.add_symbol(key, value);
     }
-    
+
     if (!parser.parse_program(program)) std::exit(0);
 
     AudioPlayer player;
@@ -99,14 +99,14 @@ int main(const int num_args, const char* args[])
     auto const play_one_block = [&] () {
         for (size_t sample = 0; sample < AudioPlayer::blocksize; sample++) {
             Volsung::Frame frame = program.run(Volsung::Frame {});
-            
+
             for (size_t channel = 0; channel < num_channels; channel++) {
                 data[sample * num_channels + channel] = frame[channel];
             }
         }
         player.play(data);
     };
-    
+
     if (time_seconds == -1.f) {
         while (true) play_one_block();
     }
