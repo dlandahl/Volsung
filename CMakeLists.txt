@@ -36,5 +36,9 @@ target_link_libraries     ( VlsngPlayer Volsung )
 
 if (UNIX AND NOT APPLE)
     target_link_libraries ( VlsngPlayer asound )
+elseif(APPLE)
+    target_link_libraries ( VlsngPlayer "-framework AudioToolbox" )
+    target_link_libraries ( VlsngPlayer "-framework CoreFoundation" )
+    target_sources ( VlsngPlayer PRIVATE extra/Player/AudioPlayer_Macos.cc )
 endif()
 

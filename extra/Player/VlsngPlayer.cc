@@ -9,6 +9,8 @@
 
 #if defined(__linux__)
 #include "AudioPlayer_Linux.hh"
+#elif defined(__APPLE__)
+#include "AudioPlayer_Macos.hh"
 #endif
 
 int main(const int num_args, const char* args[])
@@ -99,7 +101,6 @@ int main(const int num_args, const char* args[])
     auto const play_one_block = [&] () {
         for (size_t sample = 0; sample < AudioPlayer::blocksize; sample++) {
             Volsung::Frame frame = program.run(Volsung::Frame {});
-
             for (size_t channel = 0; channel < num_channels; channel++) {
                 data[sample * num_channels + channel] = frame[channel];
             }
@@ -120,4 +121,3 @@ int main(const int num_args, const char* args[])
     program.finish();
     delete[] data;
 }
-
