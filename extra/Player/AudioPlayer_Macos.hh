@@ -37,7 +37,6 @@ class AudioPlayer : public AudioPlayer_Interface
     AudioQueueOutputCallback callback = [] (void* user, AudioQueueRef queue, AudioQueueBufferRef buffer)
     {
         auto* player = (AudioPlayer*) user;
-        static int phase = 0;
         float* out_buffer = (float*) buffer->mAudioData;
         for (size_t n = 0; n < AudioPlayer::blocksize / sizeof(float); n++) {
             out_buffer[n] = player->ringbuffer.read_sample();

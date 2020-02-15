@@ -16,29 +16,28 @@ else()
 endif()
 
 add_library( Volsung STATIC ${code} )
-
 set_target_properties( Volsung PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ../lib )
 
 add_executable            ( DevSandbox test/DevSandbox.cc )
 target_include_directories( DevSandbox PUBLIC include )
 target_link_libraries     ( DevSandbox Volsung )
 
-add_executable            ( TestSuite test/Tests.cc )
-target_include_directories( TestSuite PUBLIC include )
-target_link_libraries     ( TestSuite Volsung )
+add_executable            ( Test_Parser test/Tests.cc )
+target_include_directories( Test_Parser PUBLIC include )
+target_link_libraries     ( Test_Parser Volsung )
 
 
 
-add_executable            ( VlsngPlayer extra/Player/VlsngPlayer.cc )
-target_include_directories( VlsngPlayer PUBLIC include )
-target_include_directories( VlsngPlayer PUBLIC extra/Player )
-target_link_libraries     ( VlsngPlayer Volsung )
+add_executable            ( volsung extra/Player/VlsngPlayer.cc )
+target_include_directories( volsung PUBLIC include )
+target_include_directories( volsung PUBLIC extra/Player )
+target_link_libraries     ( volsung Volsung )
 
 if (UNIX AND NOT APPLE)
-    target_link_libraries ( VlsngPlayer asound )
+    target_link_libraries ( volsung asound )
 elseif(APPLE)
-    target_link_libraries ( VlsngPlayer "-framework AudioToolbox" )
-    target_link_libraries ( VlsngPlayer "-framework CoreFoundation" )
-    target_sources ( VlsngPlayer PRIVATE extra/Player/AudioPlayer_Macos.cc )
+    target_link_libraries ( volsung "-framework AudioToolbox" )
+    target_link_libraries ( volsung "-framework CoreFoundation" )
+    target_sources ( volsung PRIVATE extra/Player/AudioPlayer_Macos.cc )
 endif()
 
