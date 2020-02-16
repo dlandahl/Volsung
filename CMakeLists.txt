@@ -10,7 +10,7 @@ file(GLOB code
 )
 
 if (MSVC)
-    SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /O3 /W4 /permissive-")
+    SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /W4 /permissive- /std:c++17")
 else()
     SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wfatal-errors -g -O3 -Wall -Wextra -Wpedantic")
 endif()
@@ -28,16 +28,18 @@ target_link_libraries     ( Test_Parser Volsung )
 
 
 
-add_executable            ( volsung extra/Player/VlsngPlayer.cc )
-target_include_directories( volsung PUBLIC include )
-target_include_directories( volsung PUBLIC extra/Player )
-target_link_libraries     ( volsung Volsung )
+add_executable            ( volsung_player extra/Player/VlsngPlayer.cc )
+target_include_directories( volsung_player PUBLIC include )
+target_include_directories( volsung_player PUBLIC extra/Player )
+target_link_libraries     ( volsung_player Volsung )
 
 if (UNIX AND NOT APPLE)
-    target_link_libraries ( volsung asound )
-elseif(APPLE)
-    target_link_libraries ( volsung "-framework AudioToolbox" )
-    target_link_libraries ( volsung "-framework CoreFoundation" )
-    target_sources ( volsung PRIVATE extra/Player/AudioPlayer_Macos.cc )
+    target_link_libraries ( volsung_player asound )
+elseif (APPLE)
+    target_link_libraries ( volsung_player "-framework AudioToolbox" )
+    target_link_libraries ( volsung_player "-framework CoreFoundation" )
+    target_sources ( volsung_player PRIVATE extra/Player/AudioPlayer_Macos.cc )
+elseif (WIN32)
+    target_link_libraries ( volsung_player dsound)
 endif()
 

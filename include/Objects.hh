@@ -54,9 +54,9 @@ public:
 
 class FilterObject : public AudioObject
 {
-    float  frequency = 100;
-    double a;
-    double b;
+    float frequency = 100;
+    float a;
+    float b;
     
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
@@ -293,10 +293,10 @@ protected:
     float frequency;
     float resonance = 1.f;
 
-    double omega;
-    double alpha;
-    double cos_omega;
-    double A;
+    float omega;
+    float alpha;
+    float cos_omega;
+    float A;
 
     virtual void calculate_coefficients() = 0;
 

@@ -132,8 +132,8 @@ bool Lexer::is_char() const
 
 bool Lexer::peek(const TokenType expected)
 {
-    const std::size_t old_position = position;
-    const std::size_t old_lines = line;
+    const size_t old_position = position;
+    const size_t old_lines = line;
     bool ret;
     if (get_next_token().type == expected) ret = true;
     else ret = false;
@@ -253,7 +253,7 @@ bool Parser::parse_program(Graph& graph)
         }
     }
 
-    } catch (const VolsungException& exception) {
+    } catch (const VolsungException&) {
         program->reset();
         return false;
     }
@@ -286,7 +286,7 @@ std::string Parser::parse_object_declaration(std::string name)
 {
     if (name.empty()) name = "Unnamed Object " + std::to_string(inline_object_index++);
     bool is_group = false;
-    std::size_t count = 1;
+    size_t count = 1;
 
     if (current_token_is(TokenType::open_bracket)) {
         is_group = true;
@@ -300,7 +300,7 @@ std::string Parser::parse_object_declaration(std::string name)
     const std::string object_type = current_token.value;
 
     if (is_group) {
-        const std::size_t old_position = position;
+        const size_t old_position = position;
 
         bool n_existed = false;
         TypedValue old_n;
@@ -309,7 +309,7 @@ std::string Parser::parse_object_declaration(std::string name)
             n_existed = true;
         }
 
-        for (std::size_t n = 0; n < count; n++) {
+        for (size_t n = 0; n < count; n++) {
             position = old_position;
 
             program->remove_symbol("n");
@@ -371,10 +371,10 @@ void Parser::make_object(const std::string& object_type, const std::string& obje
         Parser subgraph_parser;
         subgraph_parser.source_code = program->subgraphs[object_type].first;
         other_program->parent = program;
-        other_program->configure_io(io[0], io[1]);
+        other_program->configure_io((uint) io[0], (uint) io[1]);
         other_program->reset();
 
-        for (std::size_t n = 2; n < parameters.size(); n++)
+        for (size_t n = 2; n < parameters.size(); n++)
             other_program->add_symbol("_" + std::to_string(n-1), parameters[n]);
 
         if (!subgraph_parser.parse_program(*other_program)) error("Subgraph failed to parse");
@@ -486,7 +486,7 @@ std::string Parser::get_object_to_connect()
         if (peek(TokenType::open_bracket)) {
             expect(TokenType::open_bracket);
             next_token();
-            const int index = parse_number();
+            const int index = (int) parse_number();
             expect(TokenType::close_bracket);
             output = "__grp_" + output + std::to_string(index);
         }
@@ -538,7 +538,7 @@ void Parser::parse_subgraph_declaration()
     expect(TokenType::open_brace);
     expect(TokenType::newline);
     
-    const std::size_t start_position = position;
+    const size_t start_position = position;
     int num_braces_encountered = 0;
     
     while (true) {
@@ -588,7 +588,7 @@ TypedValue Parser::parse_sequence_generator()
             const float target = parse_product().get_value<Number>();
             const float step_size = (target - lower) / (upper - 1);
             Sequence s;
-            for (std::size_t n = 0; n < upper; n++)
+            for (size_t n = 0; n < upper; n++)
                 s.add_element(lower + n * step_size);
             value = s;
         }
@@ -685,8 +685,8 @@ TypedValue Parser::parse_factor()
             const Sequence& index_sequence = index.get_value<Sequence>();
             const Sequence& value_sequence = value.get_value<Sequence>();
 
-            for (std::size_t n = 0; n < index_sequence.size(); n++)
-                s.add_element(value_sequence[index_sequence[n]]);
+            for (size_t n = 0; n < index_sequence.size(); n++)
+                s.add_element(value_sequence[(size_t) index_sequence[(size_t) n]]);
 
             value = s;
         }

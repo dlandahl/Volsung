@@ -57,10 +57,10 @@ int main()
     namespace chrono = std::chrono;
     std::cout << "\nGenerating " << Volsung::sample_rate << " samples\n";
     
-    for (std::size_t p = 0; p < programs.size(); p++) {
+    for (size_t p = 0; p < programs.size(); p++) {
         const auto start_time = chrono::high_resolution_clock::now();
 
-        for (std::size_t s = 0; s < Volsung::sample_rate; s++) {
+        for (size_t s = 0; s < Volsung::sample_rate; s++) {
             programs[p]->run();
         }
         
@@ -69,7 +69,7 @@ int main()
         std::cout << "[" << Ansi_Blue << "Timer" << Ansi_Reset << "] ";
         std::cout << names[p];
 
-        for (std::size_t n = 0; n < 30 - names[p].size(); n++)
+        for (size_t n = 0; n < 30 - names[p].size(); n++)
             std::cout << ".";
 
         std::cout << time_taken_usecs.count() / 1000000.f << "s";

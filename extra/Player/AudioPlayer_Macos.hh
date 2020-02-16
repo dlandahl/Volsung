@@ -48,7 +48,7 @@ public:
     void initialize(unsigned channels) override
     {
         AudioStreamBasicDescription format = { 0 };
-        
+
         format.mSampleRate = Volsung::sample_rate;
         format.mBitsPerChannel = 8 * sizeof (float) * channels;
         format.mChannelsPerFrame = channels;
@@ -57,7 +57,7 @@ public:
         format.mFramesPerPacket = 1;
         format.mFormatID = kAudioFormatLinearPCM;
         format.mFormatFlags = kLinearPCMFormatFlagIsFloat | kAudioFormatFlagIsPacked;
-        
+
         AudioQueueNewOutput(&format, callback, this, NULL, NULL, 0, &queue);
 
         for (auto& buffer: buffers) {

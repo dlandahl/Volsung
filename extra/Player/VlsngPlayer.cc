@@ -11,6 +11,8 @@
 #include "AudioPlayer_Linux.hh"
 #elif defined(__APPLE__)
 #include "AudioPlayer_Macos.hh"
+#elif defined(_WIN32)
+#include "AudioPlayer_Windows.hh"
 #endif
 
 int main(const int num_args, const char* args[])
@@ -33,7 +35,7 @@ int main(const int num_args, const char* args[])
         }
 
         try {
-            const std::string next_arg = arguments.at(n+1);
+            const std::string next_arg = arguments.at(size_t(n)+1);
             if (arg == "-f" || arg == "--file") {
                 if (!filename.empty())
                     std::cout << "Unexpected argument '" << filename << "' since -f flag is being used to set filename. Ignoring." << std::endl;
@@ -51,11 +53,11 @@ int main(const int num_args, const char* args[])
             else std::cout << "Flag not recognised: " << arg << ". Ignoring." << std::endl;
             n++;
         } 
-        catch (std::out_of_range& e) {
+        catch (std::out_of_range&) {
             std::cout << "Flag expected an argument, none found. Exiting." << std::endl;
             std::exit(1);
         }
-        catch (std::invalid_argument& e) {
+        catch (std::invalid_argument&) {
             std::cout << "Could not read numeric parameter. Did you need to type a number? Exiting." << std::endl;
             std::exit(1);
         }
@@ -85,7 +87,7 @@ int main(const int num_args, const char* args[])
         parser.source_code = buffer.str();
     }
 
-    program.configure_io(0, num_channels);
+    program.configure_io(0, (Volsung::uint) num_channels);
     program.reset();
     for (auto& [key, value] : parameters) {
         program.add_symbol(key, value);
@@ -94,7 +96,7 @@ int main(const int num_args, const char* args[])
     if (!parser.parse_program(program)) std::exit(0);
 
     AudioPlayer player;
-    player.initialize(num_channels);
+    player.initialize((Volsung::uint) num_channels);
 
     auto* data = new float[AudioPlayer::blocksize * num_channels];
 

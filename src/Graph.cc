@@ -101,7 +101,7 @@ TypedValue Sequence::op(const TypedValue& other)                                
         case (Type::sequence): {                                                \
             Sequence seq = other.get_value<Sequence>();                         \
             Volsung::assert(size() == seq.size(), "Attempted to perform arithmetic on sequences of inequal length");       \
-            for (std::size_t n = 0; n < size(); n++)                            \
+            for (size_t n = 0; n < size(); n++)                            \
                 seq[n] = data[n].op##_num(seq[n]);                              \
             return seq;                                                         \
         }                                                                       \
@@ -155,7 +155,7 @@ Number Number::exponentiate_num(const Number& other) const
     return out;
 }
 
-std::size_t Sequence::size() const
+size_t Sequence::size() const
 {
     return data.size();
 }
@@ -165,7 +165,7 @@ Sequence::operator Text() const
     std::string string = "{ ";
 
     if (data.size()) string += (std::string) (Text) data[0];
-    for (std::size_t n = 1; n < size(); n++) string += ", " + (std::string) (Text) data[n];
+    for (size_t n = 1; n < size(); n++) string += ", " + (std::string) (Text) data[n];
     string += " }";
 
     return Text(string);
@@ -277,7 +277,7 @@ TypedValue Procedure::operator()(const ArgumentList& args, const Program* progra
         auto sequence = args[0].get_value<Sequence>();
         auto parameters = args;
 
-        for (std::size_t n = 0; n < sequence.size(); n++) {
+        for (size_t n = 0; n < sequence.size(); n++) {
             parameters[0] = sequence[n];
             sequence[n] = implementation(parameters, program).get_value<Number>();
         }
@@ -286,7 +286,7 @@ TypedValue Procedure::operator()(const ArgumentList& args, const Program* progra
     return implementation(args, program);
 }
 
-Procedure::Procedure(Implementation impl, std::size_t min_args, std::size_t max_args, bool _can_be_mapped)
+Procedure::Procedure(Implementation impl, size_t min_args, size_t max_args, bool _can_be_mapped)
     : implementation(impl), min_arguments(min_args), max_arguments(max_args), can_be_mapped(_can_be_mapped)
 { }
 
@@ -302,7 +302,7 @@ const SymbolTable<Procedure> Program::procedures = {
         }
 
         std::uniform_real_distribution<float> distribution(min, max);
-        static std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+        static std::default_random_engine generator((uint) std::chrono::system_clock::now().time_since_epoch().count());
 
         return (Number) distribution(generator);
     }, 0, 2) },
@@ -331,7 +331,7 @@ const SymbolTable<Procedure> Program::procedures = {
     { "reverse", Procedure([] (const ArgumentList& arguments, const Program*) {
         const Sequence source = arguments[0].get_value<Sequence>();
         Sequence reverse;
-        for (std::size_t n = 1; n <= source.size(); n++) {
+        for (size_t n = 1; n <= source.size(); n++) {
             reverse.add_element(source[source.size() - n]);
         }
         return reverse;
@@ -355,15 +355,15 @@ const SymbolTable<Procedure> Program::procedures = {
     }, 1, 1)},
 
     { "count_nodes", Procedure([] (const ArgumentList&, const Program* program) {
-        return (Number) program->table.size();
+        return Number((float) program->table.size());
     }, 0, 0)},
 
 };
 
-void Program::create_user_object(const std::string& name, const uint inputs, const uint outputs, std::any user_data, const AudioProcessingCallback callback)
+void Program::create_user_object(const std::string& name, const uint num_inputs, const uint num_outputs, std::any user_data, const AudioProcessingCallback callback)
 {
     if (table.count(name) != 0) error("Symbol '" + name + "' is already used");
-    table[name] = std::make_unique<UserObject, ArgumentList, const AudioProcessingCallback&, std::any&>({ TypedValue(inputs), TypedValue(outputs) }, callback, user_data);
+    table[name] = std::make_unique<UserObject, ArgumentList, const AudioProcessingCallback&, std::any&>({ TypedValue(num_inputs), TypedValue(num_outputs) }, callback, user_data);
 }
 
 void Program::check_io_and_connect_objects(const std::string& output_object, const uint output_index,
@@ -404,22 +404,22 @@ void Program::connect_objects(const std::string& output_object, const uint out,
     else if (type == ConnectionType::many_to_one) {
         expect_to_be_group(output_object);
         expect_to_be_object(input_object);
-        for (std::size_t n = 0; n < group_sizes[output_object]; n++)
+        for (size_t n = 0; n < group_sizes[output_object]; n++)
             check_io_and_connect_objects("__grp_" + output_object + std::to_string(n), out, input_object, in);
     }
 
     else if (type == ConnectionType::one_to_many) {
         expect_to_be_object(output_object);
         expect_to_be_group(input_object);
-        for (std::size_t n = 0; n < group_sizes[input_object]; n++)
+        for (size_t n = 0; n < group_sizes[input_object]; n++)
             check_io_and_connect_objects(output_object, out, "__grp_" + input_object + std::to_string(n), in);
     }
 
     else if (type == ConnectionType::biclique) {
         expect_to_be_group(output_object);
         expect_to_be_group(input_object);
-        for (std::size_t na = 0; na < group_sizes[output_object]; na++) {
-            for (std::size_t nb = 0; nb < group_sizes[input_object]; nb++) {
+        for (size_t na = 0; na < group_sizes[output_object]; na++) {
+            for (size_t nb = 0; nb < group_sizes[input_object]; nb++) {
                 check_io_and_connect_objects("__grp_" + output_object + std::to_string(na), out,
                                 "__grp_" + input_object + std::to_string(nb), in);
             }
@@ -430,7 +430,7 @@ void Program::connect_objects(const std::string& output_object, const uint out,
         expect_to_be_group(output_object);
         expect_to_be_group(input_object);
         if (group_sizes[output_object] != group_sizes[input_object]) error("Group sizes to be connected in parallel are not identical");
-        for (std::size_t n = 0; n < group_sizes[output_object]; n++)
+        for (size_t n = 0; n < group_sizes[output_object]; n++)
             check_io_and_connect_objects("__grp_" + output_object + std::to_string(n), out,
                             "__grp_" + input_object + std::to_string(n), in);
     }
@@ -459,7 +459,7 @@ Frame Program::run(const Frame sample)
     if (inputs) {
         AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
         object->data.clear();
-        for (std::size_t n = 0; n < inputs; n++) object->data.push_back(sample.at(n));
+        for (size_t n = 0; n < inputs; n++) object->data.push_back(sample.at(n));
     }
 
     simulate();
@@ -467,7 +467,7 @@ Frame Program::run(const Frame sample)
 
     if (outputs) {
         AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
-        for (std::size_t n = 0; n < outputs; n++) out.push_back(object->data[n]);
+        for (size_t n = 0; n < outputs; n++) out.push_back(object->data[n]);
         std::fill(object->data.begin(), object->data.end(), 0.f);
     }
     return out;

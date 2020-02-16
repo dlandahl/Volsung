@@ -12,7 +12,7 @@ void AudioObject::finish() { }
 
 void AudioObject::implement()
 {
-    for (std::size_t n = 0; n < inputs.size(); n++)
+    for (size_t n = 0; n < inputs.size(); n++)
     {
         in[n][0] = inputs[n].read_value();
         in[n].increment_pointer();
@@ -26,16 +26,16 @@ void AudioObject::implement()
 
     process(in, out);
 
-    for (std::size_t n = 0; n < outputs.size(); n++)
+    for (size_t n = 0; n < outputs.size(); n++)
     {
         outputs[n].write_value(out[n][0]);
         out[n].increment_pointer();
     }
 }
 
-bool AudioObject::is_connected(const uint in) const
+bool AudioObject::is_connected(const uint input_index) const
 {
-    return inputs.at(in).is_connected();
+    return inputs.at(input_index).is_connected();
 }
 
 void AudioObject::set_io(const uint num_inputs, const uint num_outputs)
@@ -51,12 +51,12 @@ void AudioObject::init(const uint ins, const uint outs, std::vector<TypedValue> 
 {
     set_io(ins, outs);
 
-    for (std::size_t n = 0; n < arguments.size() && n < values.size(); n++) {
+    for (size_t n = 0; n < arguments.size() && n < values.size(); n++) {
         *values[n] = arguments[n].get_value<Number>();
     }
 }
 
-void AudioObject::request_buffer_size(const std::size_t count)
+void AudioObject::request_buffer_size(const size_t count)
 {
     for (auto& buffer : in) buffer.resize_stream(count);
     for (auto& buffer : out) buffer.resize_stream(count);

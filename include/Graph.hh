@@ -7,6 +7,7 @@
 #include <any>
 #include <random>
 #include <chrono>
+#include <array>
 
 #include "Volsung.hh"
 #include "AudioDataflow.hh"

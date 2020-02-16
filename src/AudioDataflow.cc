@@ -4,17 +4,17 @@
 namespace Volsung {
 
 /*
-float& AudioBuffer::operator[](std::size_t n)
+float& AudioBuffer::operator[](size_t n)
 {
     return stream[n];
 }
 
-float AudioBuffer::operator[](std::size_t n) const
+float AudioBuffer::operator[](size_t n) const
 {
     return stream[n];
 }
 
-std::size_t AudioBuffer::size() const
+size_t AudioBuffer::size() const
 {
     return stream.size();
 }
@@ -28,21 +28,21 @@ float* const AudioBuffer::data_pointer()
 
 float& CircularBuffer::operator[](long n)
 {
-    n += pointer;
-    while (n < 0) n += stream.size();
-    while (n >= (long) stream.size()) n -= stream.size();
+    n += (long) pointer;
+    while (n < 0) n += (long) stream.size();
+    while (n >= (long) stream.size()) n -= (long) stream.size();
     return stream[n];
 }
 
 float CircularBuffer::operator[](long n) const
 {
-    n += pointer;
-    while (n < 0) n += stream.size();
-    while (n >= (long) stream.size()) n -= stream.size();
+    n += (long) pointer;
+    while (n < 0) n += (long) stream.size();
+    while (n >= (long) stream.size()) n -= (long) stream.size();
     return stream.at(n);
 }
 
-void CircularBuffer::resize_stream(const std::size_t new_size)
+void CircularBuffer::resize_stream(const size_t new_size)
 {
     if (new_size >= 2) stream.resize(new_size);
 }

@@ -81,7 +81,7 @@ inline const std::map<TokenType, std::string> debug_names = {
 struct Token
 {
     TokenType type;
-    std::string value = "";
+    std::string value;
 };
 
 /*! \brief A lexical analyser for a Volsung program
@@ -102,8 +102,8 @@ protected:
     bool peek_connection();
     virtual ~Lexer() = 0;
 
-    uint line = 1;
-    std::size_t position = -1;
+    size_t line = 1;
+    size_t position = (size_t) -1;
 
 public: 
     /*! \brief The source code to be lexed and parsed
@@ -147,7 +147,7 @@ class Parser : public Lexer
     TypedValue parse_factor();
 
     int inline_object_index = 0;
-    Graph* program;
+    Graph* program = nullptr;
 public:
 
     /*! \brief Parse a Program
