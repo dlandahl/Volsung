@@ -41,5 +41,6 @@ elseif (APPLE)
     target_sources ( volsung_player PRIVATE extra/Player/AudioPlayer_Macos.cc )
 elseif (WIN32)
     target_link_libraries ( volsung_player dsound)
+    target_link_libraries ( volsung_player winmm)
 endif()
 
