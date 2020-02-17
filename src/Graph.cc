@@ -5,6 +5,7 @@
 #include <memory>
 #include <type_traits>
 #include <string>
+#include <fstream>
 #include <map>
 
 #include "Graph.hh"
@@ -196,6 +197,12 @@ const Number& Sequence::operator[](long long n) const
     return data.at(n);
 }
 
+Sequence::Sequence(const std::vector<float>& _data)
+{
+    data.resize(_data.size());
+    for (size_t n = 0; n < _data.size(); n++) data[n] = _data[n];
+}
+
 Type TypedValue::get_type() const
 {
     if (is_type<Number>()) return Type::number;
@@ -345,6 +352,31 @@ const SymbolTable<Procedure> Program::procedures = {
     { "length_of", Procedure([] (const ArgumentList& arguments, const Program*) {
         return arguments[0].get_value<Sequence>().size();
     }, 1, 1)},
+	
+    { "read_file", Procedure([] (const ArgumentList& arguments, const Program*) {
+        const std::string filename = arguments[0].get_value<Text>();
+        std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
+
+        std::vector<float> out_data;
+        if (file.good()) {
+            out_data.resize(file.tellg() / sizeof(float));
+            file.seekg(0);
+            file.read(reinterpret_cast<char*>(out_data.data()), out_data.size() * sizeof(float));
+		}
+        return (Sequence) out_data;
+    }, 1, 1)},
+    
+    { "write_file", Procedure([](const ArgumentList& arguments, const Program*) {
+        const Sequence in_data = arguments[1].get_value<Sequence>();
+        const std::string filename = arguments[0].get_value<Text>();
+
+        std::ofstream file(filename, std::fstream::out | std::fstream::binary);
+        for (size_t n = 0; n < in_data.size(); n++)
+            file.write((const char*) &in_data[n], sizeof (float));
+
+        file.close();
+        return Number(0);
+    }, 2, 2)},
 
     { "implementation_of", Procedure([] (const ArgumentList& arguments, const Program* program) {
         const std::string object_type = arguments[0].get_value<Text>();
@@ -463,7 +495,7 @@ Frame Program::run(const Frame sample)
     }
 
     simulate();
-    Frame out;
+    Frame out(outputs);
 
     if (outputs) {
         AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
@@ -484,6 +516,7 @@ void Program::reset()
     table.clear();
     symbol_table.clear();
     group_sizes.clear();
+	subgraphs.clear();
 
     if (inputs) create_object<AudioInputObject>("input", { inputs });
     if (outputs) create_object<AudioOutputObject>("output", { outputs });

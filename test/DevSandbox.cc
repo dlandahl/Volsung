@@ -31,8 +31,8 @@ int main()
     const std::string code =
 R"(
 
-tset: [100] Add~
-print(count_nodes())
+file_name: "Test_File.raw"
+write_file("Other_File", read_file(file_name)^2)
 
 )";
 

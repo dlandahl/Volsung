@@ -88,7 +88,6 @@ class Sequence
 public:
     std::size_t size() const;
     operator Text() const;
-
     void add_element(const Number);
     void perform_range_check(const long long) const;
     
@@ -103,6 +102,9 @@ public:
 
     auto begin() { return std::begin(data); }
     auto end() { return std::end(data); }
+
+    Sequence() = default;
+    Sequence(const std::vector<float>&);
 };
 
 using TypedValueBase = std::variant<Number, Text, Sequence>;
