@@ -17,13 +17,13 @@ Stereo_Delay <1, 2>: {
     attenuate: [2] Divide~ 3
 
     input <> delay
-	=> feedback
+    => feedback
 	=> delay
     => [2] Tanh~
     => attenuate
 
     attenuate[0] -> 0|output
-	attenuate[1] -> 1|output
+    attenuate[1] -> 1|output
 }
 
 Random_Range <1, 1>: {

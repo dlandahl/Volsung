@@ -77,7 +77,7 @@ class NoiseObject : public AudioObject
 {
     std::uniform_real_distribution<float> distribution;
     std::default_random_engine generator;
-        
+    inline static size_t seed = 0;
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:

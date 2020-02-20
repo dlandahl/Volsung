@@ -52,3 +52,4 @@ size_t Ringbuffer::size() const
     if (head >= tail) return head - tail;
     return max_size + head - tail;
 }
+

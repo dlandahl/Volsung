@@ -83,14 +83,17 @@ public:
 
 class Sequence
 {
+    // const size_t identifier;
+    // static inline std::vector<std::vector<Number>> sequence_table;
+    // std::vector<Number>* data;
     std::vector<Number> data;
-
+    
 public:
     std::size_t size() const;
     operator Text() const;
     void add_element(const Number);
     void perform_range_check(const long long) const;
-    
+
     Number& operator[](long long);
     const Number& operator[](long long) const;
 

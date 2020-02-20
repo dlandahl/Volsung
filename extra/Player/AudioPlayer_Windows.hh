@@ -46,3 +46,4 @@ public:
         if (client) client->Release();
     }
 };
+

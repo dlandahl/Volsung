@@ -102,7 +102,7 @@ TypedValue Sequence::op(const TypedValue& other)                                
         case (Type::sequence): {                                                \
             Sequence seq = other.get_value<Sequence>();                         \
             Volsung::assert(size() == seq.size(), "Attempted to perform arithmetic on sequences of inequal length");       \
-            for (size_t n = 0; n < size(); n++)                            \
+            for (size_t n = 0; n < size(); n++)                                 \
                 seq[n] = data[n].op##_num(seq[n]);                              \
             return seq;                                                         \
         }                                                                       \
@@ -196,6 +196,11 @@ const Number& Sequence::operator[](long long n) const
     perform_range_check(n);
     return data.at(n);
 }
+
+// Sequence::Sequence() : identifier(sequence_table.size())
+// {
+//    
+// }
 
 Sequence::Sequence(const std::vector<float>& _data)
 {
@@ -352,17 +357,19 @@ const SymbolTable<Procedure> Program::procedures = {
     { "length_of", Procedure([] (const ArgumentList& arguments, const Program*) {
         return arguments[0].get_value<Sequence>().size();
     }, 1, 1)},
-	
+    
     { "read_file", Procedure([] (const ArgumentList& arguments, const Program*) {
         const std::string filename = arguments[0].get_value<Text>();
         std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
+        if (!file) error("Could not read file, not found: '" + filename + "'");
 
         std::vector<float> out_data;
         if (file.good()) {
             out_data.resize(file.tellg() / sizeof(float));
             file.seekg(0);
             file.read(reinterpret_cast<char*>(out_data.data()), out_data.size() * sizeof(float));
-		}
+        }
+        else error("Could not read file, not found: '" + filename + "'");
         return (Sequence) out_data;
     }, 1, 1)},
     
@@ -495,7 +502,7 @@ Frame Program::run(const Frame sample)
     }
 
     simulate();
-    Frame out(outputs);
+    Frame out;
 
     if (outputs) {
         AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
@@ -516,7 +523,7 @@ void Program::reset()
     table.clear();
     symbol_table.clear();
     group_sizes.clear();
-	subgraphs.clear();
+    subgraphs.clear();
 
     if (inputs) create_object<AudioInputObject>("input", { inputs });
     if (outputs) create_object<AudioOutputObject>("output", { outputs });

@@ -123,7 +123,7 @@ void NoiseObject::process(const MultichannelBuffer&, MultichannelBuffer& output_
 }
 
 NoiseObject::NoiseObject(const ArgumentList&) :
-    distribution(-1.0f, 1.0f), generator((uint) std::chrono::system_clock::now().time_since_epoch().count())
+    distribution(-1.0f, 1.0f), generator(seed++)
 { set_io(0, 1); }
 
 

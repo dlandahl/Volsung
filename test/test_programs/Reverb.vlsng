@@ -10,7 +10,7 @@ LBCF <1, 1>: {
     -> Smooth~ 15000  ; Colour
     -> 1|sum
 
-	-> output
+    -> output
 
     mod_scale: 0.2
     Sine_Oscillator~ random(0.1)

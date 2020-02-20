@@ -548,7 +548,7 @@ void Parser::parse_subgraph_declaration()
             num_braces_encountered--;
         }
         if (current() == '\n') line++;
-        if (current() == EOF) error("Program ended with incomplete subgraph definition");
+        if (current() == EOF || current() == -1) error("Program ended with incomplete subgraph definition");
         if (current() == '{') num_braces_encountered++;
     }
 
@@ -758,7 +758,10 @@ TypedValue Parser::parse_procedure_call(const std::string& name)
         arguments.push_back(parse_expression());
     }
     expect(TokenType::close_paren);
+
+    if (!Program::procedures.count(name)) error("Procedure does not exist: '" + name + "'");
     auto& procedure = Program::procedures.at(name);
+    
     if (procedure.max_arguments < arguments.size())
         Volsung::error("Too many arguments in procedure call to '" + name +"'. Expected " + std::to_string(procedure.max_arguments) +", got " + std::to_string(arguments.size()));
 

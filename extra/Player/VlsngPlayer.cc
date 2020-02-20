@@ -123,3 +123,4 @@ int main(const int num_args, const char* args[])
     program.finish();
     delete[] data;
 }
+

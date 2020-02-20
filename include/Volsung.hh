@@ -33,7 +33,6 @@ int sign(const T val)
  */
 
 inline std::function<void(std::string)> debug_callback = [] (std::string message) { std::cout << message; };
-
 inline void log(const std::string& message)
 {
     debug_callback(message);
