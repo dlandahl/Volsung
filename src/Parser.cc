@@ -274,7 +274,7 @@ void Parser::parse_declaration()
 
     else if (peek(TokenType::object) || peek(TokenType::open_bracket)) {
         next_token();
-        parse_object_declaration(name);
+        parse_connection(parse_object_declaration(name));
     }
 
     else {
@@ -408,8 +408,9 @@ void Parser::parse_connection(std::string output_object)
 
     ConnectionType connection_type;
     bool got_newline = false;
+    int path_length = 0;
 
-    do {
+    while (peek(TokenType::arrow) || peek(TokenType::many_to_one) || peek(TokenType::one_to_many) || peek(TokenType::parallel) || peek(TokenType::cross_connection)) {
         next_token();
 
         switch (current_token.type) {
@@ -442,10 +443,10 @@ void Parser::parse_connection(std::string output_object)
 
         got_newline = false;
         while (peek(TokenType::newline)) { next_token(); got_newline = true; }
+        path_length++;
+    };
 
-    } while (peek(TokenType::arrow) || peek(TokenType::many_to_one) || peek(TokenType::one_to_many) || peek(TokenType::parallel) || peek(TokenType::cross_connection));
-
-    if (!got_newline) {
+    if (!got_newline && path_length > 1) {
         next_token();
         Volsung::assert(line_end(), "Expected newline or connection operator, got " + debug_names.at(current_token.type));
     }

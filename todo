@@ -3,14 +3,10 @@ Recreate ambient objects on parsing the program
 
 Automatically fall back to asm.js
 
-Allow request buffer size per input channel
-
 eg~ should output gate
 There is a bad bug, where multiple outputs causes double free on shared pointer
 
 Write concatenation operator
-
-Use references to blocks for signal flow, automatically copy blocks when needed
 
 Add named parameters to subgraphs
     -> This may allow static analysis of subgraph validity, without a dynamic instance
@@ -19,8 +15,7 @@ Add Parameter~ / param~ object
 
 Add functions, load files into sequences instead
 
-Declaring objects in connection statements is allowed, but not if it's the first object in a path??
-
 Warn or error when discarding imaginary part of number
 
+Use references to sequences when initialising objects to save memory in case of large pcm data
 
