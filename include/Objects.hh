@@ -26,6 +26,7 @@ class DelayObject : public AudioObject
 {
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
     float sample_delay = sample_rate;
+    CircularBuffer delay_buffer;
 
 public:
     DelayObject(const ArgumentList&);
@@ -44,20 +45,33 @@ class FileoutObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
     void finish() override;
 
-    std::vector<float> in_data;
-    std::vector<float> out_data;
+    std::vector<float> data;
     std::string filename;
-    std::size_t pos = 0;
+    size_t size = 0;
+    size_t pos = 0;
+
 public:
     FileoutObject(const ArgumentList&);
+};
+
+class FileinObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+    std::vector<float> data;
+    std::string filename;
+    size_t pos = 0;
+
+public:
+    FileinObject(const ArgumentList&);
 };
 
 class FilterObject : public AudioObject
 {
     float frequency = 100;
-    float a;
-    float b;
-    
+    double a;
+    double b;
+    double last_value = 0.f;
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
@@ -66,7 +80,7 @@ public:
 
 class MultObject : public AudioObject
 {
-    float default_value = 1;
+    float multiplier = 1;
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
@@ -87,7 +101,8 @@ public:
 class OscillatorObject : public AudioObject
 {
     void  process(const MultichannelBuffer&, MultichannelBuffer&) override;
-          
+
+    GateListener sync;
     float phase     = 0;
     float frequency = 100;
 
@@ -98,7 +113,7 @@ public:
 class SquareObject : public AudioObject
 {
     void  process(const MultichannelBuffer&, MultichannelBuffer&) override;
-    
+
     float pw        = 0.0;
     float phase     = 0;
     float frequency = 100;
@@ -113,6 +128,7 @@ class UserObject : public AudioObject
 
     const AudioProcessingCallback callback;
     std::any user_data;
+
 public:
     UserObject(const ArgumentList&, const AudioProcessingCallback, std::any);
 };
@@ -122,7 +138,7 @@ class AudioInputObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
     
 public:
-    Frame data;
+    MultichannelBuffer data;
     AudioInputObject(const ArgumentList&);
 };
 
@@ -131,7 +147,7 @@ class AudioOutputObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
-    Frame data;
+    MultichannelBuffer data;
     AudioOutputObject(const ArgumentList&);
 };
 
@@ -148,6 +164,7 @@ class TimerObject : public AudioObject
 {
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
     float value = 0;
+    GateListener reset;
 
 public:
     TimerObject(const ArgumentList&);
@@ -202,6 +219,7 @@ class StepSequence : public AudioObject
 {
     Sequence sequence;
     std::size_t current = 0;
+    GateListener step;
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
@@ -223,6 +241,8 @@ class EnvelopeObject : public AudioObject
     float start = 1.f;
     float end = 0.f;
     int time = 0;
+
+    GateListener trigger;
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
@@ -248,7 +268,7 @@ public:
 class SampleAndHoldObject : public AudioObject
 {
     float value = 0;
-
+    GateListener trigger;
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
     SampleAndHoldObject(const ArgumentList&);
@@ -267,6 +287,7 @@ class SawObject : public AudioObject
 {
     float phase = -1;
     float frequency;
+    GateListener sync;
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 public:
@@ -277,6 +298,7 @@ class TriangleObject : public AudioObject
 {
     float phase = 0;
     float frequency;
+    GateListener sync;
 
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
@@ -297,6 +319,8 @@ protected:
     float alpha;
     float cos_omega;
     float A;
+
+    CircularBuffer x, y;
 
     virtual void calculate_coefficients() = 0;
 
@@ -362,9 +386,9 @@ public:
 class ConvolveObject : public AudioObject
 {
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
-
-public:
+    CircularBuffer signal;
     Sequence impulse_response;
+public:
     ConvolveObject(const ArgumentList&);
 };
 
@@ -375,6 +399,8 @@ class ZPlaneObject : public AudioObject
     Number pole = 0;
     Number zero = 0;
     
+    CircularBuffer x, y;
+    
 public:
     ZPlaneObject(const ArgumentList&);
 };
@@ -382,6 +408,7 @@ public:
 class PoleObject : public AudioObject
 {
     float a = 0;
+    float last_value = 0.f;
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
@@ -391,6 +418,7 @@ public:
 class ZeroObject : public AudioObject
 {
     float b = 0;
+    float last_value = 0.f;
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:

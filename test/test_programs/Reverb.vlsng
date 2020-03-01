@@ -1,4 +1,8 @@
 
+; Try listening without the reverb, to understand the
+; effect the program has on the raw input
+enable_reverb: true
+
 ; Modulated Schroeder-Moorer lowpass feedback comb filter
 LBCF <1, 1>: {
     M: _1 ; Filter order
@@ -20,11 +24,20 @@ LBCF <1, 1>: {
     -> 1|buffer
 }
 
+Switch <1, 2>: {
+    input <> bypass: [2] Multiply~ _1 - (n-1) * -(n-1)
+    bypass[0] -> 0|output
+    bypass[1] -> 1|output
+}
+
 ; From Freeverb
 orders: { 1557, 1617, 1491, 1422, 1277, 1356, 1188, 1113 }
 
 ; Eight parallel combs
-File~ "files/drumbeat"
+Read_File~ "drumbeat"
+;-> bypass: Switch~ enable_reverb
 <> [8] LBCF~ orders[n-1]
 >> * 0.1 -> output
+
+;bypass|1 -> output
 

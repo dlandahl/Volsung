@@ -31,8 +31,7 @@ int main()
     const std::string code =
 R"(
 
-file_name: "Test_File.raw"
-write_file("Other_File", read_file(file_name)^2)
+Sine_Oscillator~ 654 -> Add~ 100
 
 )";
 
@@ -42,10 +41,10 @@ write_file("Other_File", read_file(file_name)^2)
     parser.parse_program(prog);
     log("Finished parsing");
 
-    if (print) for (uint n = 0; n < time; n++)
+    if (print) for (uint n = 0; n < 10000.f * sample_rate / AudioBuffer::blocksize; n++)
         std::cout << prog.run(0.f) << '\n' << std::flush;
 
-    else for (uint n = 0; n < time; n++) prog.run(0.f);
+    else for (uint n = 0; n < 1000.f * sample_rate / AudioBuffer::blocksize; n++) prog.run(0.f);
     prog.finish();
 }
 

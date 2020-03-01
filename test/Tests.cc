@@ -60,7 +60,7 @@ int main()
     for (size_t p = 0; p < programs.size(); p++) {
         const auto start_time = chrono::high_resolution_clock::now();
 
-        for (size_t s = 0; s < Volsung::sample_rate; s++) {
+        for (size_t s = 0; s < Volsung::sample_rate / Volsung::AudioBuffer::blocksize; s++) {
             programs[p]->run();
         }
         

@@ -14,22 +14,15 @@ void AudioObject::implement()
 {
     for (size_t n = 0; n < inputs.size(); n++)
     {
-        in[n][0] = inputs[n].read_value();
-        in[n].increment_pointer();
+        in[n] = inputs[n].read_buffer();
     }
 
-    for (auto const& value : linked_values) {
-        if (inputs[value.input].is_connected())
-            *value.parameter = in[value.input][0];
-        else *value.parameter = value.default_value;
-    }
 
     process(in, out);
 
     for (size_t n = 0; n < outputs.size(); n++)
     {
-        outputs[n].write_value(out[n][0]);
-        out[n].increment_pointer();
+        outputs[n].write_buffer(out[n]);
     }
 }
 
@@ -56,36 +49,45 @@ void AudioObject::init(const uint ins, const uint outs, std::vector<TypedValue> 
     }
 }
 
-void AudioObject::request_buffer_size(const size_t count)
+void AudioObject::link_value(float* const parameter, const float default_value, const uint input)
 {
-    for (auto& buffer : in) buffer.resize_stream(count);
-    for (auto& buffer : out) buffer.resize_stream(count);
-//  buffer_size = count;
+    linked_values.push_back({ parameter, default_value, input });
+    *parameter = default_value;
 }
 
-void AudioObject::set_defval(float* const parameter, const float default_value, const int input)
+void AudioObject::update_parameters(size_t n)
 {
-    linked_values.push_back(linked_value(parameter, default_value, input));
+    for (auto const& value : linked_values) {
+        if (inputs[value.input].is_connected())
+            *value.parameter = in[value.input][n];
+    }
 }
 
-bool AudioObject::is_gate_high(const uint input) const
+bool operator& (GateState lhs, GateState rhs)
 {
-    if (in.at(input)[0] >= AudioObject::gate_threshold) return true;
-    return false;
+    using T = std::underlying_type_t<GateState>;
+    return static_cast<bool> (static_cast<T> (lhs) & static_cast<T> (rhs));
 }
 
-bool AudioObject::gate_opened(const uint input) const
+GateState operator| (GateState lhs, GateState rhs)
 {
-    if (in.at(input)[0] >= AudioObject::gate_threshold &&
-        in.at(input)[-1] < AudioObject::gate_threshold) return true;
-    return false;
+    using T = std::underlying_type_t<GateState>;
+    return static_cast<GateState> (static_cast<T> (lhs) | static_cast<T> (rhs));
 }
 
-bool AudioObject::gate_closed(const uint input) const
+GateState GateListener::read_gate_state(float current_value)
 {
-    if (in.at(input)[0] <   AudioObject::gate_threshold &&
-        in.at(input)[-1] >= AudioObject::gate_threshold) return true;
-    return false;
+    if (current_value >= gate_threshold && last_value >= gate_threshold)
+        return GateState::open;
+        
+    if (current_value <  gate_threshold && last_value < gate_threshold)
+        return GateState::closed;
+        
+    if (current_value >= gate_threshold && last_value < gate_threshold)
+        return GateState::just_opened | GateState::open;
+
+    return GateState::just_closed | GateState::closed;
 }
 
 }
+

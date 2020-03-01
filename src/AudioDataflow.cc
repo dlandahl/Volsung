@@ -1,29 +1,30 @@
 
 #include "AudioDataflow.hh"
+#include "Volsung.hh"
 
 namespace Volsung {
 
-/*
 float& AudioBuffer::operator[](size_t n)
 {
-    return stream[n];
+    return (*data)[n];
 }
 
 float AudioBuffer::operator[](size_t n) const
 {
-    return stream[n];
+    return (*data)[n];
 }
 
-size_t AudioBuffer::size() const
+float* AudioBuffer::data_pointer()
 {
-    return stream.size();
+    return (float*) data.get();
 }
 
-float* const AudioBuffer::data_pointer()
+AudioBuffer::AudioBuffer()
 {
-    return stream.data();
+    data = std::make_shared<Block>();
 }
-*/
+
+const AudioBuffer AudioBuffer::zero;
 
 
 float& CircularBuffer::operator[](long n)
@@ -53,31 +54,42 @@ void CircularBuffer::increment_pointer()
     if (pointer >= stream.size()) pointer -= stream.size();
 }
 
-
-
-
+CircularBuffer::CircularBuffer(size_t size)
+{
+    resize_stream(size);
+}
 
 bool AudioInput::is_connected() const
 {
     return bool(connections.size());
 }
 
-float AudioInput::read_value() const
+const AudioBuffer AudioInput::read_buffer() const
 {
-    float value = 0;
-
-    if (is_connected()) {
-        for (const auto& connection: connections)
-            value += connection->stored_value;
+    switch (connections.size()) {
+        case (0): return AudioBuffer::zero;
+        case (1): return connections[0]->stored_buffer;
+        default: {
+            AudioBuffer ret;
+            for (size_t n = 0; n < connections.size(); n++) {
+                for (size_t s = 0; s < AudioBuffer::blocksize; s++) {
+                    ret[s] += connections[n]->stored_buffer[s];
+                }
+            }
+            return ret;
+        }
     }
 
-    return value;
+    return AudioBuffer::zero;
 }
 
-void AudioOutput::write_value(const float value)
+void AudioOutput::write_buffer(const AudioBuffer buffer)
 {
-    for (auto& connection: connections)
-        connection->stored_value = value;
+    if (connections.size() == 0) return;
+    connections[0]->stored_buffer = buffer;
+    for (size_t n = 1; n < connections.size(); n++) {
+        connections[n]->stored_buffer = buffer;
+    }
 }
 
 void AudioOutput::connect(AudioInput &other)
@@ -87,3 +99,4 @@ void AudioOutput::connect(AudioInput &other)
 }
 
 }
+

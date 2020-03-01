@@ -9,42 +9,60 @@
 #include "AudioDataflow.hh"
 
 namespace Volsung {
-class TypedValue;
 
-struct linked_value
+inline static constexpr float gate_threshold = .75f;
+
+class GateListener
 {
-    float* parameter;
-    float  default_value;
-    uint input;
+    // const uint input;
+    float last_value = 0.f;
 
-    linked_value(float* const p, const float dv, const uint in):
-        parameter(p), default_value(dv), input(in)
-    { }
+public:
+    enum class GateState {
+        open        = 1 << 0,
+        closed      = 1 << 1,
+        just_opened = 1 << 2,
+        just_closed = 1 << 3,
+    };
+
+    // GateListener(const uint _input): input(_input) { }
+    GateState read_gate_state(float next_value);
 };
 
+using GateState = GateListener::GateState;
+
+bool operator& (GateState, GateState);
+GateState operator| (GateState, GateState);
+
+
+class TypedValue;
 class AudioObject
 {
 private:
     MultichannelBuffer in, out;
-    std::vector<linked_value> linked_values;
-//  std::size_t buffer_size = 1;
+
+    struct LinkedValue
+    {
+        float* const parameter;
+        const float  default_value;
+        const uint input;
+    };
+    std::vector<LinkedValue> linked_values;
 
 protected:
     virtual void process(const MultichannelBuffer&, MultichannelBuffer&) = 0;
-    void request_buffer_size(const std::size_t);
     void set_io(const uint, const uint);
     void init(const uint, const uint, std::vector<TypedValue>, std::vector<float*>);
-    void set_defval(float* const, const float, const int);
 
-    bool is_gate_high(const uint) const;
-    bool gate_opened(const uint) const;
-    bool gate_closed(const uint) const;
+    void link_value(float* const, const float, const uint);
+    void add_gate_listener(bool* const, const size_t);
+    void update_parameters(size_t);
+
     bool is_connected(const uint) const;
 
 public:
     void implement();
-    static constexpr float gate_threshold = .75f;
-    
+        
     std::vector<AudioInput>  inputs;
     std::vector<AudioOutput> outputs;
     AudioObject() = default;
@@ -54,3 +72,4 @@ public:
 };
 
 }
+

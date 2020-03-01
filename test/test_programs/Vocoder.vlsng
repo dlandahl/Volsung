@@ -26,7 +26,7 @@ voc: Vocoder~ 24
 
 ; Acquire carrier and modulator signals
 carrier: [4] Saw_Oscillator~ n*85
-modulator: File~ "files/antikythera"
+modulator: Read_File~ "drumbeat"
 
 carrier >> 1|voc
 modulator -> voc -> output

@@ -89,7 +89,7 @@ class Sequence
     std::vector<Number> data;
     
 public:
-    std::size_t size() const;
+    size_t size() const;
     operator Text() const;
     void add_element(const Number);
     void perform_range_check(const long long) const;
@@ -168,11 +168,11 @@ class Procedure
     Implementation implementation;
 
 public:
-    const std::size_t min_arguments;
-    const std::size_t max_arguments;
+    const size_t min_arguments;
+    const size_t max_arguments;
     const bool can_be_mapped;
     TypedValue operator()(const ArgumentList&, const Program*) const;
-    Procedure(Implementation, std::size_t, std::size_t, bool = false);
+    Procedure(Implementation, size_t, size_t, bool = false);
 };
 
 
@@ -204,11 +204,12 @@ class Program
     uint outputs = 0;
     SymbolTable<std::unique_ptr<AudioObject>> table;
     SymbolTable<TypedValue> symbol_table;
+    MultichannelBuffer out;
 
 public:
     static const SymbolTable<Procedure> procedures;
 
-    SymbolTable<const std::size_t> group_sizes;
+    SymbolTable<const size_t> group_sizes;
     SymbolTable<const SubgraphRepresentation> subgraphs;
     Program* parent = nullptr;
     
@@ -272,8 +273,8 @@ public:
      *  Runs the program by running each audio object in the audio processing graph in turn.
      *  Expects a sample which will be written to the "input" object, and returns a float sample from the "output" object, created by configure_io.
      */
-    float run(const float = 0);
-    Frame run(const Frame);
+    MultichannelBuffer run();
+    MultichannelBuffer run(const MultichannelBuffer);
 
     bool object_exists(const std::string&) const;
     void expect_to_be_object(const std::string&) const;

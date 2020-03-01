@@ -5,20 +5,20 @@ max_decay: 330ms
 delay_scale: 1
 
 Stereo_Delay <1, 2>: {
-	; Stereo delay with adjustable feedback,
+    ; Stereo delay with adjustable feedback,
     ; left delay time, and right delay time
 
     fb: _1
     delay_L: _2
     delay_R: _3
 
-	delay: [2] Delay_Line~ { delay_L, delay_R }[n-1]
-	feedback: [2] Multiply~ fb
+    delay: [2] Delay_Line~ { delay_L, delay_R }[n-1]
+    feedback: [2] Multiply~ fb
     attenuate: [2] Divide~ 3
 
     input <> delay
     => feedback
-	=> delay
+    => delay
     => [2] Tanh~
     => attenuate
 
@@ -27,7 +27,7 @@ Stereo_Delay <1, 2>: {
 }
 
 Random_Range <1, 1>: {
-	; Generates a random value in a given range
+    ; Generates a random value in a given range
     ; every time a gate is recieved
 
     min: _1

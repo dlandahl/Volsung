@@ -396,7 +396,6 @@ const SymbolTable<Procedure> Program::procedures = {
     { "count_nodes", Procedure([] (const ArgumentList&, const Program* program) {
         return Number((float) program->table.size());
     }, 0, 0)},
-
 };
 
 void Program::create_user_object(const std::string& name, const uint num_inputs, const uint num_outputs, std::any user_data, const AudioProcessingCallback callback)
@@ -488,28 +487,28 @@ void Program::simulate()
     }
 }
 
-float Program::run(const float sample)
+MultichannelBuffer Program::run()
 {
-    return run( Frame { sample } )[0];
+    return run( { AudioBuffer::zero } );
 }
 
-Frame Program::run(const Frame sample)
+MultichannelBuffer Program::run(const MultichannelBuffer input_buffer)
 {
     if (inputs) {
-        AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
-        object->data.clear();
-        for (size_t n = 0; n < inputs; n++) object->data.push_back(sample.at(n));
+        AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("input");
+        object->data = input_buffer;
     }
 
     simulate();
-    Frame out;
+    MultichannelBuffer output_buffer(outputs);
 
     if (outputs) {
         AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("output");
-        for (size_t n = 0; n < outputs; n++) out.push_back(object->data[n]);
-        std::fill(object->data.begin(), object->data.end(), 0.f);
+        output_buffer = object->data;
+        object->data.clear();
     }
-    return out;
+
+    return output_buffer;
 }
 
 void Program::finish()
@@ -546,6 +545,7 @@ void Program::configure_io(const uint i, const uint o)
 {
     inputs = i;
     outputs = o;
+    out.resize(outputs);
 }
 
 void Program::add_symbol(const std::string& identifier, const TypedValue& value)

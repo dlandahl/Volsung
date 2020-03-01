@@ -4,6 +4,8 @@
 #include "AudioPlayer_Interface.hh"
 #include "alsa/asoundlib.h"
 
+using Volsung::uint;
+
 class AudioPlayer : public AudioPlayer_Interface
 {
     snd_pcm_t *stream;
@@ -21,6 +23,8 @@ public:
         snd_pcm_hw_params_set_channels_minmax(stream, params, &channels, &channels);
 
         snd_pcm_hw_params(stream, params);
+        float* pre_data = new float[10000] { 0.f };
+        snd_pcm_writei(stream, pre_data, 10000);
     }
 
     void play(float* data) override {

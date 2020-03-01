@@ -1,0 +1,66 @@
+
+Grain <1, 1>: {
+    ; The audio buffer that the grain will be read from
+    data: _1
+    start_time: random(500ms, 2000ms)
+
+    ; Smoothing for the amplitude envelope of the grain
+    input -> Envelope_Generator~ 75ms
+    -> Smooth~ 7
+    -> 1|envelope: Multiply~
+
+    ; Envelope generator used for scanning through the buffer
+    input -> Envelope_Generator~ length_of(data) / 1
+    -> *-1 -> +1
+    -> *length_of(data)
+    -> Add~ start_time
+    -> Index_Sequence~ data
+    -> envelope
+    -> output
+}
+
+Random <1, 1>: {
+    ; Generates a random value when pinged
+    Noise~ -> Add~ _1 -> snh: Sample_And_Hold~
+    -> Bi_to_Unipolar~
+    -> *75ms -> +75ms -> output
+
+    input -> 1|snh
+}
+
+LBCF <1, 1>: {
+    ; Schroeder-Moorer lowpass feedback comb filter
+    M: _1 ; Filter order
+
+    input
+    -> sum: Add~
+    -> buffer: Delay_Line~ M
+    -> *-0.87         ; Decay
+    -> 1|sum
+    -> output
+}
+
+; From Freeverb
+orders: { 1557, 1617, 1491, 1422, 1277, 1356, 1188, 1113 }
+
+datal: read_file("chord_l")
+datar: read_file("chord_r")
+
+N: 5
+
+clocks: [N] Clock~
+clocks
+=> [N] Random~ n*3
+=> clocks
+=> [N] Grain~ datal
+>> /3 <> [8] LBCF~ orders[n-1]
+>> 0|output
+
+clocksr: [N] Clock~
+clocksr
+=> [N] Random~ n*2
+=> clocksr
+=> [N] Grain~ datar
+>> /3 <> [8] LBCF~ orders[n-1]
+>> 1|output
+

@@ -192,7 +192,8 @@ static const ObjectMap object_creators =
     { "Floor",               OBJECT(RoundObject) },
     { "Comparator",          OBJECT(ComparatorObject) },
     { "Bi_to_Unipolar",      OBJECT(BiToUnipolarObject) },
-    { "File",                OBJECT(FileoutObject) },
+    { "Write_File",          OBJECT(FileoutObject) },
+    { "Read_File",           OBJECT(FileinObject) },
     { "Step_Sequence",       OBJECT(StepSequence) },
     { "Index_Sequence",      OBJECT(SequenceObject) },
     { "Sample_And_Hold",     OBJECT(SampleAndHoldObject) },
@@ -351,6 +352,7 @@ std::string Parser::parse_object_declaration(std::string name)
 
         make_object(object_type, name, arguments);
     }
+
     return name;
 }
 
@@ -384,8 +386,14 @@ void Parser::make_object(const std::string& object_type, const std::string& obje
 
 void Parser::parse_connection()
 {
+    std::string output_object = get_object_to_connect();
+    parse_connection(output_object);
+}
+
+void Parser::parse_connection(std::string output_object)
+{
     int output_index = 0, input_index = 0;
-    std::string output_object = get_object_to_connect(), input_object;
+    std::string input_object;
 
     if (peek(TokenType::vertical_bar)) {
         expect(TokenType::vertical_bar);
@@ -435,7 +443,7 @@ void Parser::parse_connection()
         got_newline = false;
         while (peek(TokenType::newline)) { next_token(); got_newline = true; }
 
-    } while (peek(TokenType::arrow) || peek(TokenType::many_to_one) || peek(TokenType::one_to_many) || peek(TokenType::parallel));
+    } while (peek(TokenType::arrow) || peek(TokenType::many_to_one) || peek(TokenType::one_to_many) || peek(TokenType::parallel) || peek(TokenType::cross_connection));
 
     if (!got_newline) {
         next_token();
@@ -717,6 +725,7 @@ Number Parser::parse_number()
         next_token();
         if (current_token.value == "s")       multiplier = sample_rate;
         else if (current_token.value == "ms") multiplier = sample_rate / 1000;
+        else if (current_token.value == "deg") multiplier = TAU / 360.0;
         else if (current_token.value == "i") imaginary = true;
         else if (current_token.value == "dB"
               || current_token.value == "db") number = std::log10(number * 20);

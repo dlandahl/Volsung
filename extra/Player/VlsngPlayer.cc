@@ -87,7 +87,7 @@ int main(const int num_args, const char* args[])
         parser.source_code = buffer.str();
     }
 
-    program.configure_io(0, (Volsung::uint) num_channels);
+    program.configure_io(0, num_channels);
     program.reset();
     for (auto& [key, value] : parameters) {
         program.add_symbol(key, value);
@@ -98,21 +98,18 @@ int main(const int num_args, const char* args[])
     AudioPlayer player;
     player.initialize((Volsung::uint) num_channels);
 
-    auto* data = new float[AudioPlayer::blocksize * num_channels];
+    float* data = new float[Volsung::AudioBuffer::blocksize];
 
     auto const play_one_block = [&] () {
-        for (size_t sample = 0; sample < AudioPlayer::blocksize; sample++) {
-            Volsung::Frame frame = program.run(Volsung::Frame {});
-            for (size_t channel = 0; channel < num_channels; channel++) {
-                data[sample * num_channels + channel] = frame[channel];
-            }
-        }
+        Volsung::MultichannelBuffer buffer = program.run({ Volsung::AudioBuffer::zero });
+        std::copy(buffer[0].begin(), buffer[0].end(), data);
         player.play(data);
     };
 
     if (time_seconds == -1.f) {
         while (true) play_one_block();
     }
+    
     else {
         const auto blocks_to_generate = Volsung::sample_rate / AudioPlayer::blocksize * time_seconds;
         for (size_t n = 0; n < blocks_to_generate; n++)

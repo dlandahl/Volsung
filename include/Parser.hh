@@ -132,9 +132,12 @@ class Parser : public Lexer
     void parse_declaration();
     void parse_subgraph_declaration();
     void parse_connection();
+    void parse_connection(std::string);
+
     Sequence parse_sequence();
     Number parse_number();
     void parse_directive();
+
     TypedValue parse_procedure_call(const std::string&);
     std::string get_object_to_connect();
     void make_object(const std::string&, const std::string&, const ArgumentList&);

@@ -10,38 +10,49 @@ namespace Volsung {
 
 void AddObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = input_buffer[0][0] + default_value;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        output_buffer[0][n] = input_buffer[0][n] + default_value;
+    }
 }
 
 AddObject::AddObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &default_value });
-    set_defval(&default_value, default_value, 1);
+    link_value(&default_value, default_value, 1);
 }
 
 
 
 void DelayObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    const float lower = input_buffer[0][(long) -sample_delay];
-    const float upper = input_buffer[0][(long) -(sample_delay+0.5f)];
-    const float ratio = sample_delay - (int) sample_delay;
-    
-    output_buffer[0][0] = (1-ratio) * lower + ratio * upper;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        delay_buffer[0] = input_buffer[0][n];
+
+        const float lower = delay_buffer[(int) -std::ceil (sample_delay)];
+        const float upper = delay_buffer[(int) -std::floor(sample_delay)];
+        const float ratio = sample_delay - std::floor(sample_delay);
+
+        output_buffer[0][n] = (1-ratio) * lower + ratio * upper;
+        delay_buffer.increment_pointer();
+    }
 }
 
 DelayObject::DelayObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &sample_delay });
-    set_defval(&sample_delay, sample_delay, 1);
-    request_buffer_size((size_t) sample_delay + 1);
+    link_value(&sample_delay, sample_delay, 1);
+    delay_buffer.resize_stream(sample_delay + 10000);
 }
 
 
 
 void DriveObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = tanh(input_buffer[0][0]);
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        output_buffer[0][n] = std::tanh(input_buffer[0][n]);
+    }
 }
 
 DriveObject::DriveObject(const ArgumentList&)
@@ -51,75 +62,110 @@ DriveObject::DriveObject(const ArgumentList&)
 
 
 
-void FileoutObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
+void FileoutObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer&)
 {
-    if (is_connected(0)) in_data.push_back(input_buffer[0][0]);
-    if (out_data.size()) {
-        output_buffer[0][0] = out_data[pos++];
-        if (pos >= out_data.size()) pos = out_data.size()-1;
+    if (pos + AudioBuffer::blocksize >= size) return;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        data[pos++] = input_buffer[0][n];
     }
 }
 
 void FileoutObject::finish()
 {
-    if (is_connected(0)) {
-        std::ofstream file(filename, std::fstream::out | std::fstream::binary);
-        for (size_t n = 0; n < in_data.size(); n++)
-            file.write((const char*)& in_data[n], sizeof(float));
+    std::ofstream file(filename, std::fstream::out | std::fstream::binary);
 
-        file.close();
+    for (size_t n = 0; n < data.size(); n++) {
+        file.write(reinterpret_cast<const char*> (&data[n]), sizeof(float));
     }
+
+    file.close();
 }
 
 FileoutObject::FileoutObject(const ArgumentList& parameters)
 {
     if (!parameters.size()) error("Expected a string argument on file object");
+    filename = static_cast<std::string> (parameters[0].get_value<Text>());
+    size = parameters[1].get_value<Number>();
+    data.resize(size);
+    set_io(1, 0);
+}
+
+
+
+void FileinObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
+{
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        if (pos < data.size()) {
+            output_buffer[0][n] = data[pos++];
+        }
+    }
+}
+
+FileinObject::FileinObject(const ArgumentList& parameters)
+{
+    if (!parameters.size()) error("Expected a string argument on file object");
     filename = parameters[0].get_value<Text>();
     std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
-    
+
     if (file.good()) {
-        out_data.resize(file.tellg() / sizeof(float));
+        data.resize(file.tellg() / sizeof(float));
         file.seekg(0);
-        file.read(reinterpret_cast<char*>(out_data.data()), out_data.size() * sizeof(float));
+        file.read(reinterpret_cast<char*>(data.data()), data.size() * sizeof(float));
     }
-    set_io(1, 1);
+    set_io(0, 1);
 }
 
 
 
 void FilterObject::process(const MultichannelBuffer& x, MultichannelBuffer& y)
 {
-    b = 2 - cos(TAU * frequency / sample_rate);
-    b = sqrt(b*b - 1) - b;
-    a = 1 + b;
+    update_parameters(0);
+    b = 2.0 - std::cos(TAU * frequency / sample_rate);
+    b = std::sqrt(b*b - 1.0) - b;
+    a = 1.0 + b;
 
-    y[0][0] = a*x[0][0] - b*y[0][-1];
+    y[0][0] = a*x[0][0] - b*last_value;
+
+    for (size_t n = 1; n < AudioBuffer::blocksize; n++) { 
+        update_parameters(n);
+        b = 2.0 - std::cos(TAU * frequency / sample_rate);
+        b = sqrt(b*b - 1.0) - b;
+        a = 1.0 + b;
+
+        y[0][n] = a*x[0][n] - b*y[0][n-1];
+    }
+
+    last_value = y[0][AudioBuffer::blocksize - 1];
 }
 
 FilterObject::FilterObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &frequency });
-    set_defval(&frequency, frequency, 1);
+    link_value(&frequency, frequency, 1);
 }
 
 
 
 void MultObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = input_buffer[0][0] * default_value;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        output_buffer[0][n] = input_buffer[0][n] * multiplier;
+    }
 }
 
 MultObject::MultObject(const ArgumentList& parameters)
 {
-    init(2, 1, parameters, { &default_value });
-    set_defval(&default_value, default_value, 1);
+    init(2, 1, parameters, { &multiplier });
+    link_value(&multiplier, multiplier, 1);
 }
 
 
 
 void NoiseObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = distribution(generator);
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++)
+        output_buffer[0][n] = distribution(generator);
 }
 
 NoiseObject::NoiseObject(const ArgumentList&) :
@@ -128,46 +174,55 @@ NoiseObject::NoiseObject(const ArgumentList&) :
 
 
 
-void OscillatorObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
+void OscillatorObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = sinf(TAU * phase);
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        if (sync.read_gate_state(input_buffer[1][n]) & GateState::just_opened)
+            phase = 0;
 
-    phase = phase + frequency / sample_rate;
+        output_buffer[0][n] = std::sin(TAU * phase);
 
-    if (phase >= 1.0) { phase -= 1.0; }
-    if (gate_opened(1)) phase = 0;
+        phase = phase + frequency / sample_rate;
+
+        if (phase >= 1.0) { phase -= 1.0; }
+    }
 }
 
 OscillatorObject::OscillatorObject(const ArgumentList& parameters) :  phase(0)
 {
     init(2, 1, parameters, {&frequency} );
-    set_defval(&frequency, frequency, 0);
+    link_value(&frequency, frequency, 0);
 }
 
 
 
 void SquareObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
-{   
-    output_buffer[0][0] = (float)sign<float>(sinf(TAU * phase) + pw);
+{
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        output_buffer[0][n] = (float) sign<float>(sinf(TAU * phase) + pw);
 
-    phase = phase + frequency / sample_rate;
+        phase = phase + frequency / sample_rate;
 
-    if (phase >= 1.0) { phase -= 1.0; }
+        if (phase >= 1.0) { phase -= 1.0; }
+    }
 }
 
 SquareObject::SquareObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &frequency, &pw });
-    set_defval(&frequency, frequency, 0);
-    set_defval(&pw, pw, 1);
+    link_value(&frequency, frequency, 0);
+    link_value(&pw, pw, 1);
 }
 
 
 
 void UserObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    if (callback)
+    if (callback) {
         callback(input_buffer, output_buffer, user_data);
+    }
 }
 
 UserObject::UserObject(const ArgumentList& parameters, const AudioProcessingCallback callback_, std::any user_data_) : callback(callback_), user_data(user_data_)
@@ -181,10 +236,7 @@ UserObject::UserObject(const ArgumentList& parameters, const AudioProcessingCall
 
 void AudioInputObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
 {
-    for (auto& output : output_buffer) {
-        output[0] = data[0];
-    }   
-    for (size_t n = 0; n < output_buffer.size(); n++) output_buffer[n][0] = data[n];
+    output_buffer = data;
 }
 
 AudioInputObject::AudioInputObject(const ArgumentList& parameters)
@@ -198,7 +250,7 @@ AudioInputObject::AudioInputObject(const ArgumentList& parameters)
 
 void AudioOutputObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer&)
 {
-    for (size_t n = 0; n < input_buffer.size(); n++) data[n] = input_buffer[n][0];
+    data = input_buffer;
 }
 
 AudioOutputObject::AudioOutputObject(const ArgumentList& parameters)
@@ -212,22 +264,28 @@ AudioOutputObject::AudioOutputObject(const ArgumentList& parameters)
 
 void ComparatorObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    if (input_buffer[0][0] > value) output_buffer[0][0] = 1.f;
-    else output_buffer[0][0] = 0.f;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        
+        if (input_buffer[0][n] > value) output_buffer[0][n] = 1.f;
+        else output_buffer[0][n] = 0.f;
+    }
 }
 
 ComparatorObject::ComparatorObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &value });
-    set_defval(&value, value, 1);
+    link_value(&value, value, 1);
 }
 
 
-void TimerObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
+void TimerObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = value;
-    value += 1.f / sample_rate;
-    if (gate_opened(0)) value = 0.f;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        output_buffer[0][n] = value;
+        value += 1.f / sample_rate;
+        if (reset.read_gate_state(input_buffer[0][n]) & GateState::just_opened) value = 0.f;
+    }
 }
 
 TimerObject::TimerObject(const ArgumentList&)
@@ -238,61 +296,78 @@ TimerObject::TimerObject(const ArgumentList&)
 
 void ClockObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = 0;
-    if (elapsed >= interval) {
-        output_buffer[0][0] = 1;
-        elapsed = 0.f;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        
+        output_buffer[0][n] = 0;
+        if (elapsed >= interval) {
+            output_buffer[0][n] = 1;
+            elapsed = 0.f;
+        }
+
+        elapsed += 1.f;
     }
-    
-    elapsed += 1.f;
 }
 
 ClockObject::ClockObject(const ArgumentList& parameters)
 {
     init(1, 1, parameters, { &interval });
-    set_defval(&interval, interval, 0);
+    link_value(&interval, interval, 0);
 }
 
 
 void DivisionObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = input_buffer[0][0] / divisor;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+
+        output_buffer[0][n] = input_buffer[0][n] / divisor;
+    }
 }
 
 DivisionObject::DivisionObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &divisor });
-    set_defval(&divisor, divisor, 1);
+    link_value(&divisor, divisor, 1);
 }
 
 
 void SubtractionObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = input_buffer[0][0] - subtrahend;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+
+        output_buffer[0][n] = input_buffer[0][n] - subtrahend;
+    }
 }
 
 SubtractionObject::SubtractionObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &subtrahend });
-    set_defval(&subtrahend, subtrahend, 1);
+    link_value(&subtrahend, subtrahend, 1);
 }
 
 
 void ModuloObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = std::fmod(input_buffer[0][0], divisor);
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+
+        output_buffer[0][n] = std::fmod(input_buffer[0][n], divisor);
+    }
 }
 
 ModuloObject::ModuloObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &divisor });
-    set_defval(&divisor, divisor, 1);
+    link_value(&divisor, divisor, 1);
 }
 
 
 void AbsoluteValueObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = std::fabs(input_buffer[0][0]);
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++)
+        output_buffer[0][n] = std::fabs(input_buffer[0][n]);
 }
 
 AbsoluteValueObject::AbsoluteValueObject(const ArgumentList&)
@@ -301,13 +376,15 @@ AbsoluteValueObject::AbsoluteValueObject(const ArgumentList&)
 }
 
 
-void StepSequence::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
+void StepSequence::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    if (gate_opened(0)) {
-        current %= sequence.size();
-        current++;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        if (step.read_gate_state(input_buffer[0][n]) & GateState::just_opened) {
+            current++;
+            current %= sequence.size();
+        }
+        output_buffer[0][n] = sequence[current];
     }
-    output_buffer[0][0] = sequence[current];
 }
 
 StepSequence::StepSequence(const ArgumentList& parameters)
@@ -319,27 +396,34 @@ StepSequence::StepSequence(const ArgumentList& parameters)
 
 void PowerObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = std::pow(input_buffer[0][0], exponent);
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+
+        output_buffer[0][n] = std::pow(input_buffer[0][n], exponent);
+    }
 }
 
 PowerObject::PowerObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &exponent });
-    set_defval(&exponent, exponent, 1);
+    link_value(&exponent, exponent, 1);
 }
 
 
 
 
-void EnvelopeObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
+void EnvelopeObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    if (gate_opened(0)) time = 0;
-    if (time > length) time = (int) length;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+
+        if (trigger.read_gate_state(input_buffer[0][n]) & GateState::just_opened) time = 0;
+        if (time > length) time = (int) length;
     
-    const float ratio = float(time) / (length + 0.001f);
-    output_buffer[0][0] = (1-ratio) * start + ratio * end;
-    time++;
-    
+        const float ratio = float(time) / (length + 0.001f);
+        output_buffer[0][n] = (1-ratio) * start + ratio * end;
+        time++;
+    }
     //output_buffer[1][0] = 0.f;
     //if (time == length) output_buffer[1][0] = 1.f;
 }
@@ -347,14 +431,15 @@ void EnvelopeObject::process(const MultichannelBuffer&, MultichannelBuffer& outp
 EnvelopeObject::EnvelopeObject(const ArgumentList& parameters)
 {
     init(4, 1, parameters, { &length, &start, &end });
-    set_defval(&length, length, 1);
-    set_defval(&start, start, 2);
-    set_defval(&end, end, 3);
+    link_value(&length, length, 1);
+    link_value(&start, start, 2);
+    link_value(&end, end, 3);
 }
 
 void RoundObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = std::round(input_buffer[0][0]);
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++)
+        output_buffer[0][n] = std::round(input_buffer[0][n]);
 }
 
 RoundObject::RoundObject(const ArgumentList&)
@@ -365,9 +450,16 @@ RoundObject::RoundObject(const ArgumentList&)
 
 void SequenceObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    auto index = (size_t) std::max(0.f, input_buffer[0][0]);
-    if (index >= sequence.size()) index = sequence.size() - 1;
-    output_buffer[0][0] = sequence[index];
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        float index = std::max(0.f, input_buffer[0][n]);
+        if (index >= sequence.size()) index = sequence.size() - 1;
+
+        const float lower = sequence[std::floor(index)];
+        const float upper = sequence[std::ceil(index)];
+        const float ratio = index - std::floor(index);
+
+        output_buffer[0][n] = (1-ratio) * lower + ratio * upper;
+    }
 }
 
 SequenceObject::SequenceObject(const ArgumentList& parameters)
@@ -379,8 +471,10 @@ SequenceObject::SequenceObject(const ArgumentList& parameters)
 
 void SampleAndHoldObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    if (gate_opened(1)) value = input_buffer[0][0];
-    output_buffer[0][0] = value;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        if (trigger.read_gate_state(input_buffer[1][n]) & GateState::just_opened) value = input_buffer[0][n];
+        output_buffer[0][n] = value;
+    }
 }
 
 SampleAndHoldObject::SampleAndHoldObject(const ArgumentList&)
@@ -391,7 +485,8 @@ SampleAndHoldObject::SampleAndHoldObject(const ArgumentList&)
 
 void ConstObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = value;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++)
+        output_buffer[0][n] = value;
 }
 
 ConstObject::ConstObject(const ArgumentList& parameters)
@@ -401,59 +496,72 @@ ConstObject::ConstObject(const ArgumentList& parameters)
 }
 
 
-void SawObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
+void SawObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    if (gate_opened(1)) phase = -1;
-    
-    phase += std::abs(2.f * frequency / sample_rate);
-    if (phase > 1.f) phase = -1.f;
-    
-    if (frequency < 0) output_buffer[0][0] = -phase;
-    else output_buffer[0][0] = phase;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+
+        if (sync.read_gate_state(input_buffer[1][n]) & GateState::just_opened) phase = -1;
+
+        phase += std::abs(2.f * frequency / sample_rate);
+        if (phase > 1.f) phase = -1.f;
+
+        if (frequency < 0) output_buffer[0][n] = -phase;
+        else output_buffer[0][n] = phase;
+    }
 }
 
 SawObject::SawObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &frequency });
-    set_defval(&frequency, frequency, 0);
+    link_value(&frequency, frequency, 0);
 }
 
-void TriangleObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
+void TriangleObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    if (gate_opened(1)) phase = 0;
-    
-    phase += frequency / sample_rate;
-    if (phase >= 1.f) phase -= 1.f;
-    output_buffer[0][0] = 2.f * fabs(2.f * phase - 1.f) - 1.f;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+
+        if (sync.read_gate_state(input_buffer[1][n]) & GateState::just_opened) phase = 0;
+
+        phase += frequency / sample_rate;
+        if (phase >= 1.f) phase -= 1.f;
+        output_buffer[0][n] = 2.f * fabs(2.f * phase - 1.f) - 1.f;
+    }
 }
 
 TriangleObject::TriangleObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &frequency });
-    set_defval(&frequency, frequency, 0);
+    link_value(&frequency, frequency, 0);
 }
 
 void BiquadObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    if (!resonance) resonance = std::numeric_limits<float>::min();
-    omega = TAU * frequency / sample_rate;
-    alpha = std::sin(omega) / (2.f * resonance);
-    cos_omega = std::cos(omega);
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
 
-    calculate_coefficients();
+        if (!resonance) resonance = std::numeric_limits<float>::min();
+        omega = TAU * frequency / sample_rate;
+        alpha = std::sin(omega) / (2.f * resonance);
+        cos_omega = std::cos(omega);
 
-    auto& x = input_buffer[0];
-    auto& y = output_buffer[0];
+        calculate_coefficients();
 
-    y[0] = (b0*x[0] + b1*x[-1] + b2*x[-2] - a1*y[-1] - a2*y[-2]) / a0;
+        x[0] = input_buffer[0][n];
+        output_buffer[0][n] = y[0] = (b0*x[0] + b1*x[-1] + b2*x[-2] - a1*y[-1] - a2*y[-2]) / a0;
+
+        x.increment_pointer();
+        y.increment_pointer();
+    }
 }
 
 BiquadObject::BiquadObject(const ArgumentList& parameters)
+: x(4), y(4)
 {
     init(3, 1, parameters, { &frequency, &resonance });
-    set_defval(&frequency, frequency, 1);
-    set_defval(&resonance, resonance, 2);
-    request_buffer_size(4);
+    link_value(&frequency, frequency, 1);
+    link_value(&resonance, resonance, 2);
 }
 
 void LowpassObject::calculate_coefficients()
@@ -501,40 +609,37 @@ void AllpassObject::calculate_coefficients()
 
 void EnvelopeFollowerObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    const float sample = std::fabs(input_buffer[0][0]);
-    
-    const float internal_attack = std::exp(time_constant / attack);
-    const float internal_release = std::exp(time_constant / release);
-    
-    float detector_value = 0.f;
-    if (sample > last_value)
-        detector_value = internal_attack * (last_value - sample) + sample;
-    else
-        detector_value = internal_release * (last_value - sample) + sample;
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
 
-    if (detector_value < 0.f) detector_value = 0.f;
+        const float sample = std::fabs(input_buffer[0][n]);
 
-    last_value = detector_value;
-    output_buffer[0][0] = detector_value;
+        const float internal_attack = std::exp(time_constant / attack);
+        const float internal_release = std::exp(time_constant / release);
+
+        float detector_value = 0.f;
+        if (sample > last_value)
+            detector_value = internal_attack * (last_value - sample) + sample;
+        else
+            detector_value = internal_release * (last_value - sample) + sample;
+
+        if (detector_value < 0.f) detector_value = 0.f;
+
+        last_value = detector_value;
+        output_buffer[0][n] = detector_value;
+    }
 }
 
 EnvelopeFollowerObject::EnvelopeFollowerObject(const ArgumentList& parameters)
 {
     init(3, 1, parameters, { &attack, &release });
-    set_defval(&attack, attack, 1);
-    set_defval(&release, release, 2);
+    link_value(&attack, attack, 1);
+    link_value(&release, release, 2);
 }
 
 void SubgraphObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    if (!graph) error("Null pointer for subpatch");
-
-    Frame input_frame;
-    for (size_t n = 0; n < inputs.size(); n++) input_frame.push_back(input_buffer[n][0]);
-
-    const Frame output_frame = graph->run(input_frame);
-
-    for (size_t n = 0; n < outputs.size(); n++) output_buffer[n][0] = output_frame[n];
+    output_buffer = graph->run(input_buffer);
 }
 
 SubgraphObject::SubgraphObject(const ArgumentList& parameters)
@@ -546,34 +651,43 @@ SubgraphObject::SubgraphObject(const ArgumentList& parameters)
 
 void ConvolveObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    float value = 0;
-    for (size_t n = 0; n < impulse_response.size(); n++) {
-        value += impulse_response[n] * input_buffer[0][(long) n-1];
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        signal[0] = input_buffer[0][n];
+        
+        float value = 0;
+        for (size_t i = 0; i < impulse_response.size(); i++) {
+            value += impulse_response[i] * signal[(long) i-1];
+        }
+        output_buffer[0][n] = value;
+        signal.increment_pointer();
     }
-    output_buffer[0][0] = value;
 }
 
 ConvolveObject::ConvolveObject(const ArgumentList& parameters)
 {
     set_io(1, 1);
     impulse_response = parameters[0].get_value<Sequence>();
-    request_buffer_size(impulse_response.size());
+    signal.resize_stream(impulse_response.size());
 }
 
 void ZPlaneObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    auto& x = input_buffer[0];
-    auto& y = output_buffer[0];
-
-    y[0] = (x[0] + b1*x[-1] + b2*x[-2] - a1*y[-1] - a2*y[-2]);
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        x[0] = input_buffer[0][n];
+        output_buffer[0][n] = y[0] = (x[0] + b1*x[-1] + b2*x[-2] - a1*y[-1] - a2*y[-2]);
+        x.increment_pointer();
+        y.increment_pointer();
+    }
 }
 
 ZPlaneObject::ZPlaneObject(const ArgumentList& parameters)
+: x(4), y(4)
 {
     set_io(1, 1);
     if (parameters.size() > 0) zero = parameters[0].get_value<Number>();
     if (parameters.size() > 1) pole = parameters[1].get_value<Number>();
-    request_buffer_size(4);
+    x.resize_stream(4);
+    y.resize_stream(4);
 
     if (zero.magnitude()) {
         b1 = -2.f * zero.magnitude() * std::cos(zero.angle());
@@ -589,30 +703,46 @@ ZPlaneObject::ZPlaneObject(const ArgumentList& parameters)
 
 void PoleObject::process(const MultichannelBuffer& x, MultichannelBuffer& y)
 {
-    y[0][0] = x[0][0] + a*y[0][-1];
+    update_parameters(0);
+
+    y[0][0] = x[0][0] + a*last_value;
+    for (size_t n = 1; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+
+        y[0][n] = x[0][n] + a*y[0][n-1];
+    }
+    last_value = y[0][AudioBuffer::blocksize - 1];
 }
 
 PoleObject::PoleObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &a });
-    set_defval(&a, a, 1);
+    link_value(&a, a, 1);
 }
 
 
 void ZeroObject::process(const MultichannelBuffer& x, MultichannelBuffer& y)
 {
-    y[0][0] = x[0][0] + b*x[0][-1];
+    update_parameters(0);
+    y[0][0] = x[0][0] + b*last_value;
+    for (size_t n = 1; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        y[0][n] = x[0][n] + b*x[0][n-1];
+    }
+
+    last_value = x[0][AudioBuffer::blocksize - 1];
 }
 
 ZeroObject::ZeroObject(const ArgumentList& parameters)
 {
     init(2, 1, parameters, { &b });
-    set_defval(&b, b, 1);
+    link_value(&b, b, 1);
 }
 
 void BiToUnipolarObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    output_buffer[0][0] = 0.5f + 0.5f * input_buffer[0][0];
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++)
+        output_buffer[0][n] = 0.5f + 0.5f * input_buffer[0][n];
 }
 
 BiToUnipolarObject::BiToUnipolarObject(const ArgumentList&)
@@ -622,3 +752,4 @@ BiToUnipolarObject::BiToUnipolarObject(const ArgumentList&)
 
 
 }
+
