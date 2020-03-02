@@ -236,6 +236,7 @@ bool Parser::parse_program(Graph& graph)
             else if (peek(TokenType::open_paren)) {
                 const std::string id = current_token.value;
                 parse_procedure_call(id);
+                expect(TokenType::newline);
             }
             else if (peek(TokenType::less_than)) parse_subgraph_declaration();
             else {
@@ -358,30 +359,33 @@ std::string Parser::parse_object_declaration(std::string name)
 
 void Parser::make_object(const std::string& object_type, const std::string& object_name, const ArgumentList& arguments)
 {
-    if (object_creators.count(object_type)) (program->*(object_creators.at(object_type)))(object_name, arguments);
-    else if (program->subgraphs.count(object_type)) {
-        auto io = program->subgraphs[object_type].second;
-        ArgumentList parameters = arguments;
-        parameters.insert(parameters.begin(), TypedValue { (Number) io[0] });
-        parameters.insert(parameters.begin() + 1, TypedValue { (Number) io[1] });
-
-        program->create_object<SubgraphObject>(object_name, parameters);
-
-        program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph = std::make_unique<Program>();
-        Program* const other_program = program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph.get();
-
-        Parser subgraph_parser;
-        subgraph_parser.source_code = program->subgraphs[object_type].first;
-        other_program->parent = program;
-        other_program->configure_io((uint) io[0], (uint) io[1]);
-        other_program->reset();
-
-        for (size_t n = 2; n < parameters.size(); n++)
-            other_program->add_symbol("_" + std::to_string(n-1), parameters[n]);
-
-        if (!subgraph_parser.parse_program(*other_program)) error("Subgraph failed to parse");
+    if (object_creators.count(object_type)) {
+        (program->*(object_creators.at(object_type)))(object_name, arguments);
+        return;
     }
-    else error("No such object type: " + object_type);
+
+    SubgraphRepresentation subgraph = program->find_subgraph_recursively(object_type);
+
+    auto io = subgraph.second;
+    ArgumentList parameters = arguments;
+    parameters.insert(parameters.begin(), TypedValue { (Number) io[0] });
+    parameters.insert(parameters.begin() + 1, TypedValue { (Number) io[1] });
+
+    program->create_object<SubgraphObject>(object_name, parameters);
+
+    program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph = std::make_unique<Program>();
+    Program* const other_program = program->get_audio_object_raw_pointer<SubgraphObject>(object_name)->graph.get();
+
+    Parser subgraph_parser;
+    subgraph_parser.source_code = subgraph.first;
+    other_program->parent = program;
+    other_program->configure_io((uint) io[0], (uint) io[1]);
+    other_program->reset();
+
+    for (size_t n = 2; n < parameters.size(); n++)
+        other_program->add_symbol("_" + std::to_string(n-1), parameters[n]);
+
+    if (!subgraph_parser.parse_program(*other_program)) error("Subgraph failed to parse");
 }
 
 void Parser::parse_connection()
@@ -490,7 +494,7 @@ std::string Parser::get_object_to_connect()
             next_token();
             parse_object_declaration(output);
         }
-        Volsung::assert(program->object_exists(output), "Undefined identifier: " + output);
+        Volsung::assert(program->object_exists(output), "Undefined object: " + output);
         
         if (peek(TokenType::open_bracket)) {
             expect(TokenType::open_bracket);

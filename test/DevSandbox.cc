@@ -41,10 +41,11 @@ Sine_Oscillator~ 654 -> Add~ 100
     parser.parse_program(prog);
     log("Finished parsing");
 
-    if (print) for (uint n = 0; n < 10000.f * sample_rate / AudioBuffer::blocksize; n++)
-        std::cout << prog.run(0.f) << '\n' << std::flush;
+    if (print) for (uint n = 0; n < sample_rate / AudioBuffer::blocksize; n++)
+        for (uint n = 0; n < AudioBuffer::blocksize; n++)
+            std::cout << prog.run( { AudioBuffer::zero } )[0][n] << '\n' << std::flush;
 
-    else for (uint n = 0; n < 1000.f * sample_rate / AudioBuffer::blocksize; n++) prog.run(0.f);
+    else for (uint n = 0; n < sample_rate / AudioBuffer::blocksize; n++) prog.run();
     prog.finish();
 }
 

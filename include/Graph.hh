@@ -158,7 +158,7 @@ using AudioProcessingCallback = std::function<void(const MultichannelBuffer&, Mu
 using SubgraphRepresentation = std::pair<const std::string, const std::array<float, 2>>;
 
 template <class T>
-using SymbolTable = std::unordered_map<std::string, T>;
+using SymbolTable = std::map<std::string, T>;
 using Frame = std::vector<float>;
 
 
@@ -282,6 +282,8 @@ public:
 
     void finish();
     void reset();
+
+    const SubgraphRepresentation find_subgraph_recursively(std::string);
 
     auto begin() { return std::begin(table); }
     auto end() { return std::end(table); }

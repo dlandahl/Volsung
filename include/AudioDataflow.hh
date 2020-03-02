@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace Volsung {
- 
+
 class AudioBuffer
 {
 public:

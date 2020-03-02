@@ -151,8 +151,8 @@ class Parser : public Lexer
 
     int inline_object_index = 0;
     Graph* program = nullptr;
-public:
 
+public:
     /*! \brief Parse a Program
      *  
      *  Parse the source code and supply the instance of Program to write the audio processing graph into.

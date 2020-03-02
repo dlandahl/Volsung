@@ -357,7 +357,7 @@ const SymbolTable<Procedure> Program::procedures = {
     { "length_of", Procedure([] (const ArgumentList& arguments, const Program*) {
         return arguments[0].get_value<Sequence>().size();
     }, 1, 1)},
-    
+
     { "read_file", Procedure([] (const ArgumentList& arguments, const Program*) {
         const std::string filename = arguments[0].get_value<Text>();
         std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
@@ -372,7 +372,7 @@ const SymbolTable<Procedure> Program::procedures = {
         else error("Could not read file, not found: '" + filename + "'");
         return (Sequence) out_data;
     }, 1, 1)},
-    
+
     { "write_file", Procedure([](const ArgumentList& arguments, const Program*) {
         const Sequence in_data = arguments[1].get_value<Sequence>();
         const std::string filename = arguments[0].get_value<Text>();
@@ -495,7 +495,7 @@ MultichannelBuffer Program::run()
 MultichannelBuffer Program::run(const MultichannelBuffer input_buffer)
 {
     if (inputs) {
-        AudioOutputObject* object = get_audio_object_raw_pointer<AudioOutputObject>("input");
+        AudioInputObject* object = get_audio_object_raw_pointer<AudioInputObject>("input");
         object->data = input_buffer;
     }
 
@@ -570,6 +570,12 @@ TypedValue Program::get_symbol_value(const std::string& identifier) const
     return symbol_table.at(identifier);
 }
 
+const SubgraphRepresentation Program::find_subgraph_recursively(std::string name)
+{
+    if (subgraphs.count(name)) return subgraphs[name];
+    if (!parent) error("Object type does not exist " + name);
+    return parent->find_subgraph_recursively(name);
+}
 
 }
 

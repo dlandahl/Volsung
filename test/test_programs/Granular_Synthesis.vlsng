@@ -21,9 +21,14 @@ Grain <1, 1>: {
 
 Random <1, 1>: {
     ; Generates a random value when pinged
-    Noise~ -> Add~ _1 -> snh: Sample_And_Hold~
+    min: _1
+    max: _2
+    
+    Noise~ -> snh: Sample_And_Hold~
     -> Bi_to_Unipolar~
-    -> *75ms -> +75ms -> output
+    -> *max - min
+    -> +min
+    -> output
 
     input -> 1|snh
 }
@@ -31,36 +36,46 @@ Random <1, 1>: {
 LBCF <1, 1>: {
     ; Schroeder-Moorer lowpass feedback comb filter
     M: _1 ; Filter order
-
+    decay: _2
+    
     input
     -> sum: Add~
     -> buffer: Delay_Line~ M
-    -> *-0.87         ; Decay
+    -> Multiply~ -decay
     -> 1|sum
     -> output
 }
 
-; From Freeverb
-orders: { 1557, 1617, 1491, 1422, 1277, 1356, 1188, 1113 }
+Reverb <1, 1>: {
+    decay: _1
+    
+    ; From Freeverb
+    orders: { 1557, 1617, 1491, 1422, 1277, 1356, 1188, 1113 }
+    input -> /3 <> [8] LBCF~ orders[n-1] >> output
+}
+
+Random_Interval_Clock <0, 1>: {
+    clock: Clock~ 1ms
+    -> Random~ _1, _2
+    -> clock -> output
+}
+
+Granular_Voice <0, 1>: {
+    source_audio: _1
+    num_grains: _2
+
+    min_spawn_interval: _3
+    max_spawn_interval: _4
+
+    [num_grains] Random_Interval_Clock~ min_spawn_interval, max_spawn_interval
+    => [num_grains] Grain~ source_audio
+    >> Reverb~ 0.87 -> output
+}
+
 
 datal: read_file("chord_l")
-datar: read_file("chord_r")
-
 N: 5
 
-clocks: [N] Clock~
-clocks
-=> [N] Random~ n*3
-=> clocks
-=> [N] Grain~ datal
->> /3 <> [8] LBCF~ orders[n-1]
->> 0|output
-
-clocksr: [N] Clock~
-clocksr
-=> [N] Random~ n*2
-=> clocksr
-=> [N] Grain~ datar
->> /3 <> [8] LBCF~ orders[n-1]
->> 1|output
+Granular_Voice~ datal, 5, 150ms, 300ms
+-> output
 
