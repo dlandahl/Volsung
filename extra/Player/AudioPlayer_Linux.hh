@@ -31,7 +31,7 @@ public:
         snd_pcm_sframes_t delay = 0;
         do {
             snd_pcm_delay(stream, &delay);
-        } while (delay > (long) blocksize * 2);
+        } while (delay > (long) blocksize * 100);
         snd_pcm_writei(stream, data, blocksize);
     }
 

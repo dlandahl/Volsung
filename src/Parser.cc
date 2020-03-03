@@ -221,6 +221,7 @@ bool Parser::parse_program(Graph& graph)
     program->add_symbol("false", 0);
     program->add_symbol("i", Number(0, 1));
     program->add_symbol("e", 2.718281828459045f);
+    program->add_symbol("blocksize", AudioBuffer::blocksize);
 
     try {
 
@@ -236,7 +237,8 @@ bool Parser::parse_program(Graph& graph)
             else if (peek(TokenType::open_paren)) {
                 const std::string id = current_token.value;
                 parse_procedure_call(id);
-                expect(TokenType::newline);
+                if (!(peek(TokenType::newline) || peek(TokenType::eof))) error ("Expected newline after procedure call");
+                next_token();
             }
             else if (peek(TokenType::less_than)) parse_subgraph_declaration();
             else {

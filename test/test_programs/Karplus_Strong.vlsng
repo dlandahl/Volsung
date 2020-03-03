@@ -1,0 +1,42 @@
+
+Exciter <1, 1>: {
+    input
+    -> Envelope_Generator~ 10ms
+    -> 1|envelope: Multiply~
+
+    Noise~ -> Lowpass_Filter~ 6500, 0.4
+    -> envelope -> output
+}
+
+Resonator <1, 1>: {
+    frequency: _1
+    blocksize: 64
+
+    input -> buffer: Delay_Line~ sample_rate / frequency - blocksize
+    -> Smooth~ 2000
+    -> Multiply~ 0.985 -> buffer -> output
+}
+
+Karplus_Voice <1, 1>: {
+    input -> Exciter~ -> Resonator~ _1 -> output
+}
+
+Chord <1, 1>: {
+    major_scale: (2^(1/12))^{ -1, 0, 2, 4, 5, 7, 9, 11, 12 } * 261.63 / 2
+
+    input -> Delay_Line~ _2
+    <> [3] Delay_Line~ n * 30ms
+    => [3] Karplus_Voice~ major_scale[_1[n-1]]
+    >> output
+}
+
+; Describe chords as major scale degrees
+;         I  V  vi IV
+roots:  { 1, 5, 6, 4 }
+thirds: { 3, 0, 1, 6 }
+fifths: { 5, 2, 3, 1 }
+
+Clock~ 4s
+<> [4] Chord~ { roots[n-1], thirds[n-1], fifths[n-1] }, n * sample_rate
+>> output
+

@@ -22,6 +22,7 @@ float* AudioBuffer::data_pointer()
 AudioBuffer::AudioBuffer()
 {
     data = std::make_shared<Block>();
+    *data = { 0 };
 }
 
 const AudioBuffer AudioBuffer::zero;

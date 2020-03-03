@@ -9,15 +9,9 @@ namespace Volsung {
 class AudioBuffer
 {
 public:
-    const static inline size_t blocksize = 1024;
+    const static inline size_t blocksize = 64;
     using Block = std::array<float, blocksize>;
     
-private:
-
-    std::shared_ptr<Block> data = nullptr;
-
-//    static inline std::vector<std::pair<bool, Block>> block_pool;
-public:
     const static AudioBuffer zero;
  
     float& operator[](size_t);
@@ -27,6 +21,9 @@ public:
 
     auto begin() { return std::begin(*data); }
     auto end() { return std::end(*data); }
+
+private:
+    std::shared_ptr<Block> data = nullptr;
 };
 using MultichannelBuffer = std::vector<AudioBuffer>;
 using Block = AudioBuffer::Block;

@@ -240,7 +240,7 @@ class EnvelopeObject : public AudioObject
     float length = 1000;
     float start = 1.f;
     float end = 0.f;
-    int time = 0;
+    int time;
 
     GateListener trigger;
 

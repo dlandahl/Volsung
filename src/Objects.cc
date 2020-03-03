@@ -300,11 +300,9 @@ void ClockObject::process(const MultichannelBuffer&, MultichannelBuffer& output_
         update_parameters(n);
         
         output_buffer[0][n] = 0;
-        if (elapsed >= interval) {
-            output_buffer[0][n] = 1;
-            elapsed = 0.f;
-        }
 
+        if (elapsed >= interval) elapsed = 0.f;
+        if (!elapsed) output_buffer[0][n] = 1;
         elapsed += 1.f;
     }
 }
@@ -424,8 +422,6 @@ void EnvelopeObject::process(const MultichannelBuffer& input_buffer, Multichanne
         output_buffer[0][n] = (1-ratio) * start + ratio * end;
         time++;
     }
-    //output_buffer[1][0] = 0.f;
-    //if (time == length) output_buffer[1][0] = 1.f;
 }
 
 EnvelopeObject::EnvelopeObject(const ArgumentList& parameters)
@@ -434,6 +430,7 @@ EnvelopeObject::EnvelopeObject(const ArgumentList& parameters)
     link_value(&length, length, 1);
     link_value(&start, start, 2);
     link_value(&end, end, 3);
+    time = length;
 }
 
 void RoundObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
