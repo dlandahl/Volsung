@@ -51,7 +51,7 @@ Reverb <1, 1>: {
     
     ; From Freeverb
     orders: { 1557, 1617, 1491, 1422, 1277, 1356, 1188, 1113 }
-    input -> /3 <> [8] LBCF~ orders[n-1] >> output
+    input -> /3 <> [8] LBCF~ orders[n-1], decay >> output
 }
 
 Random_Interval_Clock <0, 1>: {
@@ -74,8 +74,7 @@ Granular_Voice <0, 1>: {
 
 
 datal: read_file("chord_l")
-N: 5
+N: 35
 
-Granular_Voice~ datal, 5, 150ms, 300ms
+Granular_Voice~ datal, N, 150ms, 300ms
 -> output
-

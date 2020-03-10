@@ -407,7 +407,6 @@ void Program::create_user_object(const std::string& name, const uint num_inputs,
 void Program::check_io_and_connect_objects(const std::string& output_object, const uint output_index,
                                            const std::string& input_object , const uint input_index)
 {
-
     if (table[output_object]->outputs.size() <= output_index) {
         error("Index out of range on output object '" + output_object + "'. Index is: " + std::to_string(output_index));
     }
@@ -578,4 +577,3 @@ const SubgraphRepresentation Program::find_subgraph_recursively(std::string name
 }
 
 }
-

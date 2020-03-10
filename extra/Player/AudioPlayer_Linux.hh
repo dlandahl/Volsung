@@ -40,4 +40,3 @@ public:
         snd_pcm_close(stream);
     }
 };
-

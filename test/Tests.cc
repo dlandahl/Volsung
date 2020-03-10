@@ -63,7 +63,7 @@ int main()
         for (size_t s = 0; s < Volsung::sample_rate / Volsung::AudioBuffer::blocksize; s++) {
             programs[p]->run();
         }
-        
+
         const auto time_taken_usecs = chrono::duration_cast<chrono::microseconds>(chrono::high_resolution_clock::now() - start_time);
 
         std::cout << "[" << Ansi_Blue << "Timer" << Ansi_Reset << "] ";
@@ -78,4 +78,3 @@ int main()
     }
     std::cout << std::endl;
 }
-

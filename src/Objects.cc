@@ -452,7 +452,7 @@ void SequenceObject::process(const MultichannelBuffer& input_buffer, Multichanne
         if (index >= sequence.size()) index = sequence.size() - 1;
 
         const float lower = sequence[std::floor(index)];
-        const float upper = sequence[std::ceil(index)];
+        const float upper = sequence[(size_t) std::ceil(index) % sequence.size()];
         const float ratio = index - std::floor(index);
 
         output_buffer[0][n] = (1-ratio) * lower + ratio * upper;

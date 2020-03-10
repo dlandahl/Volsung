@@ -77,17 +77,19 @@ GateState operator| (GateState lhs, GateState rhs)
 
 GateState GateListener::read_gate_state(float current_value)
 {
-    if (current_value >= gate_threshold && last_value >= gate_threshold)
+    const float _last_value = last_value;
+    last_value = current_value;
+    
+    if (current_value >= gate_threshold && _last_value >= gate_threshold)
         return GateState::open;
         
-    if (current_value <  gate_threshold && last_value < gate_threshold)
+    if (current_value <  gate_threshold && _last_value < gate_threshold)
         return GateState::closed;
         
-    if (current_value >= gate_threshold && last_value < gate_threshold)
+    if (current_value >= gate_threshold && _last_value < gate_threshold)
         return GateState::just_opened | GateState::open;
 
     return GateState::just_closed | GateState::closed;
 }
 
 }
-

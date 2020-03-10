@@ -246,10 +246,12 @@ bool Parser::parse_program(Graph& graph)
                 error("Expected colon or connection operator, got " + debug_names.at(current_token.type));
             }
         }
+        
         else if (peek(TokenType::object) || peek(TokenType::open_bracket)) {
             next_token();
             parse_connection();
         }
+        
         else if (peek(TokenType::ampersand)) parse_directive();
         else {
             next_token();
@@ -822,4 +824,3 @@ void Parser::verify(TokenType expected) const
 }
 
 }
-

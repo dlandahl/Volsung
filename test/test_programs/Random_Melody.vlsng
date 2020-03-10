@@ -65,7 +65,8 @@ clock
 ; Choose a random note from the
 ; pentatonic scale on clock pulse
 clock
--> Random_Range~ 0, 4.99
+-> Random_Range~ 0, 5
+-> Floor~
 -> Index_Sequence~ freqs
 -> Sine_Oscillator~
 -> vca
@@ -75,4 +76,3 @@ echo: Stereo_Delay~ 0.5, 500ms * delay_scale, 833.33ms * delay_scale
 vca -> echo
 echo|0 -> 0|output
 echo|1 -> 1|output
-

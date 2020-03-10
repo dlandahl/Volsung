@@ -1,0 +1,38 @@
+
+; --- Objects:
+Ceil~
+Sin~
+Clamp~
+Expression~
+Reciprocal~
+Linear_to_Decibel~
+Decibel_to_Linear~
+
+; --- Procedures:
+cos
+modulo
+repeat
+run_subgraph
+ceil
+floor
+
+
+count_nodes should recurse into subgraphs
+
+Envelope_Generator~ should output gate
+    -> There is a bad bug, where multiple outputs causes double free on shared pointer
+
+Write concatenation operator
+
+Add named parameters to subgraphs
+    -> This may allow static analysis of subgraph validity, without a dynamic instance
+
+Add Parameter~ object
+
+Warn or error when implicitly discarding imaginary part of number
+
+Use references to sequences when initialising objects to save memory in case of large pcm data
+
+Pole~, Zero~ should be complex
+
+Probably remove Z_Plane~

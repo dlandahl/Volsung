@@ -100,4 +100,3 @@ void AudioOutput::connect(AudioInput &other)
 }
 
 }
-
