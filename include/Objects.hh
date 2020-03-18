@@ -104,6 +104,7 @@ class OscillatorObject : public AudioObject
 
     GateListener sync;
     float phase     = 0;
+    float phase_offset = 0;
     float frequency = 100;
 
 public:
@@ -432,6 +433,50 @@ class BiToUnipolarObject : public AudioObject
 
 public:
     BiToUnipolarObject(const ArgumentList&);
+};
+
+
+
+
+class CeilObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+public:
+    CeilObject(const ArgumentList&);
+};
+
+class SinObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+public:
+    SinObject(const ArgumentList&);
+};
+
+class ClampObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+    float min;
+    float max;
+public:
+    ClampObject(const ArgumentList&);
+};
+
+class ReciprocalObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+public:
+    ReciprocalObject(const ArgumentList&);
+};
+
+class InverseObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+    float offset;
+public:
+    InverseObject(const ArgumentList&);
 };
 
 

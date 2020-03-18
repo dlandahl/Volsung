@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <array>
 
 namespace Volsung {
 

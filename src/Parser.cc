@@ -170,33 +170,49 @@ using ObjectMap = std::map<std::string, void(Program::*)(const std::string&, con
 #define OBJECT(x) &Program::create_object<x>
 static const ObjectMap object_creators =
 {
+    // Signal generation
     { "Sine_Oscillator",     OBJECT(OscillatorObject) },
     { "Saw_Oscillator",      OBJECT(SawObject) },
     { "Square_Oscillator",   OBJECT(SquareObject) },
     { "Triangle_Oscillator", OBJECT(TriangleObject) },
     { "Noise",               OBJECT(NoiseObject) },
     { "Constant",            OBJECT(ConstObject) },
+    { "Clock",               OBJECT(ClockObject) },
+    { "Timer",               OBJECT(TimerObject) },
+
+    // Simple Arithmetic
     { "Add",                 OBJECT(AddObject) },
     { "Multiply",            OBJECT(MultObject) },
     { "Subtract",            OBJECT(SubtractionObject) },
     { "Divide",              OBJECT(DivisionObject) },
     { "Power",               OBJECT(PowerObject) },
+
+    // Signal processing
     { "Delay_Line",          OBJECT(DelayObject) },
-    { "Clock",               OBJECT(ClockObject) },
+    { "Sample_And_Hold",     OBJECT(SampleAndHoldObject) },
     { "Envelope_Follower",   OBJECT(EnvelopeFollowerObject) },
     { "Envelope_Generator",  OBJECT(EnvelopeObject) },
-    { "Timer",               OBJECT(TimerObject) },
+    { "Clamp",               OBJECT(ClampObject) },
+    { "Comparator",          OBJECT(ComparatorObject) },
+    { "Inverse",             OBJECT(InverseObject) },
+    { "Reciprocal",          OBJECT(ReciprocalObject) },
+    { "Bi_to_Unipolar",      OBJECT(BiToUnipolarObject) },
+
+    // Advanced arithmetic
+    { "Sin",                 OBJECT(SinObject) },
     { "Tanh",                OBJECT(DriveObject) },
     { "Modulo",              OBJECT(ModuloObject) },
     { "Abs",                 OBJECT(AbsoluteValueObject) },
     { "Floor",               OBJECT(RoundObject) },
-    { "Comparator",          OBJECT(ComparatorObject) },
-    { "Bi_to_Unipolar",      OBJECT(BiToUnipolarObject) },
+    { "Ceil",                OBJECT(CeilObject) },
+
+    // Sequences
     { "Write_File",          OBJECT(FileoutObject) },
     { "Read_File",           OBJECT(FileinObject) },
     { "Step_Sequence",       OBJECT(StepSequence) },
     { "Index_Sequence",      OBJECT(SequenceObject) },
-    { "Sample_And_Hold",     OBJECT(SampleAndHoldObject) },
+
+    // Frequency filters and frequency filter design
     { "Smooth",              OBJECT(FilterObject) },
     { "Lowpass_Filter",      OBJECT(LowpassObject) },
     { "Highpass_Filter",     OBJECT(HighpassObject) },
@@ -205,7 +221,7 @@ static const ObjectMap object_creators =
     { "Convolver",           OBJECT(ConvolveObject) },
     { "Z_Plane",             OBJECT(ZPlaneObject) },
     { "Pole",                OBJECT(PoleObject) },
-    { "Zero",                OBJECT(ZeroObject) }
+    { "Zero",                OBJECT(ZeroObject) },
 };
 #undef OBJECT
 
@@ -609,7 +625,7 @@ TypedValue Parser::parse_sequence_generator()
                 s.add_element(lower + n * step_size);
             value = s;
         }
-        
+
         else {
             float step = 1;
             if (peek(TokenType::vertical_bar)) {

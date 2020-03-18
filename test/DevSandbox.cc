@@ -48,4 +48,3 @@ Sine_Oscillator~ 654 -> Add~ 100
     else for (uint n = 0; n < sample_rate / AudioBuffer::blocksize; n++) prog.run();
     prog.finish();
 }
-

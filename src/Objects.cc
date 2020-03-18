@@ -98,6 +98,7 @@ void FileinObject::process(const MultichannelBuffer&, MultichannelBuffer& output
         if (pos < data.size()) {
             output_buffer[0][n] = data[pos++];
         }
+        else output_buffer[0][n] = 0.f;
     }
 }
 
@@ -181,7 +182,7 @@ void OscillatorObject::process(const MultichannelBuffer& input_buffer, Multichan
         if (sync.read_gate_state(input_buffer[1][n]) & GateState::just_opened)
             phase = 0;
 
-        output_buffer[0][n] = std::sin(TAU * phase);
+        output_buffer[0][n] = std::sin(TAU * phase + phase_offset);
 
         phase = phase + frequency / sample_rate;
 
@@ -191,8 +192,9 @@ void OscillatorObject::process(const MultichannelBuffer& input_buffer, Multichan
 
 OscillatorObject::OscillatorObject(const ArgumentList& parameters) :  phase(0)
 {
-    init(2, 1, parameters, {&frequency} );
+    init(3, 1, parameters, { &frequency, &phase_offset } );
     link_value(&frequency, frequency, 0);
+    link_value(&phase_offset, phase_offset, 2);
 }
 
 
@@ -748,5 +750,68 @@ BiToUnipolarObject::BiToUnipolarObject(const ArgumentList&)
 }
 
 
+
+
+
+void CeilObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
+{
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++)
+        output_buffer[0][n] = std::ceil(input_buffer[0][n]);
 }
 
+CeilObject::CeilObject(const ArgumentList&)
+{
+    set_io(1, 1);
+}
+
+void SinObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
+{
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++)
+        output_buffer[0][n] = std::sin(input_buffer[0][n]);
+}
+
+SinObject::SinObject(const ArgumentList&)
+{
+    set_io(1, 1);
+}
+
+void ClampObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
+{
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        output_buffer[0][n] = std::clamp(input_buffer[0][n], min, max);
+    }
+}
+
+ClampObject::ClampObject(const ArgumentList& parameters)
+{
+    init(3, 1, parameters, { &min, &max });
+    link_value(&min, min, 1);
+    link_value(&max, max, 2);
+}
+
+
+void ReciprocalObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
+{
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++)
+        output_buffer[0][n] = 1.f / input_buffer[0][n];
+}
+
+ReciprocalObject::ReciprocalObject(const ArgumentList&)
+{
+    set_io(1, 1);
+}
+
+void InverseObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
+{
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++)
+        output_buffer[0][n] = -input_buffer[0][n];
+}
+
+InverseObject::InverseObject(const ArgumentList&)
+{
+    set_io(1, 1);
+}
+
+
+}

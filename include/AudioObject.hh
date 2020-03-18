@@ -58,9 +58,9 @@ protected:
     void add_gate_listener(bool* const, const size_t);
     void update_parameters(size_t);
 
-    bool is_connected(const uint) const;
 
 public:
+    bool is_connected(const uint) const;
     void implement();
         
     std::vector<AudioInput>  inputs;
@@ -72,4 +72,3 @@ public:
 };
 
 }
-

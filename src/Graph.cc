@@ -394,7 +394,16 @@ const SymbolTable<Procedure> Program::procedures = {
     }, 1, 1)},
 
     { "count_nodes", Procedure([] (const ArgumentList&, const Program* program) {
-        return Number((float) program->table.size());
+        const Program* current_program = program;
+        int num_nodes = 0;
+
+        while (true) {
+            num_nodes += current_program->table.size();
+            if (current_program->parent) current_program = current_program->parent;
+            else break;
+        }
+
+        return num_nodes;
     }, 0, 0)},
 };
 
