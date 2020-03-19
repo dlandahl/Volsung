@@ -723,10 +723,10 @@ PoleObject::PoleObject(const ArgumentList& parameters)
 void ZeroObject::process(const MultichannelBuffer& x, MultichannelBuffer& y)
 {
     update_parameters(0);
-    y[0][0] = x[0][0] + b*last_value;
+    y[0][0] = x[0][0] - b*last_value;
     for (size_t n = 1; n < AudioBuffer::blocksize; n++) {
         update_parameters(n);
-        y[0][n] = x[0][n] + b*x[0][n-1];
+        y[0][n] = x[0][n] - b*x[0][n-1];
     }
 
     last_value = x[0][AudioBuffer::blocksize - 1];
