@@ -25,6 +25,7 @@ enum class ConnectionType {
     one_to_many,
     many_to_one,
     many_to_many,
+    series,
     biclique
 };
 
@@ -37,6 +38,7 @@ class Number
 {
     float real_part = 0;
     float imag_part = 0;
+
 public:
     operator float&();
     operator float() const;
@@ -45,6 +47,9 @@ public:
     bool is_complex() const;
     float magnitude() const;
     float angle() const;
+
+    float& real();
+    float& imag();
 
     Number(float);
     Number(float, float);
@@ -87,7 +92,7 @@ class Sequence
     // static inline std::vector<std::vector<Number>> sequence_table;
     // std::vector<Number>* data;
     std::vector<Number> data;
-    
+
 public:
     size_t size() const;
     operator Text() const;

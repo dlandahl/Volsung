@@ -31,7 +31,9 @@ int main()
     const std::string code =
 R"(
 
-Sine_Oscillator~ 654 -> Add~ 100
+Noise~ -> --> [50] Zero~ -1 -> Write_File~ "series.raw", 10s
+
+&length 10s
 
 )";
 
@@ -41,10 +43,11 @@ Sine_Oscillator~ 654 -> Add~ 100
     parser.parse_program(prog);
     log("Finished parsing");
 
-    if (print) for (uint n = 0; n < sample_rate / AudioBuffer::blocksize; n++)
+    const size_t num_blocks = time / AudioBuffer::blocksize;
+    if (print) for (uint n = 0; n < num_blocks; n++)
         for (uint n = 0; n < AudioBuffer::blocksize; n++)
-            std::cout << prog.run( { AudioBuffer::zero } )[0][n] << '\n' << std::flush;
+            std::cout << prog.run()[0][n] << '\n' << std::flush;
 
-    else for (uint n = 0; n < sample_rate / AudioBuffer::blocksize; n++) prog.run();
+    else for (uint n = 0; n < num_blocks; n++) prog.run();
     prog.finish();
 }

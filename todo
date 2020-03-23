@@ -5,20 +5,19 @@ Linear_to_Decibel~
 Decibel_to_Linear~
 
 ; --- Procedures:
-cos
-modulo
-repeat
+log
+ln
 run_subgraph
-ceil
-floor
 
 
-count_nodes should recurse into subgraphs
+count_nodes should recurse into subgraphs properly
 
 Envelope_Generator~ should output gate
     -> There is a bad bug, where multiple outputs causes double free on shared pointer
 
 Write concatenation operator
+
+Write modulo operator
 
 Add named parameters to subgraphs
     -> This may allow static analysis of subgraph validity, without a dynamic instance

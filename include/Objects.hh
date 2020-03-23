@@ -393,23 +393,12 @@ public:
     ConvolveObject(const ArgumentList&);
 };
 
-class ZPlaneObject : public AudioObject
-{
-    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
-    float a1, a2, b1, b2;
-    Number pole = 0;
-    Number zero = 0;
-    
-    CircularBuffer x, y;
-    
-public:
-    ZPlaneObject(const ArgumentList&);
-};
-
 class PoleObject : public AudioObject
 {
-    float a = 0;
-    float last_value = 0.f;
+    float a1 = 0;
+    float a2 = 0;
+    Number position;
+    CircularBuffer y;
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
@@ -418,8 +407,11 @@ public:
 
 class ZeroObject : public AudioObject
 {
-    float b = 0;
-    float last_value = 0.f;
+    float b1 = 0;
+    float b2 = 0;
+    Number position;
+    CircularBuffer x;
+
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
 public:
@@ -444,6 +436,14 @@ class CeilObject : public AudioObject
 
 public:
     CeilObject(const ArgumentList&);
+};
+
+class CosObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+public:
+    CosObject(const ArgumentList&);
 };
 
 class SinObject : public AudioObject
@@ -479,5 +479,43 @@ public:
     InverseObject(const ArgumentList&);
 };
 
+
+
+
+
+
+class SignObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+public:
+    SignObject(const ArgumentList&);
+};
+
+class LogarithmObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+    float base = 2.71828182846;
+
+public:
+    LogarithmObject(const ArgumentList&);
+};
+
+class ExponentialObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+    float base = 2.71828182846;
+
+public:
+    ExponentialObject(const ArgumentList&);
+};
+
+class AtanObject : public AudioObject
+{
+    void process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+public:
+    AtanObject(const ArgumentList&);
+};
 
 }

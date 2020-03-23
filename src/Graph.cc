@@ -61,6 +61,16 @@ float Number::angle() const
     return std::atan2(imag_part, real_part);
 }
 
+float& Number::real()
+{
+    return real_part;
+}
+
+float& Number::imag()
+{
+    return imag_part;
+}
+
 Number::Number(float initial_value) : real_part(initial_value) {}
 
 Number::Number(float initial_real_part, float initial_imag_part)
@@ -225,6 +235,7 @@ std::string TypedValue::as_string() const
     return "";
 }
 
+
 void TypedValue::operator+=(const TypedValue& other)
 {
     switch(get_type()) {
@@ -331,6 +342,51 @@ const SymbolTable<Procedure> Program::procedures = {
         return std::sin(arguments[0].get_value<Number>());
     }, 1, 1, true)},
 
+    { "cos", Procedure([] (const ArgumentList& arguments, const Program*) {
+        return std::cos(arguments[0].get_value<Number>());
+    }, 1, 1, true)},
+
+    { "ceil", Procedure([] (const ArgumentList& arguments, const Program*) {
+        return std::ceil(arguments[0].get_value<Number>());
+    }, 1, 1, true)},
+
+    { "floor", Procedure([] (const ArgumentList& arguments, const Program*) {
+        return std::floor(arguments[0].get_value<Number>());
+    }, 1, 1, true)},
+
+    { "sign", Procedure([] (const ArgumentList& arguments, const Program*) {
+        return float(arguments[0].get_value<Number>()) >= 0.f ? 1 : -1;
+    }, 1, 1, true)},
+
+    { "ln", Procedure([] (const ArgumentList& arguments, const Program*) {
+        return std::log(arguments[0].get_value<Number>());
+    }, 1, 1, true)},
+
+    { "log", Procedure([] (const ArgumentList& arguments, const Program*) {
+        const float base = arguments[0].get_value<Number>();
+        const float value = arguments[1].get_value<Number>();
+
+        return std::log(value) / std::log(base);
+    }, 2, 2)},
+
+    { "sum", Procedure([] (const ArgumentList& arguments, const Program*) {
+        Number sum = 0.f;
+        Sequence sequence = arguments[0].get_value<Sequence>();
+        for (auto element: sequence) {
+            sum += element;
+        }
+        return sum;
+    }, 1, 1)},
+
+    { "average", Procedure([] (const ArgumentList& arguments, const Program*) {
+        Number sum = 0.f;
+        Sequence sequence = arguments[0].get_value<Sequence>();
+        for (auto element: sequence) {
+            sum += element;
+        }
+        return sum / sequence.size();
+    }, 1, 1)},
+
     { "Re", Procedure([] (const ArgumentList& arguments, const Program*) {
         return (float) arguments[0].get_value<Number>();
     }, 1, 1, true)},
@@ -392,6 +448,20 @@ const SymbolTable<Procedure> Program::procedures = {
 
         return (Text) program->subgraphs.at(object_type).first;
     }, 1, 1)},
+
+    { "repeat", Procedure([] (const ArgumentList& arguments, const Program*) {
+        Sequence sequence  = arguments[0].get_value<Sequence>();
+        const size_t num_repeats = arguments[1].get_value<Number>();
+        Sequence output;
+
+        for (size_t n = 0; n < num_repeats; n++) {
+            for (const auto element: sequence) {
+                output.add_element(element);
+            }
+        }
+
+        return output;
+    }, 2, 2)},
 
     { "count_nodes", Procedure([] (const ArgumentList&, const Program* program) {
         const Program* current_program = program;
@@ -459,6 +529,12 @@ void Program::connect_objects(const std::string& output_object, const uint out,
         expect_to_be_group(input_object);
         for (size_t n = 0; n < group_sizes[input_object]; n++)
             check_io_and_connect_objects(output_object, out, "__grp_" + input_object + std::to_string(n), in);
+    }
+
+    else if (type == ConnectionType::series) {
+        expect_to_be_group(input_object);
+        for (size_t n = 0; n < group_sizes[input_object] - 1; n++)
+            check_io_and_connect_objects("__grp_" + input_object + std::to_string(n), 0, "__grp_" + input_object + std::to_string(n + 1), in);
     }
 
     else if (type == ConnectionType::biclique) {

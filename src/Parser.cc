@@ -12,6 +12,7 @@ const char* VolsungException::what() const noexcept
 Token Lexer::get_next_token()
 {
     position++;
+    if (current() == '\r') position++;
     if (current() == EOF || current() == -1) return { TokenType::eof, "" };
 
     while (current() == ' ' || current() == '\t') position++;
@@ -25,6 +26,11 @@ Token Lexer::get_next_token()
         case '-':
             position++;
             if (current() == '>') return { TokenType::arrow, "" };
+            if (current() == '-') {
+                position++;
+                if (current() == '>') return { TokenType::series, "" };
+                position--;
+            }
             position--;
             return { TokenType::minus, "" };
 
@@ -186,6 +192,7 @@ static const ObjectMap object_creators =
     { "Subtract",            OBJECT(SubtractionObject) },
     { "Divide",              OBJECT(DivisionObject) },
     { "Power",               OBJECT(PowerObject) },
+    { "Exponentiate",        OBJECT(ExponentialObject) },
 
     // Signal processing
     { "Delay_Line",          OBJECT(DelayObject) },
@@ -193,18 +200,22 @@ static const ObjectMap object_creators =
     { "Envelope_Follower",   OBJECT(EnvelopeFollowerObject) },
     { "Envelope_Generator",  OBJECT(EnvelopeObject) },
     { "Clamp",               OBJECT(ClampObject) },
-    { "Comparator",          OBJECT(ComparatorObject) },
     { "Inverse",             OBJECT(InverseObject) },
+    { "Comparator",          OBJECT(ComparatorObject) },
     { "Reciprocal",          OBJECT(ReciprocalObject) },
     { "Bi_to_Unipolar",      OBJECT(BiToUnipolarObject) },
 
     // Advanced arithmetic
     { "Sin",                 OBJECT(SinObject) },
+    { "Cos",                 OBJECT(CosObject) },
     { "Tanh",                OBJECT(DriveObject) },
     { "Modulo",              OBJECT(ModuloObject) },
     { "Abs",                 OBJECT(AbsoluteValueObject) },
     { "Floor",               OBJECT(RoundObject) },
     { "Ceil",                OBJECT(CeilObject) },
+    { "Sign",                OBJECT(SignObject) },
+    { "Log",                 OBJECT(LogarithmObject) },
+    { "Atan",                OBJECT(AtanObject) },
 
     // Sequences
     { "Write_File",          OBJECT(FileoutObject) },
@@ -219,7 +230,6 @@ static const ObjectMap object_creators =
     { "Bandpass_Filter",     OBJECT(BandpassObject) },
     { "Allpass_Filter",      OBJECT(AllpassObject) },
     { "Convolver",           OBJECT(ConvolveObject) },
-    { "Z_Plane",             OBJECT(ZPlaneObject) },
     { "Pole",                OBJECT(PoleObject) },
     { "Zero",                OBJECT(ZeroObject) },
 };
@@ -446,6 +456,9 @@ void Parser::parse_connection(std::string output_object)
             default: error("Expected connection operator, got " + debug_names.at(current_token.type));
         }
 
+        const bool series_modifier = peek(TokenType::series);
+        if (series_modifier) expect(TokenType::series);
+        
         if (peek(TokenType::numeric_literal)) {
             expect(TokenType::numeric_literal);
             input_index = std::stoi(current_token.value);
@@ -455,8 +468,17 @@ void Parser::parse_connection(std::string output_object)
 
         next_token();
         input_object = get_object_to_connect();
-        program->connect_objects(output_object, output_index, input_object, input_index, connection_type);
-        output_object = input_object;
+
+        if (series_modifier) {
+            program->connect_objects(output_object, output_index, "__grp_" + input_object + "0", input_index, connection_type);
+            program->connect_objects(output_object, output_index, input_object, input_index, ConnectionType::series);
+            output_object = "__grp_" + input_object + std::to_string(program->group_sizes[input_object] - 1);
+        }
+
+        else {
+            program->connect_objects(output_object, output_index, input_object, input_index, connection_type);
+            output_object = input_object;
+        }
 
         if (peek(TokenType::vertical_bar)) {
             expect(TokenType::vertical_bar);
