@@ -103,7 +103,7 @@ class OscillatorObject : public AudioObject
     void  process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
     GateListener sync;
-    float phase     = 0;
+    double phase     = 0;
     float phase_offset = 0;
     float frequency = 100;
 
@@ -116,7 +116,7 @@ class SquareObject : public AudioObject
     void  process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
     float pw        = 0.0;
-    float phase     = 0;
+    double phase     = 0;
     float frequency = 100;
 
 public:
@@ -286,7 +286,7 @@ public:
 
 class SawObject : public AudioObject
 {
-    float phase = -1;
+    double phase = -1;
     float frequency;
     GateListener sync;
 
@@ -297,7 +297,7 @@ public:
 
 class TriangleObject : public AudioObject
 {
-    float phase = 0;
+    double phase = 0;
     float frequency;
     GateListener sync;
 
@@ -516,6 +516,20 @@ class AtanObject : public AudioObject
 
 public:
     AtanObject(const ArgumentList&);
+};
+
+
+class PhasorObject : public AudioObject
+{
+    void  process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+    GateListener sync;
+    double phase     = 0;
+    float phase_offset = 0;
+    float period = sample_rate;
+
+public:
+    PhasorObject(const ArgumentList&);
 };
 
 }

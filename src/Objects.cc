@@ -420,8 +420,9 @@ void EnvelopeObject::process(const MultichannelBuffer& input_buffer, Multichanne
 
         if (trigger.read_gate_state(input_buffer[0][n]) & GateState::just_opened) time = 0;
         if (time > length) time = (int) length;
-    
-        const float ratio = float(time) / (length + 0.001f);
+        if (length == 0.f) length = std::numeric_limits<float>::min();
+
+        const float ratio = float(time) / length;
         output_buffer[0][n] = (1-ratio) * start + ratio * end;
         time++;
     }
@@ -676,8 +677,14 @@ void PoleObject::process(const MultichannelBuffer& input_buffer, MultichannelBuf
     for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
         update_parameters(n);
 
-        a1 = -2.f * position.magnitude() * std::cos(position.angle());
-        a2 = position.magnitude() * position.magnitude();
+        if (position.imag() == 0.f) {
+            a2 = 0;
+            a1 = -position.real();
+        }
+        else {
+            a1 = -2.f * position.magnitude() * std::cos(position.angle());
+            a2 = position.magnitude() * position.magnitude();
+        }
 
         output_buffer[0][n] = y[0] = input_buffer[0][n] - a1*y[-1] - a2*y[-2];
         y.increment_pointer();
@@ -862,5 +869,26 @@ AtanObject::AtanObject(const ArgumentList&)
     set_io(1, 1);
 }
 
+
+
+void PhasorObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
+{
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        update_parameters(n);
+        if (sync.read_gate_state(input_buffer[1][n]) & GateState::just_opened)
+            phase = 0;
+
+        output_buffer[0][n] = phase + phase_offset;
+        phase += 1.0 / period;
+        if (phase >= 1.0) { phase -= 1.0; }
+    }
+}
+
+PhasorObject::PhasorObject(const ArgumentList& parameters) :  phase(0)
+{
+    init(3, 1, parameters, { &period, &phase_offset } );
+    link_value(&period, period, 0);
+    link_value(&phase_offset, phase_offset, 2);
+}
 
 }

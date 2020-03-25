@@ -17,7 +17,7 @@ int main()
         std::cout << std::setprecision(3) << message << '\n';
     };
 
-    uint time = 10;
+    uint time = 10 * sample_rate;
     bool print = false;
     Program::add_directive("length", [&time, &print] (std::vector<TypedValue> arguments, Program*) {
         time = arguments[0].get_value<Number>();
@@ -31,9 +31,7 @@ int main()
     const std::string code =
 R"(
 
-Noise~ -> --> [50] Zero~ -1 -> Write_File~ "series.raw", 10s
-
-&length 10s
+Timer~ -> *fs / 20 -> Sine_Oscillator~ -> *0.1 -> Pole~ 0.9 -> Write_File~ "Sweep", 10s
 
 )";
 

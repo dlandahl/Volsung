@@ -185,8 +185,9 @@ static const ObjectMap object_creators =
     { "Constant",            OBJECT(ConstObject) },
     { "Clock",               OBJECT(ClockObject) },
     { "Timer",               OBJECT(TimerObject) },
+    { "Phasor",              OBJECT(PhasorObject) },
 
-    // Simple Arithmetic
+    // Arithmetic
     { "Add",                 OBJECT(AddObject) },
     { "Multiply",            OBJECT(MultObject) },
     { "Subtract",            OBJECT(SubtractionObject) },
@@ -205,7 +206,7 @@ static const ObjectMap object_creators =
     { "Reciprocal",          OBJECT(ReciprocalObject) },
     { "Bi_to_Unipolar",      OBJECT(BiToUnipolarObject) },
 
-    // Advanced arithmetic
+    // Maths functions
     { "Sin",                 OBJECT(SinObject) },
     { "Cos",                 OBJECT(CosObject) },
     { "Tanh",                OBJECT(DriveObject) },
