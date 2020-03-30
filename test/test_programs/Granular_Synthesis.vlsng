@@ -75,7 +75,7 @@ Granular_Voice <0, 1>: {
 
 
 datal: read_file("chord_l")
-N: 35
+N: 5
 
 Granular_Voice~ datal, N, 150ms, 300ms
 -> output

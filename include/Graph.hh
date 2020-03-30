@@ -169,14 +169,14 @@ using Frame = std::vector<float>;
 
 class Procedure
 {
-    using Implementation = std::function<TypedValue(const ArgumentList&, const Program*)>;
+    using Implementation = std::function<TypedValue(const ArgumentList&, Program*)>;
     Implementation implementation;
 
 public:
     const size_t min_arguments;
     const size_t max_arguments;
     const bool can_be_mapped;
-    TypedValue operator()(const ArgumentList&, const Program*) const;
+    TypedValue operator()(const ArgumentList&, Program*) const;
     Procedure(Implementation, size_t, size_t, bool = false);
 };
 

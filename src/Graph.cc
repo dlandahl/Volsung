@@ -8,6 +8,7 @@
 #include <fstream>
 #include <map>
 
+#include "Parser.hh"
 #include "Graph.hh"
 #include "Objects.hh"
 
@@ -292,7 +293,7 @@ TypedValue& TypedValue::operator-()
 }
 
 
-TypedValue Procedure::operator()(const ArgumentList& args, const Program* program) const
+TypedValue Procedure::operator()(const ArgumentList& args, Program* program) const
 {
     Volsung::assert((bool) implementation, "Internal error: procedure has no implementation");
 
@@ -314,7 +315,7 @@ Procedure::Procedure(Implementation impl, size_t min_args, size_t max_args, bool
 { }
 
 const SymbolTable<Procedure> Program::procedures = {
-    { "random", Procedure([] (const ArgumentList& arguments, const Program*) -> TypedValue {
+    { "random", Procedure([] (const ArgumentList& arguments, Program*) -> TypedValue {
         float min = 0.f;
         float max = 1.f;
 
@@ -330,46 +331,50 @@ const SymbolTable<Procedure> Program::procedures = {
         return (Number) distribution(generator);
     }, 0, 2) },
 
-    { "Arg", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "Arg", Procedure([] (const ArgumentList& arguments, Program*) {
         return arguments[0].get_value<Number>().angle();
     }, 1, 1, true)},
 
-    { "abs", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "abs", Procedure([] (const ArgumentList& arguments, Program*) {
         return arguments[0].get_value<Number>().magnitude();
     }, 1, 1, true)},
 
-    { "sin", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "sin", Procedure([] (const ArgumentList& arguments, Program*) {
         return std::sin(arguments[0].get_value<Number>());
     }, 1, 1, true)},
 
-    { "cos", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "cos", Procedure([] (const ArgumentList& arguments, Program*) {
         return std::cos(arguments[0].get_value<Number>());
     }, 1, 1, true)},
 
-    { "ceil", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "ceil", Procedure([] (const ArgumentList& arguments, Program*) {
         return std::ceil(arguments[0].get_value<Number>());
     }, 1, 1, true)},
 
-    { "floor", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "floor", Procedure([] (const ArgumentList& arguments, Program*) {
         return std::floor(arguments[0].get_value<Number>());
     }, 1, 1, true)},
 
-    { "sign", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "sign", Procedure([] (const ArgumentList& arguments, Program*) {
         return float(arguments[0].get_value<Number>()) >= 0.f ? 1 : -1;
     }, 1, 1, true)},
 
-    { "ln", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "sqrt", Procedure([] (const ArgumentList& arguments, Program*) {
+        return arguments[0].get_value<Number>().exponentiate_num(0.5f);
+    }, 1, 1, true)},
+
+    { "ln", Procedure([] (const ArgumentList& arguments, Program*) {
         return std::log(arguments[0].get_value<Number>());
     }, 1, 1, true)},
 
-    { "log", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "log", Procedure([] (const ArgumentList& arguments, Program*) {
         const float base = arguments[0].get_value<Number>();
         const float value = arguments[1].get_value<Number>();
 
         return std::log(value) / std::log(base);
     }, 2, 2)},
 
-    { "sum", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "sum", Procedure([] (const ArgumentList& arguments, Program*) {
         Number sum = 0.f;
         Sequence sequence = arguments[0].get_value<Sequence>();
         for (auto element: sequence) {
@@ -378,7 +383,7 @@ const SymbolTable<Procedure> Program::procedures = {
         return sum;
     }, 1, 1)},
 
-    { "average", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "average", Procedure([] (const ArgumentList& arguments, Program*) {
         Number sum = 0.f;
         Sequence sequence = arguments[0].get_value<Sequence>();
         for (auto element: sequence) {
@@ -387,16 +392,16 @@ const SymbolTable<Procedure> Program::procedures = {
         return sum / sequence.size();
     }, 1, 1)},
 
-    { "Re", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "Re", Procedure([] (const ArgumentList& arguments, Program*) {
         return (float) arguments[0].get_value<Number>();
     }, 1, 1, true)},
 
-    { "Im", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "Im", Procedure([] (const ArgumentList& arguments, Program*) {
         const Number num = arguments[0].get_value<Number>();
         return num.subtract_num((Number) float(num));
     }, 1, 1, true)},
 
-    { "reverse", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "reverse", Procedure([] (const ArgumentList& arguments, Program*) {
         const Sequence source = arguments[0].get_value<Sequence>();
         Sequence reverse;
         for (size_t n = 1; n <= source.size(); n++) {
@@ -405,16 +410,16 @@ const SymbolTable<Procedure> Program::procedures = {
         return reverse;
     }, 1, 1)},
 
-    { "print", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "print", Procedure([] (const ArgumentList& arguments, Program*) {
         for (const auto& arg : arguments) Volsung::log(arg.as_string());
         return 0;
     }, 1, -1)},
 
-    { "length_of", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "length_of", Procedure([] (const ArgumentList& arguments, Program*) {
         return arguments[0].get_value<Sequence>().size();
     }, 1, 1)},
 
-    { "read_file", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "read_file", Procedure([] (const ArgumentList& arguments, Program*) {
         const std::string filename = arguments[0].get_value<Text>();
         std::ifstream file(filename, std::ios::in | std::ios::binary | std::ios::ate);
         if (!file) error("Could not read file, not found: '" + filename + "'");
@@ -429,7 +434,7 @@ const SymbolTable<Procedure> Program::procedures = {
         return (Sequence) out_data;
     }, 1, 1)},
 
-    { "write_file", Procedure([](const ArgumentList& arguments, const Program*) {
+    { "write_file", Procedure([](const ArgumentList& arguments, Program*) {
         const Sequence in_data = arguments[1].get_value<Sequence>();
         const std::string filename = arguments[0].get_value<Text>();
 
@@ -441,7 +446,7 @@ const SymbolTable<Procedure> Program::procedures = {
         return Number(0);
     }, 2, 2)},
 
-    { "implementation_of", Procedure([] (const ArgumentList& arguments, const Program* program) {
+    { "implementation_of", Procedure([] (const ArgumentList& arguments, Program* program) {
         const std::string object_type = arguments[0].get_value<Text>();
         if (!program->subgraphs.count(object_type))
             error("'implementation_of(" + object_type + ")': Subgraph implementation not found");
@@ -449,7 +454,7 @@ const SymbolTable<Procedure> Program::procedures = {
         return (Text) program->subgraphs.at(object_type).first;
     }, 1, 1)},
 
-    { "repeat", Procedure([] (const ArgumentList& arguments, const Program*) {
+    { "repeat", Procedure([] (const ArgumentList& arguments, Program*) {
         Sequence sequence  = arguments[0].get_value<Sequence>();
         const size_t num_repeats = arguments[1].get_value<Number>();
         Sequence output;
@@ -463,8 +468,8 @@ const SymbolTable<Procedure> Program::procedures = {
         return output;
     }, 2, 2)},
 
-    { "count_nodes", Procedure([] (const ArgumentList&, const Program* program) {
-        const Program* current_program = program;
+    { "count_nodes", Procedure([] (const ArgumentList&, Program* program) {
+        Program* current_program = program;
         int num_nodes = 0;
 
         while (true) {
@@ -475,6 +480,23 @@ const SymbolTable<Procedure> Program::procedures = {
 
         return num_nodes;
     }, 0, 0)},
+
+    { "import_library", Procedure([] (const ArgumentList& arguments, Program* program) {
+        const std::string filename = arguments[0].get_value<Text>();
+        const std::ifstream file(filename);
+
+        if (!file) error("Library not available: '" + filename + "'");
+        Parser parser;
+
+        {
+            std::stringstream buffer;
+            buffer << file.rdbuf();
+            parser.source_code = buffer.str();
+        }
+
+        parser.parse_program(*program);
+        return Number(0);
+    }, 1, 1)},
 };
 
 void Program::create_user_object(const std::string& name, const uint num_inputs, const uint num_outputs, std::any user_data, const AudioProcessingCallback callback)

@@ -35,7 +35,7 @@ int main()
             buffer << std::ifstream(file.path()).rdbuf();
             parser.source_code = buffer.str();
         }
-        
+
         if (!parser.parse_program(*program)) {
             std::cout << "[" << Ansi_Red << "Failed test" << Ansi_Reset << "] ";
             std::cout << "Parsing " << (std::string) file.path().stem();

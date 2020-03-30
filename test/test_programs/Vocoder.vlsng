@@ -22,7 +22,7 @@ Vocoder <2, 1>: {
 }
 
 ; Make a vocoder with twenty-four bands
-voc: Vocoder~ 24
+voc: Vocoder~ 12
 
 ; Acquire carrier and modulator signals
 carrier: [4] Saw_Oscillator~ n*85
@@ -30,4 +30,3 @@ modulator: Read_File~ "drumbeat"
 
 carrier >> 1|voc
 modulator -> voc -> output
-

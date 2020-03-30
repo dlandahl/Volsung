@@ -31,7 +31,9 @@ int main()
     const std::string code =
 R"(
 
-Timer~ -> *fs / 20 -> Sine_Oscillator~ -> *0.1 -> Pole~ 0.9 -> Write_File~ "Sweep", 10s
+import_library("filter_design")
+Noise~ -> Unity_Gain_Pole~ 0.01 - 0.9i -> Write_File~ "Test.raw", 10s
+&length 10s
 
 )";
 

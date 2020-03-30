@@ -237,18 +237,24 @@ static const ObjectMap object_creators =
 #undef OBJECT
 
 
+static void try_add_symbol(const std::string& name, const TypedValue& value, Graph* const program)
+{
+    if (program->symbol_exists(name)) return;
+    program->add_symbol(name, value);
+}
+
 bool Parser::parse_program(Graph& graph)
 {
     program = &graph;
-    program->add_symbol("sample_rate", sample_rate);
-    program->add_symbol("fs", sample_rate);
-    program->add_symbol("tau", TAU);
-    program->add_symbol("pi", TAU / 2.f);
-    program->add_symbol("true", 1);
-    program->add_symbol("false", 0);
-    program->add_symbol("i", Number(0, 1));
-    program->add_symbol("e", 2.718281828459045f);
-    program->add_symbol("blocksize", AudioBuffer::blocksize);
+    try_add_symbol("sample_rate", sample_rate, program);
+    try_add_symbol("fs", sample_rate, program);
+    try_add_symbol("tau", TAU, program);
+    try_add_symbol("pi", TAU / 2.f, program);
+    try_add_symbol("true", 1, program);
+    try_add_symbol("false", 0, program);
+    try_add_symbol("i", Number(0, 1), program);
+    try_add_symbol("e", 2.718281828459045f, program);
+    try_add_symbol("blocksize", AudioBuffer::blocksize, program);
 
     try {
 
@@ -273,12 +279,12 @@ bool Parser::parse_program(Graph& graph)
                 error("Expected colon or connection operator, got " + debug_names.at(current_token.type));
             }
         }
-        
+
         else if (peek(TokenType::object) || peek(TokenType::open_bracket)) {
             next_token();
             parse_connection();
         }
-        
+
         else if (peek(TokenType::ampersand)) parse_directive();
         else {
             next_token();
