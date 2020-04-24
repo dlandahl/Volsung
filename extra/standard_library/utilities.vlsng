@@ -1,0 +1,89 @@
+
+Real_Pole <1, 1>: {
+    pos: Re(_1)
+    input -> *1-pos -> Pole~ pos -> output
+}
+
+Feedforward_Comb <1, 1>: {
+    input -> Delay_Line~ _1 -> *0.5 -> output
+    input -> *0.5 -> output
+}
+
+Feedback_Comb <1, 1>: {
+    input -> sum: Add~ -> Delay_Line~ _1 -> *-0.5 -> 1|sum
+    -> *0.5 -> output
+}
+
+Filter_Bank <1, 1>: {
+    freqs: _1
+    N: length_of(freqs)
+
+    input <> [N] Bandpass_Filter~ freqs[n-1], sqrt(2) / 2 >> Divide~ N -> output
+}
+
+Leaky_Integrator <1, 1>: {
+    input -> ^2 -> Pole~ 0.99 -> output
+}
+
+Splitter <1, 3>: {
+    low: _1
+    high: _2
+
+    mid: ( low^(1/2) + (high^(1/2) - low^(1/2)) / 2 ) ^2
+
+    linkril_q: 0.5
+    input -> Lowpass_Filter~ low, linkril_q -> 0|output
+    input -> Bandpass_Filter~ mid, linkril_q -> Inverse~ -> 1|output
+    input -> Highpass_Filter~ high, linkril_q -> 2|output
+}
+
+Switch <1, 2>: {
+    input <> bypass: [2] Multiply~ _1 - (n-1) * -(n-1)
+    bypass[0] -> 0|output
+    bypass[1] -> 1|output
+}
+
+Random <1, 1>: {
+    ; Generates a random value when pinged
+    min: _1
+    max: _2
+
+    Noise~ -> snh: Sample_And_Hold~
+    -> Bi_to_Unipolar~
+    -> *max - min
+    -> +min
+    -> output
+
+    input -> 1|snh
+}
+
+Random_Interval_Clock <0, 1>: {
+    clock: Clock~ 1ms
+    -> Random~ _1, _2
+    -> clock -> output
+}
+
+Delay_Modulator <0, 1>: {
+    ; A subgraph that modulates a delay buffer relative to its length
+
+    size: _1
+    rate: _2
+    mod_depth: _3
+
+    Sine_Oscillator~ rate, random(tau)
+    -> Bi_to_Unipolar~
+    -> Multiply~    size * mod_depth
+    -> Add~  size - size * mod_depth
+    -> output
+}
+
+Linear_to_Decibel <1, 1>: {
+    input -> Log~ 10 -> *20 -> output
+}
+
+Decibel_to_Linear <1, 1>: {
+    input -> *0.05 -> Exponentiate~ 10 -> output
+}
+
+butterworth_q: sqrt(2) / 2
+linkril_q: 0.5
