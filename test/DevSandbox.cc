@@ -31,9 +31,12 @@ int main()
     const std::string code =
 R"(
 
-import_library("filter_design")
-Noise~ -> Unity_Gain_Pole~ 0.01 - 0.9i -> Write_File~ "Test.raw", 10s
-&length 10s
+test <0, 1>: {
+    print("test")
+    Clock~ 2 -> output
+}
+
+print(run_subgraph("test", 10))
 
 )";
 

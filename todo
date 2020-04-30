@@ -9,23 +9,13 @@ Parameter~
 run_subgraph
 
 ; --- Library stuff
-Real_Pole~
 Leaky_Integrator~
-Feedforward_Comb~
-Feedback_Comb~
-Filter_Bank~
-Bandsplitter~
-Switch~
 Reverb~
 Compressor~
-Random~
-Random_Interval_Clock~
-Buffer_Modulator~
 Stereo_Delay~
 
 Many scales, musical pitches
 Some wavetables
-Filter constants (biquad_q, linkril_q)
 Impulse responses
 
 

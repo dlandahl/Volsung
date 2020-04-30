@@ -457,8 +457,8 @@ public:
 class ClampObject : public AudioObject
 {
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
-    float min;
-    float max;
+    float min = 0.f;
+    float max = 1.f;
 public:
     ClampObject(const ArgumentList&);
 };

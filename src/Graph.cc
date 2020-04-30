@@ -497,6 +497,29 @@ const SymbolTable<Procedure> Program::procedures = {
         parser.parse_program(*program);
         return Number(0);
     }, 1, 1)},
+
+    { "run_subgraph", Procedure([] (const ArgumentList& arguments, Program* program) {
+        Graph meta_graph;
+        Parser parser;
+
+        const SubgraphRepresentation& subgraph_rep = program->subgraphs[arguments[0].get_value<Text>()];
+        const float sample_count = arguments[1].get_value<Number>();
+        parser.source_code = subgraph_rep.first;
+
+        meta_graph.configure_io(subgraph_rep.second[0], subgraph_rep.second[1]);
+        meta_graph.reset();
+        parser.parse_program(meta_graph);
+
+        Sequence ret;
+        for (size_t n = 0; n < sample_count / AudioBuffer::blocksize; n++) {
+            auto data = meta_graph.run();
+            for (auto const value: data[0]) {
+                if (ret.size() >= sample_count) break;
+                ret.add_element(value);
+            }
+        }
+        return ret;
+    }, 2, 2)},
 };
 
 void Program::create_user_object(const std::string& name, const uint num_inputs, const uint num_outputs, std::any user_data, const AudioProcessingCallback callback)

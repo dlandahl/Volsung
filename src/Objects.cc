@@ -85,6 +85,8 @@ FileoutObject::FileoutObject(const ArgumentList& parameters)
 {
     if (!parameters.size()) error("Expected a string argument on file object");
     filename = static_cast<std::string> (parameters[0].get_value<Text>());
+
+    if (!parameters.size() - 1) error("Expected a size to write to file");
     size = parameters[1].get_value<Number>();
     data.resize(size);
     set_io(1, 0);
