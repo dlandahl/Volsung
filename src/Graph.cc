@@ -152,6 +152,8 @@ Number Number::multiply_num(const Number& other) const
 Number Number::divide_num(const Number& other) const
 {
     if (is_complex()) {
+        if (!other.is_complex()) return Number(real_part / other.real_part, imag_part / other.real_part);
+
         const Number conjugate = Number(real_part, -imag_part);
         const Number denominator = other.multiply_num(conjugate);
         const Number inter = multiply_num(conjugate);
@@ -351,6 +353,14 @@ const SymbolTable<Procedure> Program::procedures = {
         return std::ceil(arguments[0].get_value<Number>());
     }, 1, 1, true)},
 
+    { "tanh", Procedure([] (const ArgumentList& arguments, Program*) {
+        return std::tanh(arguments[0].get_value<Number>());
+    }, 1, 1, true)},
+
+    { "atan", Procedure([] (const ArgumentList& arguments, Program*) {
+        return std::atan(arguments[0].get_value<Number>());
+    }, 1, 1, true)},
+
     { "floor", Procedure([] (const ArgumentList& arguments, Program*) {
         return std::floor(arguments[0].get_value<Number>());
     }, 1, 1, true)},
@@ -411,7 +421,9 @@ const SymbolTable<Procedure> Program::procedures = {
     }, 1, 1)},
 
     { "print", Procedure([] (const ArgumentList& arguments, Program*) {
-        for (const auto& arg : arguments) Volsung::log(arg.as_string());
+        std::string message = "";
+        for (const auto& arg : arguments) message += arg.as_string();
+        Volsung::log(message);
         return 0;
     }, 1, -1)},
 
@@ -520,6 +532,27 @@ const SymbolTable<Procedure> Program::procedures = {
         }
         return ret;
     }, 2, 2)},
+
+    { "DFT", Procedure([] (const ArgumentList& arguments, Program*) {
+        Sequence data = arguments[0].get_value<Sequence>();
+        Sequence ret;
+
+        for (size_t n = 0; n < data.size(); n++)
+        {
+            Number complex;
+            for (size_t s = 0; s < data.size(); s++)
+            {
+                float real = data[s] * std::sin(TAU * s * n / data.size());
+                float imag = data[s] * std::cos(TAU * s * n / data.size()) * -1.f;
+    
+                complex = complex.add_num(Number(real, imag));
+            }
+            complex = complex.divide_num(Number(data.size(), 0));
+            ret.add_element(complex);
+        }
+
+        return ret;
+    }, 1, 1)},
 };
 
 void Program::create_user_object(const std::string& name, const uint num_inputs, const uint num_outputs, std::any user_data, const AudioProcessingCallback callback)

@@ -140,7 +140,7 @@ class Parser : public Lexer
     Number parse_number();
     void parse_directive();
 
-    TypedValue parse_procedure_call(const std::string&);
+    TypedValue parse_procedure_call(const std::string&, TypedValue = 0, bool = false);
     std::string get_object_to_connect();
     void make_object(const std::string&, const std::string&, const ArgumentList&);
     std::string parse_object_declaration(std::string = "");
@@ -149,6 +149,7 @@ class Parser : public Lexer
     TypedValue parse_sequence_generator();
     TypedValue parse_product();
     TypedValue parse_power();
+    TypedValue parse_unary_postfix();
     TypedValue parse_factor();
 
     int inline_object_index = 0;

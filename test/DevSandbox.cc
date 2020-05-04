@@ -31,12 +31,9 @@ int main()
     const std::string code =
 R"(
 
-test <0, 1>: {
-    print("test")
-    Clock~ 2 -> output
-}
+a: "test\n".print()
 
-print(run_subgraph("test", 10))
+a.print()
 
 )";
 

@@ -108,7 +108,14 @@ Token Lexer::get_next_token()
         std::string string;
         position++;
         while (current() != '"') {
-            string += current();
+            
+            if (current() == '\\') {
+                position++;
+                if (current() == 'n') string += '\n';
+                else position--;
+            }
+
+            else string += current();
             position++;
         }
         return { TokenType::string_literal, string };
@@ -267,17 +274,23 @@ bool Parser::parse_program(Graph& graph)
             next_token();
             if (peek(TokenType::colon)) parse_declaration();
             else if (peek_connection()) parse_connection();
-            else if (peek(TokenType::open_paren)) {
-                const std::string id = current_token.value;
+            else if (peek(TokenType::open_paren) || peek(TokenType::dot)) {
+                parse_expression();
+            /* const std::string id = current_token.value;
                 parse_procedure_call(id);
-                if (!(peek(TokenType::newline) || peek(TokenType::eof))) error ("Expected newline after procedure call");
-                next_token();
+                next_token(); */
+                if (!(peek(TokenType::newline) || peek(TokenType::eof))) error ("Expected newline after expression");
             }
             else if (peek(TokenType::less_than)) parse_subgraph_declaration();
             else {
                 next_token();
                 error("Expected colon or connection operator, got " + debug_names.at(current_token.type));
             }
+        }
+
+        else if (peek_expression()) {
+            next_token();
+            parse_expression();
         }
 
         else if (peek(TokenType::object) || peek(TokenType::open_bracket)) {
@@ -689,13 +702,52 @@ TypedValue Parser::parse_product()
 
 TypedValue Parser::parse_power()
 {
-    TypedValue value = parse_factor();
+    TypedValue value = parse_unary_postfix();
     if (peek(TokenType::caret)) {
         expect(TokenType::caret);
         next_token();
         const TypedValue operand = parse_power();
 
         value ^= operand;
+    }
+    return value;
+}
+
+TypedValue Parser::parse_unary_postfix()
+{
+    TypedValue value = parse_factor();
+    while (peek(TokenType::open_bracket) || peek(TokenType::dot)) {
+        if (peek(TokenType::open_bracket)) {
+            expect(TokenType::open_bracket);
+            if (!value.is_type<Sequence>()) error("Attempted to subscript non-sequence");
+            next_token();
+    
+            const TypedValue index = parse_expression();
+            expect(TokenType::close_bracket);
+    
+            if (index.is_type<Number>()) {
+                value = value.get_value<Sequence>()[(int) index.get_value<Number>()];
+            }
+    
+            else if (index.is_type<Sequence>()) {
+                Sequence s;
+                const Sequence& index_sequence = index.get_value<Sequence>();
+                const Sequence& value_sequence = value.get_value<Sequence>();
+    
+                for (size_t n = 0; n < index_sequence.size(); n++)
+                    s.add_element(value_sequence[(size_t) index_sequence[(size_t) n]]);
+    
+                value = s;
+            }
+            
+            else error("Index into sequence must be a number or a sequence");
+        }
+        else {
+            expect(TokenType::dot);
+            expect(TokenType::identifier);
+            const std::string id = current_token.value;
+            value = parse_procedure_call(id, value, true);
+        }
     }
     return value;
 }
@@ -729,33 +781,6 @@ TypedValue Parser::parse_factor()
 
         default: error("Couldn't get value of expression factor of token type " + debug_names.at(current_token.type));
     }
-
-    if (peek(TokenType::open_bracket)) {
-        expect(TokenType::open_bracket);
-        if (!value.is_type<Sequence>()) error("Attempted to subscript non-sequence");
-        next_token();
-
-        const TypedValue index = parse_expression();
-        expect(TokenType::close_bracket);
-
-        if (index.is_type<Number>()) {
-            value = value.get_value<Sequence>()[(int) index.get_value<Number>()];
-        }
-
-        else if (index.is_type<Sequence>()) {
-            Sequence s;
-            const Sequence& index_sequence = index.get_value<Sequence>();
-            const Sequence& value_sequence = value.get_value<Sequence>();
-
-            for (size_t n = 0; n < index_sequence.size(); n++)
-                s.add_element(value_sequence[(size_t) index_sequence[(size_t) n]]);
-
-            value = s;
-        }
-        
-        else error("Index into sequence must be a number or a sequence");
-    }
-
 
     return value;
 }
@@ -806,25 +831,28 @@ Sequence Parser::parse_sequence()
     return s;
 }
 
-TypedValue Parser::parse_procedure_call(const std::string& name)
+TypedValue Parser::parse_procedure_call(const std::string& name, TypedValue lhs, bool use_lhs)
 {
     ArgumentList arguments;
+    
+    if (use_lhs) arguments.push_back(lhs);
+
     expect(TokenType::open_paren);
     if (peek_expression()) {
         next_token();
         arguments.push_back(parse_expression());
-    }
 
-    while (peek(TokenType::comma)) {
-        expect(TokenType::comma);
-        next_token();
-        arguments.push_back(parse_expression());
+        while (peek(TokenType::comma)) {
+            expect(TokenType::comma);
+            next_token();
+            arguments.push_back(parse_expression());
+        }
     }
     expect(TokenType::close_paren);
 
     if (!Program::procedures.count(name)) error("Procedure does not exist: '" + name + "'");
     auto& procedure = Program::procedures.at(name);
-    
+
     if (procedure.max_arguments < arguments.size())
         Volsung::error("Too many arguments in procedure call to '" + name +"'. Expected " + std::to_string(procedure.max_arguments) +", got " + std::to_string(arguments.size()));
 
