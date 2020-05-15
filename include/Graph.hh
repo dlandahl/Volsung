@@ -61,6 +61,8 @@ public:
     TypedValue divide(const TypedValue&);
     TypedValue exponentiate(const TypedValue&);
 
+    Number negated() const;
+
     Number add_num(const Number&) const;
     Number subtract_num(const Number&) const;
     Number multiply_num(const Number&) const;

@@ -31,9 +31,7 @@ int main()
     const std::string code =
 R"(
 
-a: "test\n".print()
-
-a.print()
+(e^(pi*i)).print()
 
 )";
 

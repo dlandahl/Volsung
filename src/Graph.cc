@@ -72,6 +72,11 @@ float& Number::imag()
     return imag_part;
 }
 
+Number Number::negated() const
+{
+    return Number(-real_part, -imag_part);
+}
+
 Number::Number(float initial_value) : real_part(initial_value) {}
 
 Number::Number(float initial_real_part, float initial_imag_part)
@@ -287,7 +292,7 @@ void TypedValue::operator^=(const TypedValue& other)
 TypedValue& TypedValue::operator-()
 {
     switch(get_type()) {
-        case(Type::number): *this = -this->get_value<Number>(); break;
+        case(Type::number): *this = this->get_value<Number>().negated(); break;
         case(Type::sequence): for (auto& value: this->get_value<Sequence>()) value = -value; break;
         case(Type::text): error("Attempted to negate expression of type string");
     }

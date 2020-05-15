@@ -87,6 +87,7 @@ Token Lexer::get_next_token()
         while (is_digit()) {
             value += current();
             position++;
+            if (current() == ' ') position++;
         }
         position--;
         return { TokenType::numeric_literal, value };
@@ -121,7 +122,7 @@ Token Lexer::get_next_token()
         return { TokenType::string_literal, string };
     }
 
-    error("Unrecognised Token: " + std::to_string(current()));
+    error("Unrecognised Token: " + std::string(1, current()));
     return { TokenType::invalid, "" };
 }
 
