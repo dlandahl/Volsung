@@ -5,7 +5,7 @@ Grain <1, 1>: {
     start_time: random(500ms, 2000ms)
 
     ; Smoothing for the amplitude envelope of the grain
-    input -> Envelope_Generator~ 75ms
+    input -> Envelope_Generator~ 40ms
     -> Smooth~ 7
     -> 1|envelope: Multiply~
 
@@ -75,7 +75,7 @@ Granular_Voice <0, 1>: {
 
 
 datal: read_file("chord_l")
-N: 5
+N: 20
 
-Granular_Voice~ datal, N, 150ms, 300ms
+Granular_Voice~ datal, N, 200ms, 400ms
 -> output

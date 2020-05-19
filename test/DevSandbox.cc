@@ -31,7 +31,11 @@ int main()
     const std::string code =
 R"(
 
-(e^(pi*i)).print()
+get_RMS: |buffer| { sqrt(sum(buffer^2) / length_of(buffer)) }
+
+buffer: read_file("drumbeat")
+
+print(buffer.get_RMS())
 
 )";
 

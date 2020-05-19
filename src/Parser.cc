@@ -17,7 +17,7 @@ Token Lexer::get_next_token()
 
     while (current() == ' ' || current() == '\t') position++;
     if (current() == ';') while (current() != '\n') position++;
-    
+
     switch(current()) {
         case '\n':
             line++;
@@ -109,7 +109,7 @@ Token Lexer::get_next_token()
         std::string string;
         position++;
         while (current() != '"') {
-            
+
             if (current() == '\\') {
                 position++;
                 if (current() == 'n') string += '\n';
@@ -160,7 +160,8 @@ bool Lexer::peek_expression()
 {
     return peek(TokenType::numeric_literal) || peek(TokenType::minus)
         || peek(TokenType::string_literal)  || peek(TokenType::open_brace)
-        || peek(TokenType::open_paren)      || peek(TokenType::identifier);
+        || peek(TokenType::open_paren)      || peek(TokenType::identifier)
+        || peek(TokenType::vertical_bar);
 }
 
 bool Lexer::peek_connection()
@@ -479,7 +480,7 @@ void Parser::parse_connection(std::string output_object)
 
         const bool series_modifier = peek(TokenType::series);
         if (series_modifier) expect(TokenType::series);
-        
+
         if (peek(TokenType::numeric_literal)) {
             expect(TokenType::numeric_literal);
             input_index = std::stoi(current_token.value);
@@ -522,7 +523,7 @@ void Parser::parse_connection(std::string output_object)
 std::string Parser::get_object_to_connect()
 {
     std::string output;
-    
+
     if (current_token_is(TokenType::plus)
      || current_token_is(TokenType::minus)
      || current_token_is(TokenType::asterisk)
@@ -551,14 +552,14 @@ std::string Parser::get_object_to_connect()
 
     else if (current_token_is(TokenType::identifier)) {
         output = current_token.value;
-        
+
         if (peek(TokenType::colon)) {
             next_token();
             next_token();
             parse_object_declaration(output);
         }
         Volsung::assert(program->object_exists(output), "Undefined object: " + output);
-        
+
         if (peek(TokenType::open_bracket)) {
             expect(TokenType::open_bracket);
             next_token();
@@ -613,10 +614,10 @@ void Parser::parse_subgraph_declaration()
     expect(TokenType::colon);
     expect(TokenType::open_brace);
     expect(TokenType::newline);
-    
+
     const size_t start_position = position;
     int num_braces_encountered = 0;
-    
+
     while (true) {
         position++;
         if (current() == '}') {
@@ -722,25 +723,25 @@ TypedValue Parser::parse_unary_postfix()
             expect(TokenType::open_bracket);
             if (!value.is_type<Sequence>()) error("Attempted to subscript non-sequence");
             next_token();
-    
+
             const TypedValue index = parse_expression();
             expect(TokenType::close_bracket);
-    
+
             if (index.is_type<Number>()) {
                 value = value.get_value<Sequence>()[(int) index.get_value<Number>()];
             }
-    
+
             else if (index.is_type<Sequence>()) {
                 Sequence s;
                 const Sequence& index_sequence = index.get_value<Sequence>();
                 const Sequence& value_sequence = value.get_value<Sequence>();
-    
+
                 for (size_t n = 0; n < index_sequence.size(); n++)
                     s.add_element(value_sequence[(size_t) index_sequence[(size_t) n]]);
-    
+
                 value = s;
             }
-            
+
             else error("Index into sequence must be a number or a sequence");
         }
         else {
@@ -779,6 +780,53 @@ TypedValue Parser::parse_factor()
             next_token();
             value = -parse_product();
             break;
+
+        case TokenType::vertical_bar: {
+            std::vector<std::string> ids;
+
+            if (peek(TokenType::identifier)) while (true) {
+                expect(TokenType::identifier);
+                ids.push_back(current_token.value);
+                if (peek(TokenType::comma)) next_token();
+                else break;
+            }
+
+            expect(TokenType::vertical_bar);
+            expect(TokenType::open_brace);
+
+            const size_t start_position = position + 1;
+            int num_braces_encountered = 0;
+
+            while (true) {
+                position++;
+                if (current() == '}') {
+                    if (!num_braces_encountered) break;
+                    num_braces_encountered--;
+                }
+                if (current() == '\n') line++;
+                if (current() == EOF || current() == -1) error("Program ended with incomplete function definition");
+                if (current() == '{') num_braces_encountered++;
+            }
+
+            position--;
+            const std::string expression_text = source_code.substr(start_position, position - start_position);
+            expect(TokenType::close_brace);
+
+            Procedure::Implementation impl = [ids, expression_text] (const ArgumentList& args, Program*) {
+                Graph graph;
+
+                for (size_t n = 0; n < args.size() && n < ids.size(); n++)
+                    graph.add_symbol(ids[n], args[n]);
+
+                Parser parser;
+                parser.program = &graph;
+                parser.source_code = expression_text;
+                parser.next_token();
+                return parser.parse_expression();
+            };
+
+            value = Procedure(impl, ids.size(), ids.size(), false);
+        } break;
 
         default: error("Couldn't get value of expression factor of token type " + debug_names.at(current_token.type));
     }
@@ -835,7 +883,7 @@ Sequence Parser::parse_sequence()
 TypedValue Parser::parse_procedure_call(const std::string& name, TypedValue lhs, bool use_lhs)
 {
     ArgumentList arguments;
-    
+
     if (use_lhs) arguments.push_back(lhs);
 
     expect(TokenType::open_paren);
@@ -851,8 +899,11 @@ TypedValue Parser::parse_procedure_call(const std::string& name, TypedValue lhs,
     }
     expect(TokenType::close_paren);
 
-    if (!Program::procedures.count(name)) error("Procedure does not exist: '" + name + "'");
-    auto& procedure = Program::procedures.at(name);
+    Procedure procedure = [&name, this] () -> Procedure {
+        if (Program::procedures.count(name)) return Program::procedures.at(name);
+        if (program->symbol_exists(name)) return program->get_symbol_value(name).get_value<Procedure>();
+        error("Procedure does not exist: '" + name + "'");
+    }();
 
     if (procedure.max_arguments < arguments.size())
         Volsung::error("Too many arguments in procedure call to '" + name +"'. Expected " + std::to_string(procedure.max_arguments) +", got " + std::to_string(arguments.size()));

@@ -115,6 +115,7 @@ FileinObject::FileinObject(const ArgumentList& parameters)
         file.seekg(0);
         file.read(reinterpret_cast<char*>(data.data()), data.size() * sizeof(float));
     }
+    else error("Input file '" + filename + "' could not be read, not found");
     set_io(0, 1);
 }
 

@@ -11,4 +11,3 @@ threshold: [N] Comparator~ n / 20
 
 partials => [N] Divide~ n => gate >> *0.3 -> output
 Timer~ <> threshold => 1|gate
-

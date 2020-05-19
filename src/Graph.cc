@@ -94,7 +94,7 @@ TypedValue Number::op(const TypedValue& other)                                  
             for (auto& element: seq) element = op##_num(element);               \
             return seq;                                                         \
         }                                                                       \
-        case (Type::text): error("Cannot perform arithmetic on expression of type 'Text'");       \
+        default: error("Attempted to perform arithmetic on non-numeric value"); \
     }                                                                           \
     return TypedValue(0);                                                       \
 }                                                                               \
@@ -122,7 +122,7 @@ TypedValue Sequence::op(const TypedValue& other)                                
                 seq[n] = data[n].op##_num(seq[n]);                              \
             return seq;                                                         \
         }                                                                       \
-        case (Type::text): error("Cannot perform arithmetic on expression of type 'Text'");       \
+        default: error("Attempted to perform arithmetic on non-numeric value"); \
     }                                                                           \
     return TypedValue(0);                                                       \
 }                                                                               \
@@ -230,6 +230,7 @@ Type TypedValue::get_type() const
 {
     if (is_type<Number>()) return Type::number;
     if (is_type<Sequence>()) return Type::sequence;
+    if (is_type<Procedure>()) return Type::procedure;
     return Type::text;
 }
 
@@ -239,6 +240,7 @@ std::string TypedValue::as_string() const
         case(Type::number): return (Text) get_value<Number>();
         case(Type::sequence): return (Text) get_value<Sequence>();
         case(Type::text): return get_value<Text>();
+        case(Type::procedure): return "PROCEDURE";
     }
     return "";
 }
@@ -249,7 +251,7 @@ void TypedValue::operator+=(const TypedValue& other)
     switch(get_type()) {
         case(Type::number): *this = get_value<Number>().add(other); break;
         case(Type::sequence): *this = get_value<Sequence>().add(other); break;
-        case(Type::text): error("Attempted to add expression of type string");
+        default: error("Attempted to perform arithmetic on non-numeric value");
     }
 }
 
@@ -258,7 +260,7 @@ void TypedValue::operator-=(const TypedValue& other)
     switch(get_type()) {
         case(Type::number): *this = get_value<Number>().subtract(other); break;
         case(Type::sequence): *this = get_value<Sequence>().subtract(other); break;
-        case(Type::text): error("Attempted to subtract expression of type string");
+        default: error("Attempted to perform arithmetic on non-numeric value");
     }
 }
 
@@ -267,7 +269,7 @@ void TypedValue::operator*=(const TypedValue& other)
     switch(get_type()) {
         case(Type::number): *this = get_value<Number>().multiply(other); break;
         case(Type::sequence): *this = get_value<Sequence>().multiply(other); break;
-        case(Type::text): error("Attempted to multiply expression of type string");
+        default: error("Attempted to perform arithmetic on non-numeric value");
     }
 }
 
@@ -276,7 +278,7 @@ void TypedValue::operator/=(const TypedValue& other)
     switch(get_type()) {
         case(Type::number): *this = get_value<Number>().divide(other); break;
         case(Type::sequence): *this = get_value<Sequence>().divide(other); break;
-        case(Type::text): error("Attempted to divide expression of type string");
+        default: error("Attempted to perform arithmetic on non-numeric value");
     }
 }
 
@@ -285,7 +287,7 @@ void TypedValue::operator^=(const TypedValue& other)
     switch(get_type()) {
         case(Type::number): *this = get_value<Number>().exponentiate(other); break;
         case(Type::sequence): *this = get_value<Sequence>().exponentiate(other); break;
-        case(Type::text): error("Attempted to exponentiate expression of type string");
+        default: error("Attempted to perform arithmetic on non-numeric value");
     }
 }
 
@@ -294,7 +296,7 @@ TypedValue& TypedValue::operator-()
     switch(get_type()) {
         case(Type::number): *this = this->get_value<Number>().negated(); break;
         case(Type::sequence): for (auto& value: this->get_value<Sequence>()) value = -value; break;
-        case(Type::text): error("Attempted to negate expression of type string");
+        default: error("Attempted to perform arithmetic on non-numeric value");
     }
     return *this;
 }
@@ -304,7 +306,7 @@ TypedValue Procedure::operator()(const ArgumentList& args, Program* program) con
 {
     Volsung::assert((bool) implementation, "Internal error: procedure has no implementation");
 
-    if (can_be_mapped && args[0].is_type<Sequence>()) {
+    if (can_be_mapped && args.size() && args[0].is_type<Sequence>()) {
         auto sequence = args[0].get_value<Sequence>();
         auto parameters = args;
 
@@ -434,6 +436,10 @@ const SymbolTable<Procedure> Program::procedures = {
 
     { "length_of", Procedure([] (const ArgumentList& arguments, Program*) {
         return arguments[0].get_value<Sequence>().size();
+    }, 1, 1)},
+
+    { "type_of", Procedure([] (const ArgumentList& arguments, Program*) {
+        return Text(type_name(arguments[0].get_type()));
     }, 1, 1)},
 
     { "read_file", Procedure([] (const ArgumentList& arguments, Program*) {
