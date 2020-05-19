@@ -31,11 +31,13 @@ int main()
     const std::string code =
 R"(
 
-get_RMS: |buffer| { sqrt(sum(buffer^2) / length_of(buffer)) }
+test: |x| { x^2 }
 
-buffer: read_file("drumbeat")
+Sine_Oscillator~ 440
+-> Invoke~ test
+-> Write_File~ "invocation_test", 10s
 
-print(buffer.get_RMS())
+&length 10s
 
 )";
 

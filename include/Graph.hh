@@ -134,20 +134,27 @@ public:
 using ArgumentList = std::vector<TypedValue>;
 class Procedure
 {
-    public: using Implementation = std::function<TypedValue(const ArgumentList&, Program*)>;
-    private: Implementation implementation;
-
 public:
+    using Implementation = std::function<TypedValue(const ArgumentList&, Program*)>;
+    Implementation implementation;
+
     const size_t min_arguments;
     const size_t max_arguments;
     const bool can_be_mapped;
+
     TypedValue operator()(const ArgumentList&, Program*) const;
     Procedure(Implementation, size_t, size_t, bool = false);
 
     Procedure& operator=(const Procedure& proc) {
         *this = proc;
         return *this;
-    };
+    }
+
+    Procedure(const Procedure& proc) : min_arguments(proc.min_arguments),
+                                       max_arguments(proc.max_arguments),
+                                       can_be_mapped(proc.can_be_mapped) {
+        implementation = proc.implementation;
+    }
 };
 
 using TypedValueBase = std::variant<Number, Text, Sequence, Procedure>;

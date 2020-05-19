@@ -86,12 +86,11 @@ FileoutObject::FileoutObject(const ArgumentList& parameters)
     if (!parameters.size()) error("Expected a string argument on file object");
     filename = static_cast<std::string> (parameters[0].get_value<Text>());
 
-    if (!parameters.size() - 1) error("Expected a size to write to file");
+    if (parameters.size() > 1) error("Expected a size to write to file");
     size = parameters[1].get_value<Number>();
     data.resize(size);
     set_io(1, 0);
 }
-
 
 
 void FileinObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
@@ -892,6 +891,21 @@ PhasorObject::PhasorObject(const ArgumentList& parameters) :  phase(0)
     init(3, 1, parameters, { &period, &phase_offset } );
     link_value(&period, period, 0);
     link_value(&phase_offset, phase_offset, 2);
+}
+
+
+
+void InvokeObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
+{
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
+        output_buffer[0][n] = function({ (Number) input_buffer[0][n] }, nullptr).get_value<Number>();
+    }
+}
+
+InvokeObject::InvokeObject(const ArgumentList& parameters)
+{
+    set_io(1, 1);
+    function = parameters[0].get_value<Procedure>().implementation;
 }
 
 }

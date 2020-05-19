@@ -427,6 +427,16 @@ const SymbolTable<Procedure> Program::procedures = {
         return reverse;
     }, 1, 1)},
 
+    { "map", Procedure([] (const ArgumentList& arguments, Program* program) {
+        const Procedure proc = arguments[1].get_value<Procedure>();
+        const Sequence source = arguments[0].get_value<Sequence>();
+        Sequence mapped;
+        for (size_t n = 0; n < source.size(); n++) {
+            mapped.add_element(proc(ArgumentList { source[n]}, program).get_value<Number>());
+        }
+        return mapped;
+    }, 2, 2)},
+
     { "print", Procedure([] (const ArgumentList& arguments, Program*) {
         std::string message = "";
         for (const auto& arg : arguments) message += arg.as_string();

@@ -532,4 +532,16 @@ public:
     PhasorObject(const ArgumentList&);
 };
 
+
+
+class InvokeObject : public AudioObject
+{
+    void  process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+    Procedure::Implementation function;
+
+public:
+    InvokeObject(const ArgumentList&);
+};
+
 }

@@ -214,6 +214,7 @@ static const ObjectMap object_creators =
     { "Comparator",          OBJECT(ComparatorObject) },
     { "Reciprocal",          OBJECT(ReciprocalObject) },
     { "Bi_to_Unipolar",      OBJECT(BiToUnipolarObject) },
+    { "Invoke",              OBJECT(InvokeObject) },
 
     // Maths functions
     { "Sin",                 OBJECT(SinObject) },
@@ -762,6 +763,7 @@ TypedValue Parser::parse_factor()
             const std::string id = current_token.value;
             if (peek(TokenType::open_paren)) value = parse_procedure_call(id);
             else if (program->symbol_exists(id)) value = program->get_symbol_value(id);
+            else if (Program::procedures.count(id)) value = Program::procedures.at(id);
             else error("Symbol not found: " + id);
             break;
         }
@@ -819,14 +821,15 @@ TypedValue Parser::parse_factor()
                     graph.add_symbol(ids[n], args[n]);
 
                 Parser parser;
-                parser.program = &graph;
+                parser.parse_program(graph);
                 parser.source_code = expression_text;
                 parser.next_token();
                 return parser.parse_expression();
             };
 
             value = Procedure(impl, ids.size(), ids.size(), false);
-        } break;
+            break;
+        }
 
         default: error("Couldn't get value of expression factor of token type " + debug_names.at(current_token.type));
     }
@@ -903,6 +906,7 @@ TypedValue Parser::parse_procedure_call(const std::string& name, TypedValue lhs,
         if (Program::procedures.count(name)) return Program::procedures.at(name);
         if (program->symbol_exists(name)) return program->get_symbol_value(name).get_value<Procedure>();
         error("Procedure does not exist: '" + name + "'");
+        return Program::procedures.at(name);
     }();
 
     if (procedure.max_arguments < arguments.size())
