@@ -31,13 +31,10 @@ int main()
     const std::string code =
 R"(
 
-test: |x| { x^2 }
+x: 10
+test: || { `x / 5 }
 
-Sine_Oscillator~ 440
--> Invoke~ test
--> Write_File~ "invocation_test", 10s
-
-&length 10s
+print((0..10).test()[-3])
 
 )";
 
