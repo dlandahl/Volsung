@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 
-#include "Volsung.hh"
+#include "VolsungCore.hh"
 #include "AudioDataflow.hh"
 
 namespace Volsung {

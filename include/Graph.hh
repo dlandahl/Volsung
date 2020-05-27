@@ -9,7 +9,7 @@
 #include <chrono>
 #include <array>
 
-#include "Volsung.hh"
+#include "VolsungCore.hh"
 #include "AudioDataflow.hh"
 
 namespace Volsung {
@@ -138,17 +138,14 @@ public:
     using Implementation = std::function<TypedValue(const ArgumentList&, Program*)>;
     Implementation implementation;
 
-    const size_t min_arguments;
-    const size_t max_arguments;
-    const bool can_be_mapped;
+    size_t min_arguments;
+    size_t max_arguments;
+    bool can_be_mapped;
 
     TypedValue operator()(const ArgumentList&, Program*) const;
     Procedure(Implementation, size_t, size_t, bool = false);
 
-    Procedure& operator=(const Procedure& proc) {
-        *this = proc;
-        return *this;
-    }
+    Procedure& operator=(const Procedure& proc) = default;
 
     Procedure(const Procedure& proc) : min_arguments(proc.min_arguments),
                                        max_arguments(proc.max_arguments),

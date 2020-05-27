@@ -17,7 +17,6 @@ void AudioObject::implement()
         in[n] = inputs[n].read_buffer();
     }
 
-
     process(in, out);
 
     for (size_t n = 0; n < outputs.size(); n++)

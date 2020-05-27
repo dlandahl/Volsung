@@ -4,7 +4,7 @@
 #include <mutex>
 #include <AudioToolbox/AudioToolbox.h>
 #include "AudioPlayer_Interface.hh"
-#include "VolsungHeader.hh"
+#include "Volsung.hh"
 
 class Ringbuffer {
     const size_t max_size = 4096;

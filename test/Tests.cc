@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <chrono>
 
-#include "VolsungHeader.hh"
+#include "Volsung.hh"
 
 using namespace Volsung;
 
@@ -16,7 +16,7 @@ const std::string Ansi_Reset = "\033[0m";
 int main()
 {
     std::string error_message;
-    debug_callback = [&error_message] (std::string message) { error_message += message + "\n"; };
+    set_debug_callback([&error_message] (std::string message) { error_message += message + "\n"; });
 
     std::vector<Program*> programs;
     std::vector<std::string> names;
@@ -55,12 +55,12 @@ int main()
     }
 
     namespace chrono = std::chrono;
-    std::cout << "\nGenerating " << Volsung::sample_rate << " samples\n";
+    std::cout << "\nGenerating " << Volsung::get_sample_rate() << " samples\n";
     
     for (size_t p = 0; p < programs.size(); p++) {
         const auto start_time = chrono::high_resolution_clock::now();
 
-        for (size_t s = 0; s < Volsung::sample_rate / Volsung::AudioBuffer::blocksize; s++) {
+        for (size_t s = 0; s < Volsung::get_sample_rate() / Volsung::AudioBuffer::blocksize; s++) {
             programs[p]->run();
         }
 

@@ -7,7 +7,7 @@
 #include <functional>
 #include <queue>
 
-#include "Volsung.hh"
+#include "VolsungCore.hh"
 #include "AudioObject.hh"
 #include "Graph.hh"
 
@@ -25,7 +25,7 @@ public:
 class DelayObject : public AudioObject
 {
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
-    float sample_delay = sample_rate;
+    float sample_delay = get_sample_rate();
     CircularBuffer delay_buffer;
 
 public:
@@ -526,7 +526,7 @@ class PhasorObject : public AudioObject
     GateListener sync;
     double phase     = 0;
     float phase_offset = 0;
-    float period = sample_rate;
+    float period = get_sample_rate();
 
 public:
     PhasorObject(const ArgumentList&);

@@ -19,7 +19,7 @@ public:
 
         snd_pcm_hw_params_any(stream, params);
         snd_pcm_hw_params_set_format(stream, params, SND_PCM_FORMAT_FLOAT_LE);
-        snd_pcm_hw_params_set_rate(stream, params, Volsung::sample_rate, 0);
+        snd_pcm_hw_params_set_rate(stream, params, Volsung::get_sample_rate(), 0);
         snd_pcm_hw_params_set_channels_minmax(stream, params, &channels, &channels);
 
         snd_pcm_hw_params(stream, params);

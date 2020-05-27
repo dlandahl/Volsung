@@ -5,7 +5,7 @@
 #include <variant>
 #include <exception>
 
-#include "Volsung.hh"
+#include "VolsungCore.hh"
 #include "Objects.hh"
 
 namespace Volsung {
@@ -29,6 +29,8 @@ enum class TokenType {
     newline,
     comma,
     ampersand,
+    percent,
+    backtick,
     plus,
     minus,
     slash,
@@ -64,6 +66,8 @@ inline const std::map<TokenType, std::string> debug_names = {
     { TokenType::newline, "end-of-line" },
     { TokenType::comma, "'Comma' (,)" },
     { TokenType::ampersand, "'Ampersand' (&)" },
+    { TokenType::percent, "'Percent' (%)" },
+    { TokenType::backtick, "'Backtick' (`)" },
     { TokenType::plus, "'Plus' (+)" },
     { TokenType::minus, "'Minus' (-)" },
     { TokenType::slash, "'Slash' (/)" },
@@ -140,7 +144,7 @@ class Parser : public Lexer
     Number parse_number();
     void parse_directive();
 
-    TypedValue parse_procedure_call(const std::string&, TypedValue = 0, bool = false);
+    TypedValue parse_procedure_call(TypedValue, TypedValue = 0, bool = false);
     std::string get_object_to_connect();
     void make_object(const std::string&, const std::string&, const ArgumentList&);
     std::string parse_object_declaration(std::string = "");
@@ -150,6 +154,7 @@ class Parser : public Lexer
     TypedValue parse_product();
     TypedValue parse_power();
     TypedValue parse_unary_postfix();
+    TypedValue parse_backtick_operator();
     TypedValue parse_factor();
 
     int inline_object_index = 0;

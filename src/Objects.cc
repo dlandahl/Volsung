@@ -123,7 +123,7 @@ FileinObject::FileinObject(const ArgumentList& parameters)
 void FilterObject::process(const MultichannelBuffer& x, MultichannelBuffer& y)
 {
     update_parameters(0);
-    b = 2.0 - std::cos(TAU * frequency / sample_rate);
+    b = 2.0 - std::cos(TAU * frequency / get_sample_rate());
     b = std::sqrt(b*b - 1.0) - b;
     a = 1.0 + b;
 
@@ -131,7 +131,7 @@ void FilterObject::process(const MultichannelBuffer& x, MultichannelBuffer& y)
 
     for (size_t n = 1; n < AudioBuffer::blocksize; n++) { 
         update_parameters(n);
-        b = 2.0 - std::cos(TAU * frequency / sample_rate);
+        b = 2.0 - std::cos(TAU * frequency / get_sample_rate());
         b = sqrt(b*b - 1.0) - b;
         a = 1.0 + b;
 
@@ -186,7 +186,7 @@ void OscillatorObject::process(const MultichannelBuffer& input_buffer, Multichan
 
         output_buffer[0][n] = std::sin(TAU * phase + phase_offset);
 
-        phase = phase + frequency / sample_rate;
+        phase = phase + frequency / get_sample_rate();
 
         if (phase >= 1.0) { phase -= 1.0; }
     }
@@ -207,7 +207,7 @@ void SquareObject::process(const MultichannelBuffer&, MultichannelBuffer& output
         update_parameters(n);
         output_buffer[0][n] = (float) sign<float>(sinf(TAU * phase) + pw);
 
-        phase = phase + frequency / sample_rate;
+        phase = phase + frequency / get_sample_rate();
 
         if (phase >= 1.0) { phase -= 1.0; }
     }
@@ -289,7 +289,7 @@ void TimerObject::process(const MultichannelBuffer& input_buffer, MultichannelBu
         if (reset.read_gate_state(input_buffer[0][n]) & GateState::just_opened) value = 0.f;
 
         output_buffer[0][n] = value;
-        value += 1.f / sample_rate;
+        value += 1.f / get_sample_rate();
     }
 }
 
@@ -506,7 +506,7 @@ void SawObject::process(const MultichannelBuffer& input_buffer, MultichannelBuff
 
         if (sync.read_gate_state(input_buffer[1][n]) & GateState::just_opened) phase = -1;
 
-        phase += std::abs(2.f * frequency / sample_rate);
+        phase += std::abs(2.f * frequency / get_sample_rate());
         if (phase > 1.f) phase = -1.f;
 
         if (frequency < 0) output_buffer[0][n] = -phase;
@@ -527,7 +527,7 @@ void TriangleObject::process(const MultichannelBuffer& input_buffer, Multichanne
 
         if (sync.read_gate_state(input_buffer[1][n]) & GateState::just_opened) phase = 0;
 
-        phase += frequency / sample_rate;
+        phase += frequency / get_sample_rate();
         if (phase >= 1.f) phase -= 1.f;
         output_buffer[0][n] = 2.f * fabs(2.f * phase - 1.f) - 1.f;
     }
@@ -545,7 +545,7 @@ void BiquadObject::process(const MultichannelBuffer& input_buffer, MultichannelB
         update_parameters(n);
 
         if (!resonance) resonance = std::numeric_limits<float>::min();
-        omega = TAU * frequency / sample_rate;
+        omega = TAU * frequency / get_sample_rate();
         alpha = std::sin(omega) / (2.f * resonance);
         cos_omega = std::cos(omega);
 

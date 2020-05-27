@@ -4,7 +4,7 @@
 #include <array>
 #include <iomanip>
 
-#include "VolsungHeader.hh"
+#include "Volsung.hh"
 
 using namespace Volsung;
 
@@ -13,11 +13,11 @@ int main()
     Program prog;
 
     prog.configure_io(0, 1);
-    debug_callback = [] (std::string message) {
+    set_debug_callback([] (std::string message) {
         std::cout << std::setprecision(3) << message << '\n';
-    };
+    });
 
-    uint time = 10 * sample_rate;
+    uint time = 10 * get_sample_rate();
     bool print = false;
     Program::add_directive("length", [&time, &print] (std::vector<TypedValue> arguments, Program*) {
         time = arguments[0].get_value<Number>();
@@ -31,10 +31,19 @@ int main()
     const std::string code =
 R"(
 
-x: 10
-test: || { `x / 5 }
+make_scale: |scale, root| {
+    |n| {
+        max_index: length_of(`scale)
+        index:      mod(n,  max_index)
+        octave: 2^floor(n / max_index)
 
-print((0..10).test()[-3])
+        (2^(1/12))^`scale[index] * `root * octave)
+    }
+}
+
+A_min_penta: make_scale({ 0, 2, 4, 7, 9 }, 110)
+
+print(A_min_penta(-5..5))
 
 )";
 

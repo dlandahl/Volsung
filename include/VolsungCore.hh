@@ -13,29 +13,22 @@
 
 namespace Volsung {
 
-inline float sample_rate = 44100.0f;
 #define PI          3.14159265f
 #define TAU         6.28318530f
 
 using uint = unsigned;
+
+void set_sample_rate(float);
+float get_sample_rate();
+
+void log(const std::string&);
+void set_debug_callback(std::function<void(std::string)>);
 
 
 template <typename T>
 int sign(const T val)
 {
     return (T(0) < val) - (val < T(0));
-}
-
-
-/*! \brief Callback for logging and debug messages
- *  
- *  Specify a function to handle error messages during parsing and running of the program.
- */
-
-inline std::function<void(std::string)> debug_callback = [] (std::string message) { std::cout << message; };
-inline void log(const std::string& message)
-{
-    debug_callback(message);
 }
 
 

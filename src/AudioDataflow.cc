@@ -1,6 +1,6 @@
 
 #include "AudioDataflow.hh"
-#include "Volsung.hh"
+#include "VolsungCore.hh"
 
 namespace Volsung {
 

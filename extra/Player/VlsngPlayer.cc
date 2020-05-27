@@ -5,7 +5,7 @@
 #include <sstream>
 #include <charconv>
 
-#include "VolsungHeader.hh"
+#include "Volsung.hh"
 
 #if defined(__linux__)
 #include "AudioPlayer_Linux.hh"
@@ -74,9 +74,9 @@ int main(const int num_args, const char* args[])
         std::exit(1);
     }
 
-    Volsung::debug_callback = [] (const std::string& message) {
+    Volsung::set_debug_callback([] (const std::string& message) {
         std::cout << message << std::endl;
-    };
+    });
 
     Volsung::Program program;
     Volsung::Parser parser;
@@ -109,9 +109,9 @@ int main(const int num_args, const char* args[])
     if (time_seconds == -1.f) {
         while (true) play_one_block();
     }
-    
+
     else {
-        const auto blocks_to_generate = Volsung::sample_rate / AudioPlayer::blocksize * time_seconds;
+        const auto blocks_to_generate = Volsung::get_sample_rate() / AudioPlayer::blocksize * time_seconds;
         for (size_t n = 0; n < blocks_to_generate; n++)
             play_one_block();
     }
