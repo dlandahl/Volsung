@@ -202,6 +202,11 @@ void Sequence::perform_range_check(const long long n) const
         error("Sequence index out of range. Index is: " + std::to_string(n) + ", length is: " + std::to_string(size()));
 }
 
+Number* Sequence::get_data_pointer()
+{
+    return data.data();
+}
+
 Number& Sequence::operator[](long long n)
 {
     if (n < 0) n += size();
@@ -392,11 +397,12 @@ const SymbolTable<Procedure> Program::procedures = {
     }, 1, 1, true)},
 
     { "log", Procedure([] (const ArgumentList& args, Program*) {
-        const float base = args[0].get_value<Number>();
-        const float value = args[1].get_value<Number>();
+        float base = 10.f;
+        if (args.size() > 1) args[1].get_value<Number>();
+        const float value = args[0].get_value<Number>();
 
         return std::log(value) / std::log(base);
-    }, 2, 2)},
+    }, 1, 2, true)},
 
     { "sum", Procedure([] (const ArgumentList& args, Program*) {
         Number sum = 0.f;
@@ -580,6 +586,41 @@ const SymbolTable<Procedure> Program::procedures = {
         }
 
         return ret;
+    }, 1, 1)},
+
+    { "FFT", Procedure([] (const ArgumentList& args, Program*) {
+        Sequence data = args[0].get_value<Sequence>();
+
+        std::function<void(Number*, size_t)> fft = [&fft] (Number* input_data, size_t N) {
+            if (N < 2) return;
+            assert(!(N % 2), "FFT size must be a power of 2");
+
+            size_t M = N / 2;
+
+            auto temp = (Number*) malloc(sizeof( Number ) * M);
+            for (size_t n = 0; n < M; n++) temp[n] = input_data[n * 2 + 1];
+            for (size_t n = 0; n < M; n++) input_data[n] = input_data[n * 2];
+            for (size_t n = 0; n < M; n++) input_data[n + M] = temp[n];
+            free(temp);
+
+            fft(input_data, M);
+            fft(input_data + M, M);
+
+            for (size_t k = 0; k < M; k++)
+            {
+                Number even = input_data[k];
+                Number odd  = input_data[k + M];
+
+                const float theta = -TAU * float(k) / N;
+                Number w   = Number(std::cos(theta), std::sin(theta)).multiply_num(odd);
+                input_data[k]     = even.add_num(w);
+                input_data[k + M] = even.subtract_num(w);
+            }
+        };
+
+        fft(data.get_data_pointer(), data.size());
+        for (auto& value: data) value = value.divide_num(data.size());
+        return data;
     }, 1, 1)},
 };
 

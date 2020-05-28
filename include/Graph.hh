@@ -110,6 +110,7 @@ class Sequence
     std::vector<Number> data;
 
 public:
+    Number* get_data_pointer();
     size_t size() const;
     operator Text() const;
     void add_element(const Number);

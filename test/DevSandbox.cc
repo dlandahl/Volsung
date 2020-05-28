@@ -31,19 +31,24 @@ int main()
     const std::string code =
 R"(
 
-make_scale: |scale, root| {
-    |n| {
-        max_index: length_of(`scale)
-        index:      mod(n,  max_index)
-        octave: 2^floor(n / max_index)
+; Defining a function for converting to decibel
+to_db: |lin| { 20 * log(lin) }
 
-        (2^(1/12))^`scale[index] * `root * octave)
-    }
-}
+N: 2^4
 
-A_min_penta: make_scale({ 0, 2, 4, 7, 9 }, 110)
+; Generate a component at half nyquist and one at DC
+; The value.operation(operand) syntax is equivalent to operation(value, operand)
+data: {0, 1, 0, -1}.repeat(N / 4) + 1
 
-print(A_min_penta(-5..5))
+; Generate a Hann window
+window: sin(pi*(0..(N-1)) / N)^2
+
+; Analyse it and take the lower half - we don't need to print the aliases.
+spectrum: (data * window).FFT()[0..N / 2]
+
+; Display the magnitude spectrum
+; Notice a peak in the middle (fs/4) and one on the left (dc)
+print("Magnitudes (dB): ", spectrum.abs().to_db())
 
 )";
 

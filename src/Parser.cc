@@ -289,7 +289,7 @@ bool Parser::parse_program(Graph& graph)
             else if (peek(TokenType::less_than)) parse_subgraph_declaration();
             else {
                 next_token();
-                error("Expected colon or connection operator, got " + debug_names.at(current_token.type));
+                error("Expected operator or colon, got " + debug_names.at(current_token.type));
             }
         }
 
@@ -754,58 +754,22 @@ TypedValue Parser::parse_unary_postfix()
         else {
             expect(TokenType::dot);
             expect(TokenType::identifier);
-            const std::string id = current_token.value;
-
             TypedValue param = value;
-            if (program->symbol_exists(id)) value = program->get_symbol_value(id);
-            else if (Program::procedures.count(id)) value = Program::procedures.at(id);
+            value = parse_identifier();
             value = parse_procedure_call(value, param, true);
         }
     }
     return value;
 }
 
-/*
-TypedValue Parser::parse_backtick_operator()
-{
-    if (peek(TokenType::backtick)) {
-        if (!program) error("Attempted to use backtick in top-level program. Only use ` in a subgraph or a function definition");
-        next_token();
-        Program* old = program;
-        program = program->parent;
-        TypedValue value = parse_factor();
-        program = old;
-        return value;
-    }
-    return parse_factor();
-}
-*/
-
 TypedValue Parser::parse_factor()
 {
     TypedValue value = 0;
-    Program* old = program;
 
     switch (current_token.type) {
         case TokenType::backtick:
-            while (current_token.type == TokenType::backtick) {
-                if (!program->parent) error("Attempted to use backtick in top-level program. Only use ` in a subgraph or a function definition");
-                if (program == program->parent) std::cout << "WHAT" << std::endl;
-                program = program->parent;
-                next_token();
-            }
-
-        case TokenType::identifier: {
-            const std::string id = current_token.value;
-            if (program->symbol_exists(id)) value = program->get_symbol_value(id);
-            else if (Program::procedures.count(id)) value = Program::procedures.at(id);
-            else error("Symbol not found: " + id);
-
-            program = old;
-            break;
-        }
-
-        case TokenType::numeric_literal: value = parse_number(); break;
+        case TokenType::identifier:      value = parse_identifier();   break;
+        case TokenType::numeric_literal: value = parse_number();      break;
         case TokenType::string_literal:  value = current_token.value; break;
 
         case TokenType::open_paren:
@@ -956,6 +920,29 @@ TypedValue Parser::parse_procedure_call(TypedValue value, TypedValue lhs, bool u
         Volsung::error("Too few arguments in procedure call to '" + name +"'. Expected " + std::to_string(procedure.min_arguments) +", got " + std::to_string(arguments.size()));
 
     return procedure(arguments, program);
+}
+
+TypedValue Parser::parse_identifier()
+{
+    Program* old = program;
+    TypedValue value;
+
+    while (current_token.type == TokenType::backtick) {
+        if (!program->parent) error("Attempted to use backtick in top-level program. Only use ` in a subgraph or a function definition");
+        if (program == program->parent) std::cout << "WHAT" << std::endl;
+        program = program->parent;
+        next_token();
+    }
+
+    verify(TokenType::identifier);
+    const std::string id = current_token.value;
+
+    if (program->symbol_exists(id)) value = program->get_symbol_value(id);
+    else if (Program::procedures.count(id)) value = Program::procedures.at(id);
+    else error("Symbol not found: " + id);
+
+    program = old;
+    return value;
 }
 
 bool Parser::line_end() const
