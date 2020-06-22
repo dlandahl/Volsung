@@ -1,0 +1,59 @@
+
+N: 2^17;
+S: read_file("files/antikythera")[0..(N-1)]
+
+theta: 45deg
+
+W: S * sqrt(2) / 2
+X: S * cos(theta)
+Y: S * sin(theta)
+
+a: sqrt(8)
+w: sqrt(2)*W
+
+LF: (w + X + Y) * a
+LB: (w - X + Y) * a
+RB: (w - X - Y) * a
+RF: (w + X - Y) * a
+
+
+
+Channel <0, 1>: {
+    cat: concatenate
+    N: `N
+
+    read_IR: |file| {
+        read_file(file)[0..(`N-1)].`cat(0..`N..0)
+    }
+
+    suffix: _1
+    LF_IR: read_IR("files/HRIR_LF_".cat(suffix))
+;   LB_IR: read_IR("files/HRIR_LB_".cat(suffix))
+;   RB_IR: read_IR("files/HRIR_RB_".cat(suffix))
+;   RF_IR: read_IR("files/HRIR_RF_".cat(suffix))
+
+
+
+    IFFT: |data| {
+        FFT(Im(data) + Re(data) * i)
+    }
+
+    convolve: |z, h| {
+        `IFFT(FFT(z) * FFT(h))[0..`N/2]
+    }
+
+    data: convolve(`LF, LF_IR) \
+;        + convolve(`LB, LB_IR) \
+;        + convolve(`RB, RB_IR) \
+;        + convolve(`RF, RF_IR)
+
+
+    Phasor~ N -> *N
+    -> Index_Sequence~ data
+    -> output
+}
+
+Channel~ "L" -> 0|output
+Channel~ "R" -> 1|output
+
+
