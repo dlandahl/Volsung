@@ -13,7 +13,7 @@ int main()
     Program prog;
 
     prog.configure_io(0, 1);
-    set_debug_callback([] (std::string message) {
+    set_debug_callback([] (const std::string& message) {
         std::cout << std::setprecision(3) << message << '\n';
     });
 
@@ -31,24 +31,9 @@ int main()
     const std::string code =
 R"(
 
-; Defining a function for converting to decibel
-to_db: |lin| { 20 * log(lin) }
+f: |x, n| { x[n] / 2 }
 
-N: 2^4
-
-; Generate a component at half nyquist and one at DC
-; The value.operation(operand) syntax is equivalent to operation(value, operand)
-data: {0, 1, 0, -1}.repeat(N / 4) + 1
-
-; Generate a Hann window
-window: sin(pi*(0..(N-1)) / N)^2
-
-; Analyse it and take the lower half - we don't need to print the aliases.
-spectrum: (data * window).FFT()[0..N / 2]
-
-; Display the magnitude spectrum
-; Notice a peak in the middle (fs/4) and one on the left (dc)
-print("Magnitudes (dB): ", spectrum.abs().to_db())
+Sine_Oscillator~ 440 -> Invoke~ f -> output
 
 )";
 

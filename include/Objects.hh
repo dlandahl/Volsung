@@ -544,4 +544,15 @@ public:
     InvokeObject(const ArgumentList&);
 };
 
+class InvokeBlockwiseObject : public AudioObject
+{
+    void  process(const MultichannelBuffer&, MultichannelBuffer&) override;
+
+    Procedure::Implementation function;
+    Sequence indeces;
+
+public:
+    InvokeBlockwiseObject(const ArgumentList&);
+};
+
 }

@@ -26,6 +26,7 @@ Number::operator float() const
 
 Number::operator Text() const
 {
+    if (!std::isfinite(real_part)) return std::to_string(real_part);
     std::string ret = "";
     bool const real = std::abs(real_part) >= 0.001;
     bool const imag = std::abs(imag_part) >= 0.001;
@@ -388,6 +389,10 @@ const SymbolTable<Procedure> Program::procedures = {
         return float(args[0].get_value<Number>()) >= 0.f ? 1 : -1;
     }, 1, 1, true)},
 
+    { "clamp", Procedure([] (const ArgumentList& args, Program*) {
+        return std::clamp(args[0].get_value<Number>(), args[1].get_value<Number>(), args[2].get_value<Number>());
+    }, 3, 3, true)},
+
     { "sqrt", Procedure([] (const ArgumentList& args, Program*) {
         return args[0].get_value<Number>().exponentiate_num(0.5f);
     }, 1, 1, true)},
@@ -403,24 +408,6 @@ const SymbolTable<Procedure> Program::procedures = {
 
         return std::log(value) / std::log(base);
     }, 1, 2, true)},
-
-    { "sum", Procedure([] (const ArgumentList& args, Program*) {
-        Number sum = 0.f;
-        Sequence sequence = args[0].get_value<Sequence>();
-        for (auto element: sequence) {
-            sum += element;
-        }
-        return sum;
-    }, 1, 1)},
-
-    { "average", Procedure([] (const ArgumentList& args, Program*) {
-        Number sum = 0.f;
-        Sequence sequence = args[0].get_value<Sequence>();
-        for (auto element: sequence) {
-            sum += element;
-        }
-        return sum / sequence.size();
-    }, 1, 1)},
 
     { "Re", Procedure([] (const ArgumentList& args, Program*) {
         return (float) args[0].get_value<Number>();
@@ -440,6 +427,24 @@ const SymbolTable<Procedure> Program::procedures = {
         return reverse;
     }, 1, 1)},
 
+    { "concatenate", Procedure([] (const ArgumentList& args, Program*) -> TypedValue {
+        if (args[0].is_type<Sequence>()) {
+            const Sequence a = args[0].get_value<Sequence>();
+            const Sequence b = args[1].get_value<Sequence>();
+
+            Sequence out;
+            for (size_t n = 0; n < a.size() + b.size(); n++) {
+                out.add_element(n < a.size() ? a[n] : b[n-a.size()]);
+            }
+
+            return out;
+        }
+
+        const Text a = args[0].get_value<Text>();
+        const Text b = args[1].get_value<Text>();
+        return (Text) (std::string) a + (std::string) b;
+    }, 2, 2)},
+
     { "map", Procedure([] (const ArgumentList& args, Program* program) {
         const Procedure proc = args[1].get_value<Procedure>();
         const Sequence source = args[0].get_value<Sequence>();
@@ -449,6 +454,42 @@ const SymbolTable<Procedure> Program::procedures = {
         }
         return mapped;
     }, 2, 2)},
+
+    { "sum", Procedure([] (const ArgumentList& args, Program*) {
+        Number sum = 0.f;
+        Sequence sequence = args[0].get_value<Sequence>();
+        for (auto element: sequence) {
+            sum += element;
+        }
+        return sum;
+    }, 1, 1)},
+
+    { "average", Procedure([] (const ArgumentList& args, Program*) {
+        Number sum = 0.f;
+        Sequence sequence = args[0].get_value<Sequence>();
+        for (auto element: sequence) {
+            sum += element;
+        }
+        return sum / sequence.size();
+    }, 1, 1)},
+
+    { "largest", Procedure([] (const ArgumentList& args, Program*) {
+        Sequence sequence = args[0].get_value<Sequence>();
+        Number greatest = sequence[0];
+        for (auto element: sequence) {
+            greatest = std::max(greatest, element);
+        }
+        return greatest;
+    }, 1, 1)},
+
+    { "smallest", Procedure([] (const ArgumentList& args, Program*) {
+        Sequence sequence = args[0].get_value<Sequence>();
+        Number smallest = sequence[0];
+        for (auto element: sequence) {
+            smallest = std::min(smallest, element);
+        }
+        return smallest;
+    }, 1, 1)},
 
     { "print", Procedure([] (const ArgumentList& args, Program*) {
         std::string message = "";
@@ -623,6 +664,7 @@ const SymbolTable<Procedure> Program::procedures = {
         return data;
     }, 1, 1)},
 };
+
 
 void Program::create_user_object(const std::string& name, const uint num_inputs, const uint num_outputs, std::any user_data, const AudioProcessingCallback callback)
 {

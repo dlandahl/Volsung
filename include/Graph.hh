@@ -198,9 +198,9 @@ template<>
 inline std::string type_debug_name<Procedure>() { return "Procedure"; }
 
 
-using DirectiveFunctor = std::function<void(const ArgumentList&, Program* const)>;
+using DirectiveFunctor        = std::function<void(const ArgumentList&, Program* const)>;
 using AudioProcessingCallback = std::function<void(const MultichannelBuffer&, MultichannelBuffer&, std::any)>;
-using SubgraphRepresentation = std::pair<const std::string, const std::array<float, 2>>;
+using SubgraphRepresentation  = std::pair<const std::string, const std::array<float, 2>>;
 
 template <class T>
 using SymbolTable = std::map<std::string, T>;

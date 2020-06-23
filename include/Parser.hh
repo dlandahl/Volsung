@@ -34,6 +34,7 @@ enum class TokenType {
     plus,
     minus,
     slash,
+    backslash,
     asterisk,
     caret,
     many_to_one,
@@ -71,6 +72,7 @@ inline const std::map<TokenType, std::string> debug_names = {
     { TokenType::plus, "'Plus' (+)" },
     { TokenType::minus, "'Minus' (-)" },
     { TokenType::slash, "'Slash' (/)" },
+    { TokenType::backslash, "'Backslash' (\\)" },
     { TokenType::asterisk, "'Asterisk' (*)" },
     { TokenType::caret, "'Caret' (^)" },
     { TokenType::many_to_one, "'Many-to-One' (>>)" },
@@ -101,7 +103,7 @@ class Lexer
     bool is_char() const;
 
 protected:
-    char current() const;
+    int current() const;
     Token get_next_token();
     bool peek(const TokenType);
     bool peek_expression();
