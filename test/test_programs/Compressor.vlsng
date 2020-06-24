@@ -1,35 +1,31 @@
 
 Max_Zero <1, 1>: {
     ; Essentially a negative half-wave rectifier.
-    
-    ; We use it in the compressor to avoid doing dynamic expansion
-    ; when the envelope detector value is below the threshold
 
     input -> Comparator~ 0 -> Inverse~ -> +1 -> 1|gate: Multiply~
     input -> gate -> output
 }
 
 Compressor <1, 1>: {
-    ratio: 2.5
+    ; The compression is quite strong just to make it clear
+    ratio: 2.6
     threshold: -20
 
-    ; Detect envelope
+    slope: 1 - 1 / ratio
+
     input -> Envelope_Follower~ 4ms, 20ms
-
-    ; Convert to decibels
     -> Log~ 10 -> *20
-
-    ; Calculate gain attenuation based on threshold and ratio
-    -> Inverse~ -> +threshold -> * -1 / ratio -> Max_Zero~
-
-    ; Convert to linear so that applying the gain becomes a multiplication
+    -> Inverse~ -> +threshold -> *slope -> Max_Zero~
     -> *0.05 -> Exponentiate~ 10 
     -> 1|gain: Multiply~
 
-    ; Apply gain
     input -> gain -> output
 }
 
-Read_File~ "files/drumbeat"
+path: "files/drumbeat"
+
+Read_File~ path
 -> Compressor~
 -> output
+
+&length length_of(read_file(path))

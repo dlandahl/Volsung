@@ -1,4 +1,6 @@
 
+&length 10s
+
 ; A bank of bandpass filters, the centre frequencies
 ; of which represent modes of resonance
 Filter_Bank <1, 1>: {
@@ -6,7 +8,7 @@ Filter_Bank <1, 1>: {
 
     input
     <> [4] Bandpass_Filter~ freqs[n-1], 280
-    >> Multiply~ 0.001 -> output
+    >> Multiply~ 0.01 -> output
 }
 
 [2] Noise~

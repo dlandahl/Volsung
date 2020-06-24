@@ -1,4 +1,9 @@
 
+&length 2s
+
+; This program sums together many harmonically related sine-waves to create
+; a saw wave
+
 ; Try changing this to a 2. You will get a square instead of a saw.
 mult: 1
 

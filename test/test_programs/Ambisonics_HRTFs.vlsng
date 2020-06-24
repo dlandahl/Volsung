@@ -1,0 +1,86 @@
+
+; Implementation of AMBISONICS
+;
+; Encoding is based on 1st order channel config: front-back difference channel,
+; left-right difference channel, and mid channel
+;
+; Decoding is based on four planar virtual speakers with associated HRIRs
+; The HRIRs are from http://recherche.ircam.fr/equipes/salles/listen/
+;
+; Evaluation may take a few seconds, but if both buttons are greyed out (not depressed) and
+; the sound is not playing then there may have been a crash
+
+zero_pad: |buffer, n| {
+    buffer.concatenate(0..(n+2)..0)
+}
+
+N: 2^19-1
+
+rotation_speed: 4
+; ===============================================
+; This is the angle describing the position of the source
+; Try `-90deg` to hear the sound from the right
+theta: ((0..N) / N * rotation_speed * tau).zero_pad(N)
+; ===============================================
+
+
+file:        read_file("files/antikythera")
+hann_window: sin(tau*(0..N) / N)^2
+
+S: (file[0..N] * hann_window).zero_pad(N)
+
+W: S * 1 / sqrt(2)
+X: S * cos(theta)
+Y: S * sin(theta)
+
+a: sqrt(8)
+w: sqrt(2)*W
+
+LF: (w + X + Y) * a
+LB: (w - X + Y) * a
+RB: (w - X - Y) * a
+RF: (w + X - Y) * a
+
+
+Channel <0, 1>: {
+    N: `N
+
+    padding: N - read_file("files/HRIR_LF_L").length_of()
+
+    read_IR: |file| {
+        read_file(file).``zero_pad(`N + `padding)
+    }
+
+
+    suffix: _1
+    cat: concatenate
+
+    LF_IR: read_IR("files/HRIR_LF_".cat(suffix))
+    LB_IR: read_IR("files/HRIR_LB_".cat(suffix))
+    RB_IR: read_IR("files/HRIR_RB_".cat(suffix))
+    RF_IR: read_IR("files/HRIR_RF_".cat(suffix))
+
+
+    IFFT: |data| {
+        FFT(Im(data) + Re(data) * i)
+    }
+
+    convolve: |z, h| {
+        `IFFT(FFT(z) * FFT(h))[0..`N/2]
+    }
+
+    data: convolve(`LF, LF_IR) \
+        + convolve(`LB, LB_IR) \
+        + convolve(`RB, RB_IR) \
+        + convolve(`RF, RF_IR)
+
+
+    Phasor~ N -> *N
+    -> Index_Sequence~ data
+    -> *N*N*5 -> output
+}
+
+Channel~ "L" -> 0|output
+Channel~ "R" -> 1|output
+
+&length N/2

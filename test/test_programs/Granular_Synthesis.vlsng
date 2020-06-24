@@ -1,24 +1,4 @@
 
-Grain <1, 1>: {
-    ; The audio buffer that the grain will be read from
-    data: _1
-    start_time: random(500ms, 2000ms)
-
-    ; Smoothing for the amplitude envelope of the grain
-    input -> Envelope_Generator~ 40ms
-    -> Smooth~ 7
-    -> 1|envelope: Multiply~
-
-    ; Envelope generator used for scanning through the buffer
-    input -> Envelope_Generator~ length_of(data) / 1
-    -> *-1 -> +1
-    -> *length_of(data)
-    -> Add~ start_time
-    -> Index_Sequence~ data
-    -> envelope
-    -> output
-}
-
 Random <1, 1>: {
     ; Generates a random value when pinged
     min: _1
@@ -33,49 +13,51 @@ Random <1, 1>: {
     input -> 1|snh
 }
 
-LBCF <1, 1>: {
-    ; Schroeder-Moorer lowpass feedback comb filter
-    M: _1 ; Filter order
-    decay: _2
-    
-    input
-    -> sum: Add~
-    -> buffer: Delay_Line~ M
-    -> Multiply~ -decay
-    -> 1|sum
-    -> output
-}
-
-Reverb <1, 1>: {
-    decay: _1
-    
-    ; From Freeverb
-    orders: { 1557, 1617, 1491, 1422, 1277, 1356, 1188, 1113 }
-    input -> /3 <> [8] LBCF~ orders[n-1], decay >> output
-}
-
 Random_Interval_Clock <0, 1>: {
+    ; A clock that outputs each value after a random time interval
     clock: Clock~ 1ms
     -> Random~ _1, _2
     -> clock -> output
+}
+
+Grain <1, 1>: {
+    ; The audio buffer that the grain will be read from
+    data: _1
+    start_time: random(500ms, 2000ms)
+
+    ; Smoothing for the amplitude envelope of the grain
+    input -> Envelope_Generator~ 75ms
+    -> Smooth~ 7
+    -> 1|envelope: Multiply~
+
+    ; Envelope generator used for scanning through the buffer
+    input -> Envelope_Generator~ length_of(data) / 1
+    -> *-1 -> +1
+    -> *length_of(data)
+    -> Add~ start_time
+    -> Index_Sequence~ data
+    -> envelope
+    -> output
 }
 
 Granular_Voice <0, 1>: {
     source_audio: _1
     num_grains: _2
 
-    min_spawn_interval: _3
-    max_spawn_interval: _4
+    spawn_interval: _3
 
-    [num_grains] Random_Interval_Clock~ min_spawn_interval, max_spawn_interval
+    [num_grains] Random_Interval_Clock~ spawn_interval[0], spawn_interval[1]
     => [num_grains] Grain~ source_audio
-    >> Reverb~ 0.87 -> output
+    >> output
 }
 
+&length 10s
 
+data: read_file("files/drumbeat")
+num_grains: 15
+respawn_interval_bounds: { 150ms, 500ms }
 
-datal: read_file("chord_l")
-N: 20
+voice: [2] Granular_Voice~ data, num_grains, respawn_interval_bounds
 
-Granular_Voice~ datal, N, 200ms, 400ms
--> output
+voice[0] -> 0|output
+voice[1] -> 1|output

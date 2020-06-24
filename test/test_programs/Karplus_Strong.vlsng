@@ -1,10 +1,20 @@
 
+;
+; This is an implementation of the Karplus-Strong string-modeling algorithm
+;
+; Citation: K. Karplus and A. Strong, ``Digital synthesis of plucked string and drum timbres,''
+; Computer Music Journal, vol. 7
+;
+; The language is not _really_ designed for music sequencing, but you can make
+; a basic progression like this
+;
+
 Exciter <1, 1>: {
     input
     -> Envelope_Generator~ 10ms
     -> 1|envelope: Multiply~
 
-    Noise~ -> Lowpass_Filter~ 6500, 0.4
+    Noise~ -> Lowpass_Filter~ 4500, 0.5
     -> envelope -> output
 }
 
@@ -12,8 +22,8 @@ Resonator <1, 1>: {
     frequency: _1
 
     input -> buffer: Delay_Line~ sample_rate / frequency - blocksize
-    -> Smooth~ 2000
-    -> Multiply~ 0.985 -> buffer -> output
+    -> Smooth~ 5500
+    -> Multiply~ 0.98 -> buffer -> output
 }
 
 Karplus_Voice <1, 1>: {
@@ -38,3 +48,5 @@ fifths: { 5, 2, 3, 1 }
 Clock~ 4s -> Delay_Line~ blocksize
 <> [4] Chord~ { roots[n-1], thirds[n-1], fifths[n-1] }, n * sample_rate
 >> output
+
+&length 5s

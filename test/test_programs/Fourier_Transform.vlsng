@@ -1,0 +1,19 @@
+
+; Defining a function for converting to decibel
+to_db: |lin| { 20 * log(lin) }
+
+N: 2^4
+
+; Generate a component at half nyquist and one at DC
+; The value.operation(operand) syntax is equivalent to operation(value, operand)
+data: {0, 1, 0, -1}.repeat(N / 4) + 1
+
+; Generate a Hann window
+window: sin(pi*(0..(N-1)) / N)^2
+
+; Analyse it and take the lower half - we don't need to print the aliases.
+spectrum: (data * window).FFT()[0..N / 2]
+
+; Display the magnitude spectrum
+; Notice a peak in the middle (fs/4) and one on the left (dc)
+print("Magnitudes (dB): ", spectrum.abs().to_db())

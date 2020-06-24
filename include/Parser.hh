@@ -92,10 +92,6 @@ struct Token
     std::string value;
 };
 
-/*! \brief A lexical analyser for a Volsung program
- *  
- *  Instantiate instead a Parser, and use only the source_code field from this class.
- */
 
 class Lexer
 {
@@ -113,19 +109,9 @@ protected:
     size_t line = 1;
     size_t position = (size_t) -1;
 
-public: 
-    /*! \brief The source code to be lexed and parsed
-     *  
-     *  Set this to the code you wish to lex and parse.
-     */
-
+public:
      std::string source_code;
 };
-
-/*! \brief A parser for a Volsung program
- *  
- *  Use this to parse a Volsung program, and populate the symbol tables of a Program class instance.
- */
 
 class Parser : public Lexer
 {
@@ -164,11 +150,6 @@ class Parser : public Lexer
     Graph* program = nullptr;
 
 public:
-    /*! \brief Parse a Program
-     *  
-     *  Parse the source code and supply the instance of Program to write the audio processing graph into.
-     */
-
     bool parse_program(Graph&);
 };
 

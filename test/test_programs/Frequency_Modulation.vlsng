@@ -1,4 +1,6 @@
 
+&length 5s
+
 ; Specify basic parameters for synthesis
 carrier_f: 220
 ratio: 0.201
@@ -17,4 +19,3 @@ Sine_Oscillator~ modulator_f
 ; Have the modulation index increase proportional to
 ; the square of the elapsed time
 Timer~ -> ^2 -> *100 -> 1|index
-

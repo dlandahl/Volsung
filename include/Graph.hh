@@ -207,25 +207,6 @@ using SymbolTable = std::map<std::string, T>;
 using Frame = std::vector<float>;
 
 
-/*
-class Allocator
-{
-    void* data;
-    std::size_t blocksize_bytes;
-    std::size_t num_blocks;
-public:
-    Allocator(Program* program) {
-        
-    }
-};
-*/
-
-/*! \brief An instance of a Volsung program
- *  
- *  This class stores a representation of a parsed Volsung program.
- *  It includes the symbol tables for constants and unit generators (audio~ objects).
- *  Instantiate one of these for each program you want to interpret and run.
- */
 
 class Program
 {
@@ -243,12 +224,6 @@ public:
     SymbolTable<const size_t> group_sizes;
     SymbolTable<const SubgraphRepresentation> subgraphs;
     Program* parent = nullptr;
-    
-    /*! \brief Used to create audio objects manually
-     *  
-     *  This template can be used to inject audio objects into the symbol table without
-     *  using the interpreter.
-     */
 
     template<typename>
     void create_object(const std::string&, const ArgumentList&);
@@ -259,51 +234,17 @@ public:
     void check_io_and_connect_objects(const std::string&, const uint,
                                       const std::string&, const uint);
 
-    /*! \brief Used to connect audio objects manually
-     *  
-     *  This template can be used to connect two audio objects by name.
-     */
 
     void connect_objects(const std::string&, const uint, const std::string&, const uint, const ConnectionType = ConnectionType::one_to_one);
-
-    /*! \brief Create a custom user directive
-     *
-     *  Supply a functor to be invoked when parsing an ampersand followed by the name of this directive.
-     */
 
     static void add_directive(const std::string&, const DirectiveFunctor);
     void invoke_directive(const std::string&, const ArgumentList&);
 
-    /*! \brief Create an ambient user object
-     *
-     *  Create an ambient user object which will persist even when the program is reset and reinterpreted.
-     *  Use this to create input / output objects specific to your frontend.
-     *  User objects will be added to the symbol table upon reset of the program.
-     */
-
     void create_user_object(const std::string&, const uint, const uint, std::any, AudioProcessingCallback);
-
-    /*! \brief Add inputs and outputs to a program 
-     *
-     *  This will inject "input" and "output" objects into the symbol table.
-     *  The parameters control how many channels each of these will have.
-     *  Read and write data from them through the "run" function.
-     */
 
     void configure_io(const uint, const uint);
 
-    /*! \brief Run the program
-     *
-     *  Runs the program by running each audio object in the audio processing graph in turn. Doesn't give you back data.
-     */
-
     void simulate();
-
-    /*! \brief Run the program with one input and one output
-     *
-     *  Runs the program by running each audio object in the audio processing graph in turn.
-     *  Expects a sample which will be written to the "input" object, and returns a float sample from the "output" object, created by configure_io.
-     */
     MultichannelBuffer run();
     MultichannelBuffer run(const MultichannelBuffer);
 

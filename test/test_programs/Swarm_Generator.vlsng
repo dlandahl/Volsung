@@ -1,4 +1,6 @@
 
+&length 5s
+
 ; Use five saw oscillators
 N: 5
 swarm: [N] Saw_Oscillator~ 
