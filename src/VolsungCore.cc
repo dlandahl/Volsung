@@ -4,7 +4,8 @@
 namespace Volsung {
 
 
-float sample_rate = 44100.0f;
+static float sample_rate = 44100.0f;
+static std::string library_path = "";
 
 void set_sample_rate(float new_fs)
 {
@@ -16,8 +17,19 @@ float get_sample_rate()
     return sample_rate;
 }
 
+void set_library_path(const std::string& path)
+{
+    library_path = path;
+}
 
-static std::function<void(std::string)> debug_callback = [] (std::string message) {
+const std::string& get_library_path()
+{
+    return library_path;
+}
+
+
+static std::function<void(std::string)> debug_callback = [] (std::string message)
+{
     std::cout << message;
 };
 

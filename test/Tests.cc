@@ -21,11 +21,12 @@ int main()
 
     std::vector<Program*> programs;
     std::vector<std::string> names;
-    
+
     const std::filesystem::path path = "../test/test_programs";
     std::filesystem::current_path(path);
+    Volsung::set_library_path("../../extra/standard_library/");
 
-    std::cout << "\nAttempting to parse some programs\n";
+    std::cout << "\n ------ Attempting to parse some programs ------ \n";
 
     Program::add_directive("length", [] (std::vector<TypedValue>, Program*) {
         return;
@@ -36,8 +37,8 @@ int main()
     for (const auto& file : std::filesystem::directory_iterator(".")) {
         Parser parser;
         Program* program = new Program;
-        program->configure_io(0, 2);
 
+        program->configure_io(0, 2);
         program->reset();
 
         {
@@ -56,7 +57,7 @@ int main()
 
         if (!parser.parse_program(*program)) {
             std::cout << "[" << Ansi_Red << "Fail" << Ansi_Reset << "] ";
-            std::cout << "...\nMessage:\n\t" << error_message;
+            std::cout << "\nMessage:\n\t" << error_message;
             delete program;
         }
 
@@ -73,7 +74,7 @@ int main()
         error_message.clear();
     }
 
-    std::cout << "\nGenerating " << Volsung::get_sample_rate() << " samples\n";
+    std::cout << "\n ------ Generating " << Volsung::get_sample_rate() << " samples ------ \n";
 
     for (size_t p = 0; p < programs.size(); p++) {
         const auto start_time = chrono::high_resolution_clock::now();
