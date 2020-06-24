@@ -880,9 +880,9 @@ void PhasorObject::process(const MultichannelBuffer& input_buffer, MultichannelB
         if (sync.read_gate_state(input_buffer[1][n]) & GateState::just_opened)
             phase = 0;
 
-        output_buffer[0][n] = phase + phase_offset;
+        output_buffer[0][n] = phase;
         phase += 1.0 / period;
-        if (phase >= 1.0) { phase -= 1.0; }
+        if (phase - phase_offset >= 1.0) { phase -= 1.0 - phase_offset; }
     }
 }
 

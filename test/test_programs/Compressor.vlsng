@@ -1,4 +1,8 @@
 
+; The standard library contains subgraphs for converting
+; between linear and decibel values
+import_library("utilities")
+
 Max_Zero <1, 1>: {
     ; Essentially a negative half-wave rectifier.
 
@@ -14,9 +18,9 @@ Compressor <1, 1>: {
     slope: 1 - 1 / ratio
 
     input -> Envelope_Follower~ 4ms, 20ms
-    -> Log~ 10 -> *20
+    -> Linear_to_Decibel~
     -> Inverse~ -> +threshold -> *slope -> Max_Zero~
-    -> *0.05 -> Exponentiate~ 10 
+    -> Decibel_to_Linear~
     -> 1|gain: Multiply~
 
     input -> gain -> output

@@ -25,7 +25,7 @@ void log(const std::string&);
 void set_debug_callback(std::function<void(std::string)>);
 
 void set_library_path(const std::string&);
-const std::string& get_library_path();
+std::string get_library_path();
 
 
 template <typename T>

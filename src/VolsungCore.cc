@@ -22,7 +22,7 @@ void set_library_path(const std::string& path)
     library_path = path;
 }
 
-const std::string& get_library_path()
+std::string get_library_path()
 {
     return library_path;
 }

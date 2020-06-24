@@ -570,7 +570,7 @@ const SymbolTable<Procedure> Program::procedures = {
 
     { "import_library", Procedure([] (const ArgumentList& args, Program* program) {
         const std::string filename = args[0].get_value<Text>();
-        const std::ifstream file(get_library_path() + filename);
+        std::ifstream file(get_library_path() + filename);
 
         if (!file) file.open(get_library_path() + filename + ".vlsng");
         if (!file) file.open(filename);
