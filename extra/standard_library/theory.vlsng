@@ -1,0 +1,72 @@
+
+; Volsung musical theory library
+
+import_library("list_processing")
+
+semis_per_octave: 12
+tuning: 440
+
+
+chromatic  : 0..11
+minor      : { 0, 2, 3, 5, 7, 8, 10 }
+major      : { 0, 2, 4, 5, 7, 9, 11 }
+pentatonic : { 0, 2, 4, 7, 9 }
+
+C  : 0 
+Db : 1 
+D  : 2 
+Eb : 3 
+E  : 4 
+F  : 5 
+Gb : 6 
+G  : 7 
+Ab : 8 
+A  : 9 
+Bb : 10
+B  : 11
+
+note: |note, octave| {
+      note + (octave+1) * `semis_per_octave
+}
+
+get_frequency: |n| {
+    (2^(1/`semis_per_octave))^(n - 69) * `tuning
+}
+
+get_octave_from_degree: |n, scale| {
+    floor((n-1)/scale.length_of())
+}
+
+get_octave: |n| {
+    floor(n/`semis_per_octave)
+}
+
+read_scale: |n, scale| {
+    scale[mod(n-1, scale.length_of())] + `get_octave_from_degree(n, scale) * `semis_per_octave
+}
+
+make_scale: |root, scale| {
+    |n| {
+        ``get_frequency(`root + ``read_scale(n, `scale) ) 
+    }
+}
+
+
+shift_scale_root: |scale, n| {
+    { 0 }.concatenate(                        \
+    scale.concatenate({ 12 })                 \
+   .`finite_difference()[1..length_of(scale)] \
+   .`roll(n)                                  \
+   .`accumulate())[0..(length_of(scale)-1)]
+}
+
+ionian     : shift_scale_root(major, 0)
+dorian     : shift_scale_root(major, 1)
+phrygian   : shift_scale_root(major, 2)
+lydian     : shift_scale_root(major, 3)
+mixolydian : shift_scale_root(major, 4)
+aeolian    : shift_scale_root(major, 5)
+locrian    : shift_scale_root(major, 6)
+
+; map (0..12, |x, n| { `shift_scale_root(`major, n).print(": ", n) } )
+;

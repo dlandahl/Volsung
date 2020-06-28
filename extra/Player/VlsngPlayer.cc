@@ -24,6 +24,9 @@ int main(const int num_args, const char* args[])
     size_t num_channels = 1;
 
     std::map<std::string, float> parameters;
+    bool offline = false;
+    bool dont_run = false;
+    Volsung::set_library_path("../extra/standard_library/");
 
     for (int n = 1; n < num_args; n++) {
         const std::string arg = arguments[n];
@@ -35,16 +38,18 @@ int main(const int num_args, const char* args[])
         }
 
         try {
-            const std::string next_arg = arguments.at(size_t(n)+1);
+            auto next_arg = [&] () -> std::string { return arguments.at(size_t(n)+1); };
             if (arg == "-f" || arg == "--file") {
                 if (!filename.empty())
                     std::cout << "Unexpected argument '" << filename << "' since -f flag is being used to set filename. Ignoring." << std::endl;
-                filename = next_arg;
+                filename = next_arg();
             }
-            else if (arg == "-t" || arg == "--time") time_seconds = std::stof(next_arg);
-            else if (arg == "-c" || arg == "--channels") num_channels = std::stoi(next_arg);
-            else if (arg == "-p" || arg == "--parameter") {
-                const std::string& key_value = next_arg;
+            else if (arg == "-t"      || arg == "--time") time_seconds = std::stof(next_arg());
+            else if (arg == "-c"      || arg == "--channels") num_channels = std::stoi(next_arg());
+            else if (arg == "-o"      || arg == "--offline") offline = true;
+            else if (arg == "--parse" || arg == "--compile") dont_run = true;
+            else if (arg == "-p"      || arg == "--parameter") {
+                const std::string& key_value = next_arg();
                 const size_t pos = key_value.find("=");
                 const std::string key = key_value.substr(0, pos);
                 const std::string value = key_value.substr(pos + 1, key_value.size() - pos);
@@ -94,6 +99,7 @@ int main(const int num_args, const char* args[])
     }
 
     if (!parser.parse_program(program)) std::exit(0);
+    if (dont_run) std::exit(0);
 
     AudioPlayer player;
     player.initialize((Volsung::uint) num_channels);
@@ -103,6 +109,7 @@ int main(const int num_args, const char* args[])
     auto const play_one_block = [&] () {
         Volsung::MultichannelBuffer buffer = program.run({ Volsung::AudioBuffer::zero });
         std::copy(buffer[0].begin(), buffer[0].end(), data);
+        if (offline) return;
         player.play(data);
     };
 

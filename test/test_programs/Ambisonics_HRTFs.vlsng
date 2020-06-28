@@ -1,14 +1,14 @@
 
 ; Implementation of AMBISONICS
 ;
-; Encoding is based on 1st order channel config: front-back difference channel,
+; Encoding is based on a 1st order channel config: front-back difference channel,
 ; left-right difference channel, and mid channel
 ;
 ; Decoding is based on four planar virtual speakers with associated HRIRs
 ; The HRIRs are from http://recherche.ircam.fr/equipes/salles/listen/
 ;
-; Evaluation may take a few seconds, but if both buttons are greyed out (not depressed) and
-; the sound is not playing then there may have been a crash
+; Evaluation may take a few seconds, but if both buttons are greyed out (not depressed)
+; and the sound is not playing then there may have been a crash
 
 zero_pad: |buffer, n| {
     buffer.concatenate(0..(n+2)..0)
@@ -44,7 +44,6 @@ RF: (w + X - Y) * a
 
 Channel <0, 1>: {
     N: `N
-
     padding: N - read_file("files/HRIR_LF_L").length_of()
 
     read_IR: |file| {

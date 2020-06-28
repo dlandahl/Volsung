@@ -1,0 +1,77 @@
+
+; Volsung conversions library
+
+Frequency_to_Period <1, 1>: {
+    input -> Reciprocal~ -> output
+}
+
+Period_to_Frequency <1, 1>: {
+    input -> Reciprocal~ -> output
+}
+
+frequency_to_period: |f| { 1 / f }
+period_to_frequency: |s| { 1 / s }
+
+
+
+
+milliseconds_per_second: 1000
+
+Seconds_to_Milliseconds <1, 1>: {
+    input -> Multiply~ milliseconds_per_second -> output
+}
+
+Milliseconds_to_Seconds <1, 1>: {
+    input -> Divide~ milliseconds_per_second -> output
+}
+
+
+Seconds_to_Samples <1, 1>: {
+    input -> Multiply~ sample_rate -> output
+}
+
+Samples_to_Seconds <1, 1>: {
+    input -> Divide~ sample_rate -> output
+}
+
+
+Milliseconds_to_Samples <1, 1>: {
+    input -> Multiply~ sample_rate / milliseconds_per_second -> output
+}
+
+Samples_to_Milliseconds <1, 1>: {
+    input -> Divide~ sample_rate / milliseconds_per_second -> output
+}
+
+
+seconds_to_milliseconds: |s|  { s  * milliseconds_per_second }
+milliseconds_to_seconds: |ms| { ms / milliseconds_per_second }
+
+seconds_to_samples: |s|  { s  * sample_rate }
+samples_to_seconds: |ms| { ms / sample_rate }
+
+milliseconds_to_samples: |s|  { s  *  sample_rate / milliseconds_per_second }
+samples_to_milliseconds: |ms| { ms / (sample_rate / milliseconds_per_second) }
+
+
+
+
+Linear_to_Decibel <1, 1>: {
+    input -> Log~ 10 -> *20 -> output
+}
+
+Decibel_to_Linear <1, 1>: {
+    input -> *0.05 -> Exponentiate~ 10 -> output
+}
+
+linear_to_decibel: |lin| { 20*log(lin) }
+decibel_to_linear: |db|  { 10^(0.05 * db) }
+
+
+
+
+Midi_to_Frequency <1, 1>: {
+    input -> -69 -> Exponentiate~ (2^(1/12)) -> *440 -> output
+}
+
+midi_to_frequency: |n| { (2^(1/12))^(n - 69) * 440 }

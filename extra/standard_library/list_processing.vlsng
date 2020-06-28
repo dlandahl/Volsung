@@ -1,0 +1,27 @@
+
+; Volsung list processing library
+
+first:         |list| { list[0] }
+last:          |list| { list[-1] }
+end:           |list| { length_of(list) - 1 }
+circular_read: |list, n| { list[mod(n, length_of(list))] }
+
+roll: |s, n| {
+    `circular_read(s, n..(length_of(s) - 1 + n))
+}
+
+finite_difference: |list| {
+    list - { 0 }.concatenate(list[0..(length_of(list) - 2)])
+}
+
+accumulate: |list| {
+    map(list, |x, n| { sum(`list[0..n]) })
+}
+
+magnitude: |list| {
+    sqrt((list^2).sum())
+}
+
+normalise: |list| {
+    list / list.`magnitude()
+}

@@ -450,7 +450,7 @@ const SymbolTable<Procedure> Program::procedures = {
         const Sequence source = args[0].get_value<Sequence>();
         Sequence mapped;
         for (size_t n = 0; n < source.size(); n++) {
-            mapped.add_element(proc(ArgumentList { source[n]}, program).get_value<Number>());
+            mapped.add_element(proc(ArgumentList { source[n], n }, program).get_value<Number>());
         }
         return mapped;
     }, 2, 2)},
@@ -586,7 +586,7 @@ const SymbolTable<Procedure> Program::procedures = {
             parser.source_code = buffer.str();
         }
 
-        parser.parse_program(*program);
+        if (!parser.parse_program(*program)) error("Library failed to parse. Exiting");
         return Number(0);
     }, 1, 1)},
 
