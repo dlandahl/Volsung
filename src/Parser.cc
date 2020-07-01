@@ -83,6 +83,7 @@ Token Lexer::get_next_token()
 
         case '\\': {
             position++;
+            if (current() == '\n') line++;
             return get_next_token();
         }
     }
@@ -537,6 +538,7 @@ std::string Parser::get_object_to_connect()
      || current_token_is(TokenType::minus)
      || current_token_is(TokenType::asterisk)
      || current_token_is(TokenType::slash)
+     || current_token_is(TokenType::elipsis)
      || current_token_is(TokenType::caret)) {
 
         const Token operation = current_token;
@@ -552,6 +554,7 @@ std::string Parser::get_object_to_connect()
                 case (TokenType::asterisk): program->create_object<MultObject>(output, argument); break;
                 case (TokenType::slash):    program->create_object<DivisionObject>(output, argument); break;
                 case (TokenType::caret):    program->create_object<PowerObject>(output, argument); break;
+                case (TokenType::elipsis):  program->create_object<DelayObject>(output, argument); break;
                 default: error("Invalid token for inline operation: " + debug_names.at(operation.type) + ". Expected arithmetic operator");
             }
         } else {
@@ -774,9 +777,10 @@ TypedValue Parser::parse_factor()
 
     switch (current_token.type) {
         case TokenType::backtick:
-        case TokenType::identifier:      value = parse_identifier();  break;
-        case TokenType::numeric_literal: value = parse_number();      break;
-        case TokenType::string_literal:  value = current_token.value; break;
+        case TokenType::identifier      :  value = parse_identifier();  break;
+        case TokenType::numeric_literal :  value = parse_number();      break;
+        case TokenType::string_literal  :  value = current_token.value; break;
+        case TokenType::open_brace      :  value = parse_sequence(); break;
 
         case TokenType::open_paren:
             next_token();
@@ -784,7 +788,6 @@ TypedValue Parser::parse_factor()
             expect(TokenType::close_paren);
             break;
 
-        case TokenType::open_brace: value = parse_sequence(); break;
         case TokenType::minus:
             next_token();
             value = -parse_product();
@@ -873,7 +876,7 @@ Number Parser::parse_number()
         else if (current_token.value == "deg") multiplier = TAU / 360.0;
         else if (current_token.value == "i")   imaginary = true;
         else if (current_token.value == "dB"
-              || current_token.value == "db") number = std::log10(number * 20);
+              || current_token.value == "db") number = std::pow(10, 0.05*number);
         else error("Invalid literal operator or stray identifier");
     }
     else if (peek(TokenType::percent)) {
@@ -938,7 +941,6 @@ TypedValue Parser::parse_identifier()
 
     while (current_token.type == TokenType::backtick) {
         if (!program->parent) error("Attempted to use backtick in top-level program. Only use ` in a subgraph or a function definition");
-        if (program == program->parent) std::cout << "WHAT" << std::endl;
         program = program->parent;
         next_token();
     }

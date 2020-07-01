@@ -25,16 +25,17 @@ A  : 9
 Bb : 10
 B  : 11
 
+
 note: |note, octave| {
       note + (octave+1) * `semis_per_octave
 }
 
 get_frequency: |n| {
-    (2^(1/`semis_per_octave))^(n - 69) * `tuning
+    (2^(1 / `semis_per_octave))^(n - 69) * `tuning
 }
 
 get_octave_from_degree: |n, scale| {
-    floor((n-1)/scale.length_of())
+    floor((n-1) / scale.length_of())
 }
 
 get_octave: |n| {
@@ -67,6 +68,3 @@ lydian     : shift_scale_root(major, 3)
 mixolydian : shift_scale_root(major, 4)
 aeolian    : shift_scale_root(major, 5)
 locrian    : shift_scale_root(major, 6)
-
-; map (0..12, |x, n| { `shift_scale_root(`major, n).print(": ", n) } )
-;

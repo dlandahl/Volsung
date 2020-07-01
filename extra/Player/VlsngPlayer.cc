@@ -26,6 +26,8 @@ int main(const int num_args, const char* args[])
     std::map<std::string, float> parameters;
     bool offline = false;
     bool dont_run = false;
+    bool profile = false;
+
     Volsung::set_library_path("../extra/standard_library/");
 
     for (int n = 1; n < num_args; n++) {
@@ -44,11 +46,12 @@ int main(const int num_args, const char* args[])
                     std::cout << "Unexpected argument '" << filename << "' since -f flag is being used to set filename. Ignoring." << std::endl;
                 filename = next_arg();
             }
-            else if (arg == "-t"      || arg == "--time") time_seconds = std::stof(next_arg());
-            else if (arg == "-c"      || arg == "--channels") num_channels = std::stoi(next_arg());
-            else if (arg == "-o"      || arg == "--offline") offline = true;
-            else if (arg == "--parse" || arg == "--compile") dont_run = true;
-            else if (arg == "-p"      || arg == "--parameter") {
+            else if (arg == "-t" || arg == "--time") time_seconds = std::stof(next_arg());
+            else if (arg == "-c" || arg == "--channels") num_channels = std::stoi(next_arg());
+            else if (arg == "-o" || arg == "--offline") offline = true;
+            else if (arg == "-n" || arg == "--compile") dont_run = true;
+            else if (               arg == "--profile") profile = true;
+            else if (arg == "-p" || arg == "--parameter") {
                 const std::string& key_value = next_arg();
                 const size_t pos = key_value.find("=");
                 const std::string key = key_value.substr(0, pos);

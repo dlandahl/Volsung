@@ -18,11 +18,11 @@ period_to_frequency: |s| { 1 / s }
 milliseconds_per_second: 1000
 
 Seconds_to_Milliseconds <1, 1>: {
-    input -> Multiply~ milliseconds_per_second -> output
+    input -> Multiply~ `milliseconds_per_second -> output
 }
 
 Milliseconds_to_Seconds <1, 1>: {
-    input -> Divide~ milliseconds_per_second -> output
+    input -> Divide~ `milliseconds_per_second -> output
 }
 
 
@@ -36,23 +36,22 @@ Samples_to_Seconds <1, 1>: {
 
 
 Milliseconds_to_Samples <1, 1>: {
-    input -> Multiply~ sample_rate / milliseconds_per_second -> output
+    input -> Multiply~ sample_rate / `milliseconds_per_second -> output
 }
 
 Samples_to_Milliseconds <1, 1>: {
-    input -> Divide~ sample_rate / milliseconds_per_second -> output
+    input -> Divide~ sample_rate / `milliseconds_per_second -> output
 }
 
 
-seconds_to_milliseconds: |s|  { s  * milliseconds_per_second }
-milliseconds_to_seconds: |ms| { ms / milliseconds_per_second }
+seconds_to_milliseconds: |s|  { s  * `milliseconds_per_second }
+milliseconds_to_seconds: |ms| { ms / `milliseconds_per_second }
 
 seconds_to_samples: |s|  { s  * sample_rate }
 samples_to_seconds: |ms| { ms / sample_rate }
 
-milliseconds_to_samples: |s|  { s  *  sample_rate / milliseconds_per_second }
-samples_to_milliseconds: |ms| { ms / (sample_rate / milliseconds_per_second) }
-
+milliseconds_to_samples: |s|  { s  *  sample_rate / `milliseconds_per_second }
+samples_to_milliseconds: |ms| { ms / (sample_rate / `milliseconds_per_second) }
 
 
 

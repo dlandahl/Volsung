@@ -18,7 +18,7 @@ Filter_Bank <1, 1>: {
     freqs: _1
     N: length_of(freqs)
 
-    input <> [N] Bandpass_Filter~ freqs[n-1], sqrt(2) / 2 >> Divide~ N -> output
+    input <> [N] Bandpass_Filter~ freqs[n-1], 128 >> Divide~ N -> output
 }
 
 Leaky_Integrator <1, 1>: {
@@ -75,14 +75,6 @@ Delay_Modulator <0, 1>: {
     -> Multiply~    size * mod_depth
     -> Add~  size - size * mod_depth
     -> output
-}
-
-Linear_to_Decibel <1, 1>: {
-    input -> Log~ 10 -> *20 -> output
-}
-
-Decibel_to_Linear <1, 1>: {
-    input -> *0.05 -> Exponentiate~ 10 -> output
 }
 
 butterworth_q: sqrt(2) / 2
