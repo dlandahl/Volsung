@@ -44,13 +44,13 @@ int main(const int num_args, const char* args[])
             if (arg == "-f" || arg == "--file") {
                 if (!filename.empty())
                     std::cout << "Unexpected argument '" << filename << "' since -f flag is being used to set filename. Ignoring." << std::endl;
-                filename = next_arg();
+                else filename = next_arg();
             }
             else if (arg == "-t" || arg == "--time") time_seconds = std::stof(next_arg());
             else if (arg == "-c" || arg == "--channels") num_channels = std::stoi(next_arg());
-            else if (arg == "-o" || arg == "--offline") offline = true;
-            else if (arg == "-n" || arg == "--compile") dont_run = true;
-            else if (               arg == "--profile") profile = true;
+            else if (arg == "-o" || arg == "--offline") { offline = true; continue; }
+            else if (arg == "-n" || arg == "--compile") { dont_run = true; continue; }
+            else if (               arg == "--profile") { profile = true; continue; }
             else if (arg == "-p" || arg == "--parameter") {
                 const std::string& key_value = next_arg();
                 const size_t pos = key_value.find("=");

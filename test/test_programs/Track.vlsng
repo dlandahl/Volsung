@@ -1,0 +1,137 @@
+
+import_library("theory")
+import_library("utilities")
+import_library("audio_effects")
+import_library("conversions")
+
+LFO <0, 1>: {
+    frequency: _1
+    amount: _2
+    offset: _3
+
+    Sine_Oscillator~ frequency -> *-1
+    -> Bi_to_Unipolar~
+    -> Multiply~ amount -> Add~ offset
+    -> output
+}
+
+Filter <2, 1> : {
+    input|1 -> 1|gain: Multiply~
+
+    input|1 -> ^1
+    -> env_amount : Multiply~
+    -> 1|filter   : Lowpass_Filter~
+
+    input -> gain -> filter -> output
+
+    cutoff:    LFO~ 0.023, 350, 50  -> 1|filter
+    resonance: LFO~ 0.015, 4,   2.5 -> 2|filter
+    envelope:  LFO~ 0.037, 50,  100 -> 1|env_amount
+}
+
+
+Master <1, 1>: {
+    input -> *0.8
+    -> Tanh~ -> Compressor~ 3.4, -40 -> *75
+    -> *0.2 -> output
+    input -> Highpass_Filter~ 900, 0.3 -> Reverb~ _1, 0.8 -> *0.3 -> output
+}
+master: [2] Master~ (n-1)*20
+
+master[0] -> output
+master[0] -> Write_File~ "GenerativeL", 60s
+master[1] -> Write_File~ "GenerativeR", 60s
+
+
+scale: make_scale(note(Gb, 1), minor)
+time: 125ms
+
+melody: { \
+   1, 1, 1, 1, 3, 3, \
+   1, 1, 1, 1, 2, 2, \
+   1, 1, 1, 1, 4, 4, \
+   1, 1, 1, 1, 5, 5  \
+}.repeat(3).concatenate({ 7, 7, 7, 6, 5, 4 })
+
+
+Subtractive_Voice <0, 2>: {
+    Clock~ `time -> Step_Sequence~ `scale(`melody + 14*_2) -> Smooth~ 7
+    -> Saw_Oscillator~
+    -> filter: Filter~
+    -> *0.75 -> Tanh~ -> *0.25
+    -> Delay_Line~ `time*_1
+    <> reverb: [2] Reverb~ 30*n, 0.75
+
+    reverb[0] -> 0|output
+    reverb[1] -> 1|output
+
+    Clock~ `time -> Envelope_Generator~ 250ms -> 1|filter
+    Noise~ -> *0.9 -> Bandpass_Filter~ 1200, 9 -> filter
+}
+
+voices: [2] Subtractive_Voice~ { 5, 21 }[n-1], { 1, 1.5 }[n-1]
+
+voices|0 >> master[0]
+voices|1 >> master[1]
+
+
+Clock~ time*8 -> Step_Sequence~ scale({8, 8, 6, 4, 1, 1, 1})
+-> Saw_Oscillator~
+-> filter_b: Filter~
+-> *0.25 <> master
+
+Clock~ time -> Envelope_Generator~ 200ms -> 1|filter_b
+
+
+
+Clock~ time*4
+-> Envelope_Generator~ 200ms -> ^4 -> *150
+-> kick_osc: Sine_Oscillator~
+-> kick_gain: Multiply~
+-> *2.2 <> master
+
+Clock~ time*4 -> Envelope_Generator~ 300ms -> Smooth~ 20 -> 1|kick_gain
+Clock~ time*4 -> 1|kick_osc
+
+
+
+Snare <1, 1>: {
+    f: { 2200, 1700, 4200 } / 7 + 100
+    print(f)
+
+               [f.length_of()] Noise~
+    => filter: [f.length_of()] Bandpass_Filter~ f[n-1], 5
+    >> gain:                   Multiply~
+    -> output
+
+    input
+    <> [2] Delay_Line~ floor(18ms*(n-1))
+    => [2] Envelope_Generator~ 125ms
+    => [2] Power~ 16.5 >> *0.2 -> 1|gain
+}
+
+Clock~ time*8
+-> Delay_Line~ floor(time*4 - 15ms)
+-> Snare~ <> master
+
+
+
+Hat <1, 1>: {
+    attenuation: _3
+    Noise~
+    -> hat_gain: Multiply~
+    -> attenuation: Multiply~
+    -> Bandpass_Filter~ 17000, 3 -> *0.1
+    -> output
+
+    input -> Step_Sequence~ attenuation.`roll(1) -> 1|attenuation
+    input -> Envelope_Generator~ _1 -> ^_2 -> 1|hat_gain
+}
+
+Clock~ time
+-> Hat~ 100ms, 6, { 0.9, 0.15, 0.55, 0.15 }
+<> master
+
+Clock~ time*4 -> ..floor(time*2)
+-> Hat~ 600ms, 13, { 0.6, 1.5 }
+-> *0.4 <> master

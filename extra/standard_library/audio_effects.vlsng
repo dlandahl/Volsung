@@ -20,9 +20,8 @@ Reverb <1, 2>: {
         ; Delay_Modulator~ N, random(0.1), 0.1
         ; -> 1|buffer
     }
-
     offset: _1
-    
+   
     ; From freeverb,
     orders: { 1557, 1617, 1491, 1422, 1277, 1356, 1188, 1113 } + offset
 
@@ -40,14 +39,12 @@ Compressor <1, 1>: {
 
     slope: 1 - 1 / ratio
 
-
     Max_Zero <1, 1>: {
         ; Essentially a negative half-wave rectifier.
     
         input -> Comparator~ 0 -> Inverse~ -> +1 -> 1|gate: Multiply~
         input -> gate -> output
     }
-
 
     input -> Envelope_Follower~ 4ms, 20ms
     -> Linear_to_Decibel~

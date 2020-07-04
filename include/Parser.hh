@@ -149,8 +149,11 @@ class Parser : public Lexer
     int inline_object_index = 0;
     Graph* program = nullptr;
 
+    std::function<void()> parse_hook;
+
 public:
     bool parse_program(Graph&);
+    void set_parse_hook(std::function<void()>);
 };
 
 }

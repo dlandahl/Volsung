@@ -299,23 +299,28 @@ TimerObject::TimerObject(const ArgumentList&)
 }
 
 
-void ClockObject::process(const MultichannelBuffer&, MultichannelBuffer& output_buffer)
+void ClockObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
     for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
         update_parameters(n);
-        
+        if (reset.read_gate_state(input_buffer[1][n]) & GateState::just_opened) {
+            elapsed = interval;
+        }
         output_buffer[0][n] = 0;
 
-        if (elapsed >= interval) elapsed = 0.f;
-        if (!elapsed) output_buffer[0][n] = 1;
-        elapsed += 1.f;
+        if (elapsed >= interval) {
+            elapsed -= interval;
+            output_buffer[0][n] = 1;
+        }
+        elapsed++;
     }
 }
 
 ClockObject::ClockObject(const ArgumentList& parameters)
 {
-    init(1, 1, parameters, { &interval });
+    init(2, 1, parameters, { &interval });
     link_value(&interval, interval, 0);
+    elapsed = interval;
 }
 
 

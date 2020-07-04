@@ -35,6 +35,7 @@ int main()
     const size_t num_dots = 30;
 
     for (const auto& file : std::filesystem::directory_iterator(".")) {
+        if (file.is_directory()) continue;
         Parser parser;
         Program* program = new Program;
 

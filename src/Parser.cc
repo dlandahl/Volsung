@@ -315,6 +315,7 @@ bool Parser::parse_program(Graph& graph)
             next_token();
             error("Expected declaration or connection, got " + debug_names.at(current_token.type));
         }
+        if (parse_hook) parse_hook();
     }
 
     } catch (const VolsungException&) {
@@ -988,6 +989,10 @@ void Parser::verify(TokenType expected) const
     if (!current_token_is(expected)) {
         error("Got " + debug_names.at(current_token.type) + ", expected " + debug_names.at(expected));
     }
+}
+
+void Parser::set_parse_hook(std::function<void()> function) {
+    parse_hook = function;
 }
 
 }

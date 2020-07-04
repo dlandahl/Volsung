@@ -176,6 +176,7 @@ class ClockObject : public AudioObject
     void process(const MultichannelBuffer&, MultichannelBuffer&) override;
     float interval = 1;
     float elapsed = 0;
+    GateListener reset;
 
 public:
     ClockObject(const ArgumentList&);
