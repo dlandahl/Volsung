@@ -915,12 +915,11 @@ InvokeObject::InvokeObject(const ArgumentList& parameters)
 
 void InvokeBlockwiseObject::process(const MultichannelBuffer& input_buffer, MultichannelBuffer& output_buffer)
 {
-    Sequence block;
     for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
-        block.add_element(input_buffer[0][n]);
+        block[n] = input_buffer[0][n];
     }
 
-    block = function({ block, indeces }, nullptr).get_value<Sequence>();
+    //block = function({ block, indeces }, nullptr).get_value<Sequence>();
 
     for (size_t n = 0; n < AudioBuffer::blocksize; n++) {
         output_buffer[0][n] = block[n];
@@ -931,6 +930,8 @@ InvokeBlockwiseObject::InvokeBlockwiseObject(const ArgumentList& parameters)
 {
     set_io(1, 1);
     function = parameters[0].get_value<Procedure>().implementation;
+
+    for (size_t n = 0; n < AudioBuffer::blocksize; n++) block.add_element(0);
     for (size_t n = 0; n < AudioBuffer::blocksize; n++) indeces.add_element(n);
 }
 

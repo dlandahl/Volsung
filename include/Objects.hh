@@ -550,6 +550,7 @@ class InvokeBlockwiseObject : public AudioObject
     void  process(const MultichannelBuffer&, MultichannelBuffer&) override;
 
     Procedure::Implementation function;
+    Sequence block;
     Sequence indeces;
 
 public:

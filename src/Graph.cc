@@ -330,6 +330,12 @@ Procedure::Procedure(Implementation impl, size_t min_args, size_t max_args, bool
     : implementation(impl), min_arguments(min_args), max_arguments(max_args), can_be_mapped(_can_be_mapped)
 { }
 
+#define APPLY_FLOAT_FUNCTION_TO_NUMBER(fun)      \
+    Number number = args[0].get_value<Number>(); \
+    number.imag() = fun(number.imag());          \
+    number.real() = fun(number.real());          \
+    return number                                \
+
 const SymbolTable<Procedure> Program::procedures = {
     { "random", Procedure([] (const ArgumentList& arguments, Program*) -> TypedValue {
         float min = 0.f;
@@ -370,19 +376,19 @@ const SymbolTable<Procedure> Program::procedures = {
     }, 1, 1, true)},
 
     { "ceil", Procedure([] (const ArgumentList& args, Program*) {
-        return std::ceil(args[0].get_value<Number>());
+        APPLY_FLOAT_FUNCTION_TO_NUMBER(std::ceil);
     }, 1, 1, true)},
 
     { "tanh", Procedure([] (const ArgumentList& args, Program*) {
-        return std::tanh(args[0].get_value<Number>());
+        APPLY_FLOAT_FUNCTION_TO_NUMBER(std::tanh);
     }, 1, 1, true)},
 
     { "atan", Procedure([] (const ArgumentList& args, Program*) {
-        return std::atan(args[0].get_value<Number>());
+        APPLY_FLOAT_FUNCTION_TO_NUMBER(std::atan);
     }, 1, 1, true)},
 
     { "floor", Procedure([] (const ArgumentList& args, Program*) {
-        return std::floor(args[0].get_value<Number>());
+        APPLY_FLOAT_FUNCTION_TO_NUMBER(std::floor);
     }, 1, 1, true)},
 
     { "sign", Procedure([] (const ArgumentList& args, Program*) {
@@ -403,7 +409,7 @@ const SymbolTable<Procedure> Program::procedures = {
 
     { "log", Procedure([] (const ArgumentList& args, Program*) {
         float base = 10.f;
-        if (args.size() > 1) args[1].get_value<Number>();
+        if (args.size() > 1) base = args[1].get_value<Number>();
         const float value = args[0].get_value<Number>();
 
         return std::log(value) / std::log(base);
@@ -414,8 +420,13 @@ const SymbolTable<Procedure> Program::procedures = {
     }, 1, 1, true)},
 
     { "Im", Procedure([] (const ArgumentList& args, Program*) {
-        const Number num = args[0].get_value<Number>();
-        return num.subtract_num((Number) float(num));
+        Number num = args[0].get_value<Number>();
+        return num.imag();
+    }, 1, 1, true)},
+
+    { "conjugate", Procedure([] (const ArgumentList& args, Program*) {
+        Number num = args[0].get_value<Number>();
+        return Number(num.real(), -num.imag());
     }, 1, 1, true)},
 
     { "reverse", Procedure([] (const ArgumentList& args, Program*) {
@@ -473,11 +484,13 @@ const SymbolTable<Procedure> Program::procedures = {
         return sum / sequence.size();
     }, 1, 1)},
 
-    { "largest", Procedure([] (const ArgumentList& args, Program*) {
+    { "greatest", Procedure([] (const ArgumentList& args, Program*) {
         Sequence sequence = args[0].get_value<Sequence>();
         Number greatest = sequence[0];
-        for (auto element: sequence) {
-            greatest = std::max(greatest, element);
+        for (size_t n = 0; n < sequence.size(); n++) {
+            if (sequence[n].magnitude() > greatest.magnitude()) {
+                greatest = sequence[n];
+            }
         }
         return greatest;
     }, 1, 1)},
@@ -485,8 +498,10 @@ const SymbolTable<Procedure> Program::procedures = {
     { "smallest", Procedure([] (const ArgumentList& args, Program*) {
         Sequence sequence = args[0].get_value<Sequence>();
         Number smallest = sequence[0];
-        for (auto element: sequence) {
-            smallest = std::min(smallest, element);
+        for (size_t n = 0; n < sequence.size(); n++) {
+            if (sequence[n].magnitude() < smallest.magnitude()) {
+                smallest = sequence[n];
+            }
         }
         return smallest;
     }, 1, 1)},
@@ -639,11 +654,11 @@ const SymbolTable<Procedure> Program::procedures = {
 
         std::function<void(Number*, size_t)> fft = [&fft] (Number* input_data, size_t N) {
             if (N < 2) return;
-            assert(!(N % 2), "FFT size must be a power of 2");
+            assert((size_t) std::floor(std::log2(N)) == N, "FFT size must be a power of 2");
 
             size_t M = N / 2;
 
-            auto temp = (Number*) malloc(sizeof( Number ) * M);
+            auto temp = (Number*) std::malloc(sizeof( Number ) * M);
             for (size_t n = 0; n < M; n++) temp[n] = input_data[n * 2 + 1];
             for (size_t n = 0; n < M; n++) input_data[n] = input_data[n * 2];
             for (size_t n = 0; n < M; n++) input_data[n + M] = temp[n];
@@ -670,6 +685,7 @@ const SymbolTable<Procedure> Program::procedures = {
     }, 1, 1)},
 };
 
+#undef APPLY_FLOAT_FUNCTION_TO_NUMBER
 
 void Program::create_user_object(const std::string& name, const uint num_inputs, const uint num_outputs, std::any user_data, const AudioProcessingCallback callback)
 {

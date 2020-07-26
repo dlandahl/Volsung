@@ -25,11 +25,6 @@ void AudioObject::implement()
     }
 }
 
-bool AudioObject::is_connected(const uint input_index) const
-{
-    return inputs.at(input_index).is_connected();
-}
-
 void AudioObject::set_io(const uint num_inputs, const uint num_outputs)
 {
     outputs.resize(num_outputs);

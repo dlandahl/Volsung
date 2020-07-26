@@ -9,6 +9,7 @@ file(GLOB code
     "src/*.cc"
 )
 
+
 if (MSVC)
     SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /W4 /permissive- /std:c++17")
 else()
@@ -43,4 +44,3 @@ elseif (WIN32)
     target_link_libraries ( volsung_player dsound)
     target_link_libraries ( volsung_player winmm)
 endif()
-

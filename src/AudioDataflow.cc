@@ -4,15 +4,6 @@
 
 namespace Volsung {
 
-float& AudioBuffer::operator[](size_t n)
-{
-    return (*data)[n];
-}
-
-float AudioBuffer::operator[](size_t n) const
-{
-    return (*data)[n];
-}
 
 float* AudioBuffer::data_pointer()
 {

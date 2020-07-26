@@ -60,7 +60,12 @@ protected:
 
 
 public:
-    bool is_connected(const uint) const;
+    __attribute__((always_inline))
+    inline bool is_connected(const uint input_index) const
+    {
+        return inputs.at(input_index).is_connected();
+    }
+
     void implement();
         
     std::vector<AudioInput>  inputs;

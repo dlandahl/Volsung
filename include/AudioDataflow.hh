@@ -15,8 +15,18 @@ public:
     
     const static AudioBuffer zero;
  
-    float& operator[](size_t);
-    float operator[](size_t) const;
+    __attribute__((always_inline))
+    inline float& operator[](size_t n)
+    {
+        return (*data)[n];
+    }
+
+    __attribute__((always_inline))
+    inline float operator[](size_t n) const
+    {
+        return (*data)[n];
+    }
+
     float* data_pointer();
     AudioBuffer();
 
