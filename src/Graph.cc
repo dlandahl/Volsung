@@ -654,7 +654,7 @@ const SymbolTable<Procedure> Program::procedures = {
 
         std::function<void(Number*, size_t)> fft = [&fft] (Number* input_data, size_t N) {
             if (N < 2) return;
-            assert((size_t) std::floor(std::log2(N)) == N, "FFT size must be a power of 2");
+            // assert((size_t) std::floor(std::log2(N)) == N, "FFT size must be a power of 2");
 
             size_t M = N / 2;
 

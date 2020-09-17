@@ -45,7 +45,9 @@ get_octave: |n| {
 }
 
 read_scale: |n, scale| {
-    scale[mod(n-1, scale.length_of())] + `get_octave_from_degree(n, scale) * `semis_per_octave
+    scale[mod(n-1, scale.length_of())] \
+  + `get_octave_from_degree(n, scale)  \
+  * `semis_per_octave
 }
 
 make_scale: |root, scale| {

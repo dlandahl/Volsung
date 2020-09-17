@@ -18,7 +18,7 @@ Token Lexer::get_next_token()
     while (current() == ' ' || current() == '\t') position++;
     if (current() == ';') while (current() != '\n') position++;
 
-    switch(current()) {
+    switch (current()) {
         case '\n':
             line++;
             return { TokenType::newline, "" };
